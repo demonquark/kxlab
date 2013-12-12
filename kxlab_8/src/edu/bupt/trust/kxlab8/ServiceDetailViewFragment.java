@@ -8,7 +8,9 @@ import edu.bupt.trust.kxlab.adapters.ServicesArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.MyServicesDAO;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
+import edu.bupt.trust.kxlab.data.MyServicesDAO.Type;
 import edu.bupt.trust.kxlab.model.TrustService;
+import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import android.app.Activity;
@@ -34,6 +36,7 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 	private LinearLayout mProgressContainer;
 	private LinearLayout mListHolder;
 	TrustService mService;
+	MyServicesDAO.Type servicesType;
 	ArrayList<TrustService> comments;
 	
 	public ServiceDetailViewFragment (){
@@ -111,7 +114,7 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 			if(comments == null){
 				// TODO: implement the comments DAO (not sure where this is coming from, so I did it with services)
 				showList(false);
-				MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this);
+				MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
 				myServicesDAO.readServices(MyServicesDAO.Type.APPLY, DaoFactory.Source.DUMMY, new String [] {});
 				Loggen.v(this, "Restoring saved Instancestate: Hide the list");
 			}else{
@@ -170,15 +173,15 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 	private void loadHeaderContent(View rootView) {
 		
 		//Set the image
-		File imgFile = new File(mService.getServicePhoto());
+		File imgFile = new File(mService.getServicephoto());
 		ImageView serviceImg = (ImageView) rootView.findViewById(R.id.details_service_img);
 		if(imgFile.exists()){
 			serviceImg.setImageBitmap(BitmapFactory.decodeFile(imgFile.getAbsolutePath()));
 		}
 		
 		// Set the text
-		((TextView) rootView.findViewById(R.id.details_service_title)).setText(mService.getServiceTitle());
-		((TextView) rootView.findViewById(R.id.details_service_description)).setText(mService.getServiceDetail());
+		((TextView) rootView.findViewById(R.id.details_service_title)).setText(mService.getServicetitle());
+		((TextView) rootView.findViewById(R.id.details_service_description)).setText(mService.getServicedetail());
 
 	}
 
@@ -195,14 +198,38 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		
 	}
 
+
+	public interface OnActionSelectedListener{
+		public void onActionSelected(String tag, TrustService service);
+	}
 	@Override
-	public void onReadService(String service) {
+	public void onReadService(TrustService service) {
 		// TODO Auto-generated method stub
 		
 	}
-	
-	public interface OnActionSelectedListener{
-		public void onActionSelected(String tag, TrustService service);
+
+	@Override
+	public void onCreateService(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onDeleteService(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onEditService(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSearchService(List<TrustService> services) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

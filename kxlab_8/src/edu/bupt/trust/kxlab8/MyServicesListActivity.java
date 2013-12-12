@@ -28,7 +28,9 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 		setupActionBar((savedInstanceState != null) ? savedInstanceState.getInt(Gegevens.EXTRA_SELECTEDTAB, 0) : 0 );
 		
 	}
-
+	/**
+	 * 将当前选中的Fragment页的索引保存到Bundle中
+	 */
 	@Override protected void onSaveInstanceState(Bundle outState) {
 		Loggen.v(this, "Saving instance state of the services activity.");
 		// save the selected tab to the instance state
@@ -70,7 +72,7 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 		// This keeps the MyServicesListFragment completely independent of the ServicesDetailFragment (i.e. low cohesion)
 		// In our case we show the service details in a new activity. 
 		// This can easily be modified to a local fragment for tablet devices
-		
+		System.out.println("Into startDetails");
 		// Put the necessary arguments in a bundle
 		Bundle b = new Bundle();
 		b.putInt(Gegevens.EXTRA_FOOTERID,  R.id.footer_myservice);
@@ -81,11 +83,13 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 		// Send the bundle off to the detail activity
 		Intent detailIntent = new Intent(this, ServiceDetailActivity.class);
 		detailIntent.putExtra(Gegevens.EXTRA_MSG, b);
+		System.out.println("here is not null"+service.getServicedetail());
 		startActivityForResult(detailIntent, BaseActivity.RESULT_FIRST_USER);
 	}
 
 	@Override public void onItemSelected(String tag, int position, TrustService service) {
-		Loggen.v(this, "User has selected "+service.getServiceTitle()+" from " + tag + ". id=" + service.getServiceId() );
+		Loggen.v(this, "User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid() );
+		System.out.println("User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid());
 		startDetailsActivity(tag, ServiceDetailActivity.Type.VIEW, service);
 	}
 	

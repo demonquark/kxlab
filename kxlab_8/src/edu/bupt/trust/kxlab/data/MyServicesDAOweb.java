@@ -23,6 +23,7 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 	
 	// Server URL address strings
 	private String urlBase 		= Urls.urlBASE;
+	private int currentPage = 0;
 	
 	// HTTP client 
 	private AsyncHttpClient asyncHttpClient;
@@ -50,7 +51,15 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 
 	@Override protected void readService(String path) {
 		// TODO Auto-generated method stub
-		
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onReadServices(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onReadServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
 	}
 
 	@Override
@@ -63,6 +72,20 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 	protected void createServiceComment(String path) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	@Override
+	protected void searchService(String path) {
+		// TODO Auto-generated method stub
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onSearchServices(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onSearchServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
 	}
 	
 	/** Check if we have network connectivity. No point in trying anything if we have no connection. */
@@ -96,5 +119,8 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 		@Override public void onFailure(Throwable error, String content) { Log.e("DAOweb" , "onFailure: not implemented."); }
 		@Override public void onFinish() { Log.v("DAOweb" , "onFinish: not implemented."); }		
 
-	} 
+	}
+
+
+	 
 }

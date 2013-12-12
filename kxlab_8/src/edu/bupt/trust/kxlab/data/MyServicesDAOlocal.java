@@ -148,6 +148,13 @@ class MyServicesDAOlocal extends ServicesDAOabstract {
 		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
 		
 	}
+
+
+	@Override
+	protected void searchService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 //	public static String readString(File file) throws IOException {
 //		InputStream in = new FileInputStream(file);

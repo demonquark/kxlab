@@ -66,7 +66,7 @@ public class ServicesListActivity extends BaseActivity implements OnServiceSelec
 	}
 
 	@Override public void onItemSelected(String tag, int position, TrustService service) {
-		Loggen.v(this, "User has selected "+service.getServiceTitle()+" from " + tag + ". id=" + service.getServiceId() );
+		Loggen.v(this, "User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid() );
 		// Note: The Activity handles delegating the service details to ServicesDetailFragment. 
 		// This keeps the ServicesListFragment completely independent of the ServicesDetailFragment (i.e. low cohesion)
 		// In our case we show the service details in a new activity. 

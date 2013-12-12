@@ -96,5 +96,12 @@ class ServicesDAOweb extends ServicesDAOabstract{
 		@Override public void onFailure(Throwable error, String content) { Log.e("DAOweb" , "onFailure: not implemented."); }
 		@Override public void onFinish() { Log.v("DAOweb" , "onFinish: not implemented."); }		
 
+	}
+
+
+	@Override
+	protected void searchService(String path) {
+		// TODO Auto-generated method stub
+		
 	} 
 }

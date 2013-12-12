@@ -38,8 +38,15 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 			@Override protected void onPostExecute(Void v) {
 				String response = null;
 				if(path != null){
-					String filename = (path.contains(".")) ? path : path + ServicesDAOlocal.REPLACE_extension; 
-					response = readFromFile(filename);
+					//String filename = (path.contains(".")) ? path : path + ServicesDAOlocal.REPLACE_extension; 
+					//response = readFromFile(filename);
+					String s = "[" +
+							"{\"serviceid\":107,\"servicetype\":1,\"servicetitle\":\"1\",\"servicedetail\":\"1\",\"servicecreatetime\":1385365825000,\"servicelastedittime\":1385365825000,\"credibilityScore\":\"0\",\"servicephoto\":null,\"useremail\":\"3\",\"servicestatus\":1}," +
+									"{\"serviceid\":90,\"servicetype\":1,\"servicetitle\":\"1\",\"servicedetail\":\"前天，在《咱们结婚吧扭，但也算是个能得不对了\",\"servicecreatetime\":1385114472000,\"servicelastedittime\":1385114472000,\"credibilityScore\":\"0\",\"servicephoto\":null,\"useremail\":\"3\",\"servicestatus\":1}," +
+									"{\"serviceid\":87,\"servicetype\":1,\"servicetitle\":\"1\",\"servicedetail\":\"前天，在《咱们结婚吧》里头听到妞儿说的话，“结婚就是两个人搭伙过日子，你要谈到什么爱不爱的，那就不对了，跑题了。”当时虽然觉得这话有点凄凉、有点别扭，但也算是个能让自己生活好过一些的箴言。 昨天，我看了韩寒主编的《很高兴见到你》里头的一篇文章，突然就觉得不对了，西式婚礼的誓词是什么，“我愿意爱他、安慰他、尊重他、保护他，像你爱自己一样。" +
+									"不论他生病或是健康、富有或贫穷，始终忠於他，直到离开世界！”这才是婚姻的真谛啊，爱是排在第一位的啊。 所以，我将帖子发在这里，只是想提醒广大征友者以及应征者，相亲也是为了在千万人中找到那个彼此说出“我愿意”的人，千万不要让婚姻变了味道。 发牢骚完毕\",\"servicecreatetime\":1385049600000,\"servicelastedittime\":1385085600000,\"credibilityScore\":\"0\",\"servicephoto\":null,\"useremail\":\"3\",\"servicestatus\":1}," +
+									"{\"serviceid\":14,\"servicetype\":1,\"servicetitle\":\"13\",\"servicedetail\":\"13\",\"servicecreatetime\":1383840000000,\"servicelastedittime\":1383879600000,\"credibilityScore\":\"0\",\"servicephoto\":null,\"useremail\":\"3\",\"servicestatus\":1}]";
+					response = s;
 				}
 				
 				listener.onReadServices(new RawResponse(response, path));
@@ -94,6 +101,12 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 		}
 		
 		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
+		
+	}
+
+	@Override
+	protected void searchService(String path) {
+		// TODO Auto-generated method stub
 		
 	}
 

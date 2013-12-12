@@ -97,5 +97,11 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 		
 	}
 
+	@Override
+	protected void searchService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }

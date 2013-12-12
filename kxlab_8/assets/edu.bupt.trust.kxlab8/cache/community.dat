@@ -1,0 +1,10 @@
+Tabs in the action bar make it easy for users to explore and switch between different views in your app. 
+The tabs provided by the ActionBar are ideal because they adapt to different screen sizes. 
+For example, when the screen is wide enough the tabs appear in the action bar alongside the action buttons
+while when on a narrow screen they appear in a separate bar. 
+In some cases, the Android system will instead show your tab items as a drop-down list to ensure the best fit in the action bar.
+To get started, your layout must include a ViewGroup in which you place each Fragment associated with a tab.
+Be sure the ViewGroup has a resource ID so you can reference it from your code and swap the tabs within it. 
+Alternatively, if the tab content will fill the activity layout.
+then your activity doesn't need a layout at all (you don't even need to call setContentView()). 
+Instead, you can place each fragment in the default root view, which you can refer to with the android.R.id.content ID.

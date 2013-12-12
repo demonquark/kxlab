@@ -1,9 +1,10 @@
 package edu.bupt.trust.kxlab.data;
 
+import java.util.HashMap;
+
 import android.content.Context;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesDetailListener;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
-import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesDetailListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
 
@@ -15,10 +16,11 @@ public class DaoFactory {
 	private static DaoFactory mInstance = null;
  
 	private ServicesDAO servicesDAO;
-	private MyServicesDAO myServicesDAO;
-	private ProfileDAO	profileDAO;
+	private HashMap <MyServicesDAO.Type, MyServicesDAO> myServicesDAOMap;
  
-	private DaoFactory(){ }
+	private DaoFactory(){ 
+		myServicesDAOMap = new HashMap <MyServicesDAO.Type, MyServicesDAO>();
+	}
  
 	public static DaoFactory getInstance(){
 		if(mInstance == null) { mInstance = new DaoFactory(); }
@@ -45,33 +47,17 @@ public class DaoFactory {
 		return servicesDAO;
 	}
 
-	public MyServicesDAO setMyServicesDAO(Context c, MyServicesListListener listener){
-		if(myServicesDAO == null) { 
-			myServicesDAO = new MyServicesDAO(null, listener); 
+	public MyServicesDAO setMyServicesDAO(Context c, MyServicesListListener listener, MyServicesDAO.Type type){
+		MyServicesDAO myServicesDAO;
+		if(myServicesDAOMap.get(type) == null) {
+			myServicesDAO = new MyServicesDAO(null, listener);
+			myServicesDAOMap.put(type,myServicesDAO);
 		} else {
+			myServicesDAO = myServicesDAOMap.get(type);
 			myServicesDAO.setServicesListListener(listener);
 			myServicesDAO.setServicesDetailListener(null);
 		}
 		return myServicesDAO;
 	}
-
-	public MyServicesDAO setMyServicesDAO(Context c, MyServicesDetailListener listener){
-		if(myServicesDAO == null) { 
-			myServicesDAO = new MyServicesDAO(null, listener); 
-		} else {
-			myServicesDAO.setServicesListListener(null);
-			myServicesDAO.setServicesDetailListener(listener);
-		}
-		return myServicesDAO;
-	}
 	
-	public ProfileDAO setProfileDAO(Context c, ProfileListener listener){
-		if(profileDAO == null) { 
-			profileDAO = new ProfileDAO(null, listener); 
-		} else {
-			profileDAO.setProfileListener(listener);
-		}
-		return profileDAO;
-	}
-
 }

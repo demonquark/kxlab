@@ -3,14 +3,15 @@ package edu.bupt.trust.kxlab.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Context;
+import android.util.Log;
+
 import com.loopj.android.http.RequestParams;
 
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ServicesDAOabstract.OnServicesRawDataReceivedListener;
 import edu.bupt.trust.kxlab.model.TrustService;
-
-import android.content.Context;
-import android.util.Log;
+import edu.bupt.trust.kxlab.utils.Loggen;
 
 public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	
@@ -108,7 +109,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	// For now we can keep them public. Just in case the data recipient wants the raw data.
 	
 	@Override public void onReadServices(RawResponse response) {
-//		Log.i("Kris", "Got a response: " + response.message);
+		Loggen.i("Kris", "Got a response: " + response.message);
 		ArrayList <TrustService> services = null;
 		if(response.errorStatus == RawResponse.Error.NONE){
 			
@@ -123,10 +124,10 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			String lines[] = response.message.split("\\r?\\n");
 			for(int i = 0; i < lines.length; i++){ 
 				TrustService service = new TrustService();
-				service.setServiceId(i);
-				service.setServiceDetail(i + ") " + lines[i]);
-				service.setServiceTitle((lines[i].length() > 5) ? lines[i].substring(0,5) : lines[i]);
-				service.setServicePhoto(dummy.randomPic());
+				service.setServiceid(i);
+				service.setServicedetail(i + ") " + lines[i]);
+				service.setServicetitle((lines[i].length() > 5) ? lines[i].substring(0,5) : lines[i]);
+				service.setServicephoto(dummy.randomPic());
 				services.add(service);	 
 			}
 		} else {
@@ -148,5 +149,11 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		public void onReadService(String service);
 		public void writeServiceScore(boolean success);
 		public void writeServiceComment(boolean success);
+	}
+
+	@Override
+	public void onSearchServices(RawResponse response) {
+		// TODO Auto-generated method stub
+		
 	}
 }

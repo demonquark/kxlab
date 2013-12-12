@@ -1,0 +1,7 @@
+I have resolved the problem, it seems that based on the life cycle 
+of both the activity and the fragment by the time the findFragmentById() 
+is executed in the onCreate() the fragment has not been 'actually created', 
+I tested this by adding a simple button to the layout and making a method that 
+when clicked on the button the spinner will be filled with data.
+But of course I don't want the user to click a 'Load' button to fill the spinner, 
+instead I have implemented on my fragment the public void onActivityCreated() method.
