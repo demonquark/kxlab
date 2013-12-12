@@ -49,9 +49,8 @@ public class ServicesArrayAdapter extends ArrayAdapter <TrustService>{
 				TrustService service = items.get(position);
 				String text1 = service.getServicetitle();
 				String text2 = service.getServicedetail();
-				Loggen.d(this, "text: " + text1 + " | " + text2);
 				File imgFile = new File(service.getServicephoto() != null ? service.getServicephoto() : "");
-				Loggen.d(this, "file: " + imgFile.getAbsolutePath());
+				Loggen.d(this, "text: " + text1 + " | " + text2 + " | file: " + imgFile.getAbsolutePath());
 				
 				// Set the text
 				((TextView) firstText).setText(text1);
@@ -60,11 +59,9 @@ public class ServicesArrayAdapter extends ArrayAdapter <TrustService>{
 				//Set the image
 				ImageView thumb = (ImageView) v.findViewById(android.R.id.icon1);
 				if(imgFile.exists()){
-					Loggen.d(this, "file exists????");
 				    thumb.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
 				    		imgFile.getAbsolutePath(),thumb.getWidth(), thumb.getHeight()));
 				}
-				Loggen.d(this, "fini");
 				
 	        } catch (Exception e) {
 	        	Loggen.e(this, "Failed to add the text for "+position+". "); 

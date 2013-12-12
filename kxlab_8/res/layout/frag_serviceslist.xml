@@ -23,21 +23,16 @@
 			android:singleLine="true" />
     </LinearLayout>
 
-	<edu.bupt.trust.kxlab.widgets.RefreshableView android:id="@+id/list_holder" 
-		android:layout_width="match_parent"
-	    android:layout_height="match_parent"
-	    android:orientation="vertical"
-	    android:layout_gravity="center" >
-		
-		<ListView android:id="@id/android:list"
+	<LinearLayout 
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" android:background="#f0f0f0">
+
+    
+    <edu.bupt.trust.kxlab.widgets.XListView android:id="@id/android:list"
 			android:layout_width="match_parent"
-			android:layout_height="match_parent"
+			android:layout_height="0dp"
 			android:layout_weight="1"
 			android:drawSelectorOnTop="false"/>
-	
-		<Button android:id="@id/android:empty"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:text="@string/services_empty_list"/>
-	 </edu.bupt.trust.kxlab.widgets.RefreshableView>
+</LinearLayout>
  </FrameLayout>

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import android.content.Context;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesDetailListener;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
+import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesDetailListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
 
@@ -17,6 +18,7 @@ public class DaoFactory {
  
 	private ServicesDAO servicesDAO;
 	private HashMap <MyServicesDAO.Type, MyServicesDAO> myServicesDAOMap;
+	private ProfileDAO	profileDAO;
  
 	private DaoFactory(){ 
 		myServicesDAOMap = new HashMap <MyServicesDAO.Type, MyServicesDAO>();
@@ -58,6 +60,28 @@ public class DaoFactory {
 			myServicesDAO.setServicesDetailListener(null);
 		}
 		return myServicesDAO;
+	}
+
+	public MyServicesDAO setMyServicesDAO(Context c, MyServicesDetailListener listener, MyServicesDAO.Type type){
+		MyServicesDAO myServicesDAO;
+		if(myServicesDAOMap.get(type) == null) {
+			myServicesDAO = new MyServicesDAO(null, listener);
+			myServicesDAOMap.put(type,myServicesDAO);
+		} else {
+			myServicesDAO = myServicesDAOMap.get(type);
+			myServicesDAO.setServicesDetailListener(listener);
+			myServicesDAO.setServicesListListener(null);
+		}
+		return myServicesDAO;
+	}
+
+	public ProfileDAO setProfileDAO(Context c, ProfileListener listener){
+		if(profileDAO == null) { 
+			profileDAO = new ProfileDAO(null, listener); 
+		} else {
+			profileDAO.setProfileListener(listener);
+		}
+		return profileDAO;
 	}
 	
 }

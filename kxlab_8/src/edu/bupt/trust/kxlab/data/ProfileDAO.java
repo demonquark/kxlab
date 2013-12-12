@@ -61,7 +61,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		if(email != null && password != null){
 			// build the query
 			RequestParams params = new RequestParams();
-			params.put(Urls.paramProfileEmail, email);
+			params.put(Urls.paramUserEmail, email);
 			params.put(Urls.paramProfilePassword, password);
 			path = ServicesDAOweb.getPath(true, path, params);
 
@@ -91,7 +91,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		if(email != null){
 			// build the query
 			RequestParams params = new RequestParams();
-			params.put(Urls.paramProfileEmail, email);
+			params.put(Urls.paramUserEmail, email);
 			path = ServicesDAOweb.getPath(true, path, params);
 
 			// contact the web

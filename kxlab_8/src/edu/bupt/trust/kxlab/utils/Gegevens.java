@@ -7,6 +7,8 @@ public class Gegevens {
 
 	/** Preferences */
 	public static final String PREF_LANGUAGE 		= "language";
+	public static final String PREF_EMAIL 			= "email";
+	public static final String PREF_DUMMY 			= "dummy";
 
 	/** Intent and Bundle Extras */
 	public static final String EXTRA_MSGID			= "msgId";
@@ -24,13 +26,15 @@ public class Gegevens {
 	public static final String EXTRA_TYPE			= "type";
 	public static final String EXTRA_RESULT			= "result";
 	public static final String EXTRA_COMMENTS		= "comments";
+	public static final String EXTRA_USER			= "user";
 	
 	/** Folder and file names */
 	public static final String FILE_EXT_MP3 		= ".mp3";
 	public static final String FILE_EXT_RAW 		= ".raw";
 	public static final String FILE_EXT_WAV 		= ".wav";
 	public static final String FILE_EXT_TXT 		= ".txt";
-	public static final String FILE_EXT_LOG 		= ".log"; 
+	public static final String FILE_EXT_LOG 		= ".log";
+	public static final String FILE_EXT_JET 		= ".jet";
 	public static final String FILE_SEPARATOR 		= "/"; 
 
 	/** Fragment tags */
@@ -43,6 +47,8 @@ public class Gegevens {
 	public static final String FRAG_COMMUNITY		= "community";
 	public static final String FRAG_RECOMMEND 		= "recommended";
 	public static final String FRAG_APPLY	 		= "apply";
+	public static final String FRAG_INFOVIEW 		= "infoview";
+	public static final String FRAG_INFOEDIT 		= "infoedit";
 	
 	/** Application package names */
 	

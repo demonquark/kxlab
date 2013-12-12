@@ -20,7 +20,6 @@ import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.ListFragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
@@ -51,7 +50,6 @@ public class MyServicesListFragment extends ListFragment
 	private State state;
 	
 	private XListView mListView;
-	private Handler mHandler;
 	
 	public MyServicesListFragment() {
         // Empty constructor required for ServicesListFragment
@@ -128,13 +126,12 @@ public class MyServicesListFragment extends ListFragment
 		Loggen.v(this, getTag() + " - Creating the ServicesList view. ");
 
 		// Inflate the root view and save references to useful views as class variables
-		View rootView = inflater.inflate(R.layout.main, container, false);
+		View rootView = inflater.inflate(R.layout.frag_serviceslist, container, false);
 		mListView = (XListView) rootView.findViewById(android.R.id.list);
 		mListView.setPullLoadEnable(true);
 		mListView.setXListViewListener(this);
 		mProgressContainer = (LinearLayout) rootView.findViewById(R.id.progress_container);
-		//mAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item, items);
-		mHandler = new Handler();
+
 		return rootView;
 	}
 
@@ -242,6 +239,15 @@ public class MyServicesListFragment extends ListFragment
 	@Override public void onReadServices(List<TrustService> services) {
 		Loggen.i(this, getTag() + " - Returned from onReadservices. ");
 
+		if(mListView != null){ 
+			if(mListView.isPullLoading()){
+				mListView.stopLoadMore();
+			}
+			if(mListView.isPullRefreshing()){
+				mListView.stopRefresh(); 
+				mListView.updateHeaderTime();
+			}
+		}
 		
 		// update the services
 		this.services = (ArrayList<TrustService>) ((services != null) ? services : new ArrayList <TrustService> ());
@@ -251,16 +257,9 @@ public class MyServicesListFragment extends ListFragment
 	}
 
 	@Override public void onRefresh() {
-		mHandler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				
-				geneData();
-				mListView.stopRefresh();
-				mListView.updateHeaderTime();
-			}
-		}, 2000);
+		geneData();
 	}
+	
 	private void geneData() {
 		// TODO: process refresh request (for now it just reloads the list)
 		MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
@@ -369,13 +368,7 @@ public class MyServicesListFragment extends ListFragment
 
 	@Override
 	public void onLoadMore() {
-		mHandler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				geneData();
-				mListView.stopLoadMore();
-			}
-		}, 500);
+		geneData();
 	}
 
 	@Override
@@ -399,7 +392,8 @@ public class MyServicesListFragment extends ListFragment
 	@Override
 	public void onSearchService(List<TrustService> services) {
 		this.services = (ArrayList<TrustService>) ((services != null) ? services : new ArrayList <TrustService> ()); 
-		
-		
+
+		// update the UI
+		initListView();
 	}
 }

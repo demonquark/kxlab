@@ -40,7 +40,7 @@ public class XListView extends ListView implements OnScrollListener {
 	private TextView mHeaderTimeView;
 	private int mHeaderViewHeight; // header view's height
 	private boolean mEnablePullRefresh = true;
-	private boolean mPullRefreshing = false; // is refreashing.
+	private boolean mPullRefreshing = false; // is refreshing.
 
 	// -- footer view
 	private XListViewFooter mFooterView;
@@ -178,6 +178,9 @@ public class XListView extends ListView implements OnScrollListener {
 		}
 	}
 
+	public boolean isPullRefreshing(){ return mPullRefreshing; }
+	public boolean isPullLoading(){ return mPullLoading; }
+	
 	/**
 	 * set last refresh time
 	 * 

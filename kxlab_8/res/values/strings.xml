@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_name">Kxlab_8</string>
-	
+	<string name="app_name">Kxlab_8</string>
 	<!-- String to be sorted -->
-    <string name="myserv_activity_name">my services</string>
-    <string name="forum_activity_name">forum</string>
-    <string name="myinfo_activity_name">my info</string>
-    <string name="other_activity_name">other</string>
+	<string name="myserv_activity_name">my services</string>
+	<string name="forum_activity_name">forum</string>
+	<string name="myinfo_activity_name">my info</string>
+	<string name="other_activity_name">other</string>
 	<string name="pull_to_refresh">下拉可以刷新</string>
 	<string name="release_to_refresh">释放立即刷新</string>
 	<string name="refreshing">正在刷新…</string>
@@ -15,52 +13,46 @@
 	<string name="updated_at">上次更新于%1$s前</string>
 	<string name="updated_just_now">刚刚更新</string>
 	<string name="time_error">时间有问题</string>
-    
-	
-	 <!-- 注册界面 -->
-    <string name="strInputAccHint">输入邮箱</string>
-    <string name="strAccInputLabel">帐号</string>
-    <string name="strPswInputLabel">密码</string>
-    <string name="opt_remember">记住密码</string>
-    <string name="login">登 录</string>
-    <string name="findPasswordLabel">找回密码</string>
-    <string name="guestLabel"> 我是游客 </string>
-    <!-- 用户名密码不能空 -->
-    <string name="strLoginReplyAmpty">not allow null</string>
-    <!--用户名密码错误  -->
-    <string name="strLoginReplyErr">username or password is incorrect</string>
-    <!--没有该按钮的响应  -->
-    <string name="no_suchbtn">no such button</string>
-    <!-- 用户名需要为邮箱 -->
-    <string name="strLoginReplyNotMail">username must be EmaiAddress</string>
-    <!-- 如果不是你的手机不要保存密码 -->
-    
-    <string name="strRemmenberTips">If this is not your Phone Dont do this </string>
-    <!-- 找回密码界面 -->
-    
-    <string name="strPwdInputEmail">请输入邮箱</string>
-    <string name="strPwdTipLabel">请您留下您的注册邮箱，稍后管理员会将您的密码发送给您！谢谢！</string>
-    <string name="strPwdTittle">找回密码</string>
-    <string name="btnFindpwdSubmit">确定</string>
-	
-    <!-- generic strings -->
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="ok">OK</string>
-    <string name="on">ON</string>
+	<!-- 注册界面 -->
+	<string name="strInputAccHint">输入邮箱</string>
+	<string name="strAccInputLabel">帐号</string>
+	<string name="strPswInputLabel">密码</string>
+	<string name="opt_remember">记住密码</string>
+	<string name="login">登 录</string>
+	<string name="findPasswordLabel">找回密码</string>
+	<string name="guestLabel">我是游客</string>
+	<!-- 用户名密码不能空 -->
+	<string name="strLoginReplyAmpty">not allow null</string>
+	<!--用户名密码错误  -->
+	<string name="strLoginReplyErr">username or password is incorrect</string>
+	<!--没有该按钮的响应  -->
+	<string name="no_suchbtn">no such button</string>
+	<!-- 用户名需要为邮箱 -->
+	<string name="strLoginReplyNotMail">username must be EmaiAddress</string>
+	<!-- 如果不是你的手机不要保存密码 -->
+	<string name="strRemmenberTips">If this is not your Phone Dont do this</string>
+	<!-- 找回密码界面 -->
+	<string name="strPwdInputEmail">请输入邮箱</string>
+	<string name="strPwdTipLabel">请您留下您的注册邮箱，稍后管理员会将您的密码发送给您！谢谢！</string>
+	<string name="strPwdTittle">找回密码</string>
+	<string name="btnFindpwdSubmit">确定</string>
+	<!-- generic strings -->
+	<string name="yes">Yes</string>
+	<string name="no">No</string>
+	<string name="ok">OK</string>
+	<string name="on">ON</string>
 	<string name="off">OFF</string>
-    <string name="and">and</string>
-    <string name="back">Back</string>
-    <string name="reset">Reset</string>
-    <string name="error">Error</string>
-    <string name="loading">Loading</string>
-    <string name="cancel">Cancel</string>
-    <string name="unknown">Unknown</string>
-    <string name="invalidInput">Invalid input</string>
-    <string name="unknownBtn">You pressed an unknown button</string>
-    <string name="bullet">&#8226;</string>
-	<string name="niets"> </string>
-	
+	<string name="and">and</string>
+	<string name="back">Back</string>
+	<string name="reset">Reset</string>
+	<string name="error">Error</string>
+	<string name="loading">Loading</string>
+	<string name="cancel">Cancel</string>
+	<string name="unknown">Unknown</string>
+	<string name="invalidInput">Invalid input</string>
+	<string name="unknownBtn">You pressed an unknown button</string>
+	<string name="bullet">&#8226;</string>
+	<string name="niets"/>
 	<!-- menu strings -->
 	<string name="action_accept">accept</string>
 	<string name="action_search">search</string>
@@ -72,9 +64,8 @@
 	<string name="footer_forum">Discussion Forum</string>
 	<string name="footer_myinformation">My Information</string>
 	<string name="footer_other">Other</string>
-
 	<!-- services activity -->
-    <string name="services_activity_name">services</string>
+	<string name="services_activity_name">services</string>
 	<string name="services_tab_community">Community</string>
 	<string name="services_tab_recommended">Recommended</string>
 	<string name="services_tab_apply">Apply</string>
@@ -85,13 +76,12 @@
 	<string name="services_delete_empty_title">Delete</string>
 	<string name="services_delete_empty_text">No services were selected. Nothing was deleted.</string>
 	<string-array name="services_tab_titles">
-	    <item>@string/services_tab_community</item>
-	    <item>@string/services_tab_recommended</item>
+		<item>@string/services_tab_community</item>
+		<item>@string/services_tab_recommended</item>
 		<item>@string/services_tab_apply</item>
 	</string-array>
-	
 	<!-- service details activity -->
-    <string name="details_activity_name">details</string>
+	<string name="details_activity_name">details</string>
 	<string name="details_confirm_close_title">Data not saved</string>
 	<string name="details_confirm_close_text">Are you sure you want to continue? Leaving this screen will result in losing all your changes.</string>
 	<string name="details_owner_img">Owner</string>
@@ -105,15 +95,26 @@
 	<string name="details_service_number">Number of users:</string>
 	<string name="details_service_description">这里是详情页面  this the details of this service</string>
 	<string name="details_empty_list">No comments</string>
-			
+	<!-- myinfo activity -->
+	<string name="myinfo_name_text">Unknown name</string>
+	<string name="myinfo_email_text">Unknown email</string>
+	<string name="myinfo_joindate_title">Join date</string>
+	<string name="myinfo_joindate_text">Unknown date</string>
+	<string name="myinfo_activitylevel_title">Activity level</string>
+	<string name="myinfo_activitylevel_text">-</string>
+	<string name="myinfo_activityrecord_title">Activity record</string>
+	<string name="myinfo_phone_title">Phone number</string>
+	<string name="myinfo_phone_text">Unknown number</string>
+	<string name="myinfo_source_title">Source</string>
+	<string name="myinfo_source_text">Unknown source</string>
+
 	<!-- xlistView refreshable -->	
 	<string name="xlistview_header_hint_normal">pull refresh</string>
     <string name="xlistview_header_hint_ready">relase to refresh</string>
-    <string name="xlistview_header_hint_loading">loading...</string>
+    <string name="xlistview_header_hint_loading">loading&#8230;</string>
     <string name="xlistview_header_last_time">update before：%1$s</string>
     <string name="xlistview_header_not_update_yet">not update yet</string>
     <string name="xlistview_header_update_justnow">update justnow</string>
     <string name="xlistview_footer_hint_normal">load more</string>
     <string name="xlistview_footer_hint_ready">relase to load</string>			
-
 </resources>

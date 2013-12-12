@@ -20,6 +20,11 @@
     <dimen name="list_header_text_large">18sp</dimen>
     <dimen name="list_header_text">14sp</dimen>
     <dimen name="list_header_text_small">10sp</dimen>
+    <dimen name="row_horizontal_padding">10dp</dimen>
+    <dimen name="row_vertical_padding">8dp</dimen>
+    <dimen name="row_header_horizontal_padding">10dp</dimen>
+    <dimen name="fragment_img_height">90dp</dimen>
+    <dimen name="fragment_img_width">90dp</dimen>
     <dimen name="fragment_horizontal_margin">8dp</dimen>
     <dimen name="fragment_vertical_margin">8dp</dimen>
     <dimen name="fragment_filter_vertical_padding">4dp</dimen>

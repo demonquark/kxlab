@@ -3,8 +3,6 @@ package edu.bupt.trust.kxlab8;
 import java.io.File;
 import java.util.List;
 
-import edu.bupt.trust.kxlab.data.DaoFactory;
-import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.model.ActivityHistory;
 import edu.bupt.trust.kxlab.model.User;
@@ -90,7 +88,7 @@ public class MyInformationFragment extends Fragment implements ProfileListener {
 		// load the user if requested (generally only if we just created the fragment)
 		if(mUser == null){
 			// Load the user from the DAO
-			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
+//			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
 //			profileDAO.readUserInformation(email);
 			Loggen.v(this, "Restoring saved Instancestate: Getting user from site");
 		}else{

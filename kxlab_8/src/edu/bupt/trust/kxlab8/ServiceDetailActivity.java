@@ -30,7 +30,7 @@ public class ServiceDetailActivity extends BaseActivity implements OnActionSelec
 		
 		// get the service and the tag (identifying which tab this is from)
 		TrustService service = b.getParcelable(Gegevens.EXTRA_SERVICE);
-		String tag = b.getString(Gegevens.EXTRA_TAG);
+		// String tag = b.getString(Gegevens.EXTRA_TAG);
 		mType = (Type) b.getSerializable(Gegevens.EXTRA_TYPE);
 		if(mType == null) { mType = Type.VIEW; }
 		

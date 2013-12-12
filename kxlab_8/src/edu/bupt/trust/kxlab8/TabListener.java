@@ -63,13 +63,10 @@ public class TabListener<T extends Fragment> implements android.support.v7.app.A
     }
 
     @Override public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-        ft.remove(mFragment);
-    	/*if (mFragment != null) {
+        if (mFragment != null) {
             // Detach the fragment, because another one is being attached
             ft.detach(mFragment);
-            //kris you forgot commit
-            ft.commit();
-        }*/
+        }
     }
 
     @Override public void onTabReselected(Tab tab, FragmentTransaction ft) {

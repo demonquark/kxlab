@@ -17,6 +17,7 @@ public class Settings {
 	
 	// The current status of the application
 	public Language language;
+	public String email;
 	
 	/** Get the instance of the singleton */
     public static Settings getInstance(Context c) {
@@ -33,7 +34,18 @@ public class Settings {
 		// Get the all the shared preferences
     	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
     	setLanguage(prefs.getInt(Gegevens.PREF_LANGUAGE, -1));
+    	email = prefs.getString(Gegevens.PREF_EMAIL, "");
 	}
+    
+    public String setEmail(String userEmail){
+    	if(Settings.isValidEmail(userEmail)){
+    		this.email = userEmail;
+    	}else{
+    		throw new IllegalArgumentException();
+    	}
+    	
+    	return email;
+    }
     
 	public int setLanguage(int preference) {
 		if(preference < 0 || preference >= Language.values().length) { language = null;
@@ -58,7 +70,6 @@ public class Settings {
 		return 0;
 	}
 
-
 	public Locale getLocale(){
 		if(language == null) {return null;}
 		switch(language){
@@ -67,5 +78,15 @@ public class Settings {
 			case DUTCH: return new Locale("nl", "NL");
 		}
 		return null;
+	}
+	
+    public String getEmail(){
+    	return email;
+    }
+
+	public static boolean isValidEmail(String email){
+		java.util.regex.Pattern p = java.util.regex.Pattern.compile(".+@.+\\.[a-z]+");
+		java.util.regex.Matcher m = p.matcher(email);
+		return m.matches();
 	}
 }
