@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edu.bupt.trust.kxlab.widgets.BottomBar xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bottom_bar"  
+	style="@style/BottomBar">
+	
+	<ImageButton android:id="@+id/footer_services"
+	    android:src="@drawable/ic_footer_services"
+		android:contentDescription="@string/footer_services"
+		style="@style/BottomBarBtn" />
+    
+    <ImageButton android:id="@+id/footer_myservice"
+	    android:src="@drawable/ic_footer_myservice"
+		android:contentDescription="@string/footer_myservice"
+		style="@style/BottomBarBtn" />
+	
+	<ImageButton android:id="@+id/footer_forum"
+	    android:src="@drawable/ic_footer_forum"
+		android:contentDescription="@string/footer_forum"
+		style="@style/BottomBarBtn" />
+	
+	<ImageButton android:id="@+id/footer_myinformation"
+	    android:src="@drawable/ic_footer_myinformation"
+		android:contentDescription="@string/footer_myinformation"
+		style="@style/BottomBarBtn" />
+	
+	<ImageButton android:id="@+id/footer_other"
+	    android:src="@drawable/ic_footer_other"
+		android:contentDescription="@string/footer_other"
+		style="@style/BottomBarBtn" />
+	
+</edu.bupt.trust.kxlab.widgets.BottomBar>

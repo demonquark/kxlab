@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:kxlab="http://schemas.android.com/apk/res-auto" >
+
+    <item android:id="@+id/action_search"
+        android:title="@string/action_search"
+        kxlab:showAsAction="always|collapseActionView"
+        kxlab:actionViewClass="android.support.v7.widget.SearchView"
+        android:icon="@drawable/ic_action_search" />
+    <item android:id="@+id/action_create"
+        android:title="@string/action_create"
+        kxlab:showAsAction="always"
+        android:icon="@drawable/ic_action_new" />
+	<item android:id="@+id/action_delete"
+        android:title="@string/action_delete"
+        kxlab:showAsAction="always"
+        android:icon="@drawable/ic_action_remove" />
+</menu>

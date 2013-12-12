@@ -1,0 +1,23 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LoginActivity" >
+
+    <FrameLayout android:id="@+id/footer_holder" android:layout_alignParentBottom="true" 
+        android:layout_width="match_parent" android:layout_height="60dp" >
+    	<include layout="@layout/widget_footer" />
+    </FrameLayout>
+    
+    
+    <TextView android:id="@+id/txtLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/niets" />
+    <Button android:id="@+id/btnLogin"
+        android:text="@string/unknown"
+        android:onClick="onBtnClick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</RelativeLayout>
