@@ -1,6 +1,7 @@
 package edu.bupt.trust.kxlab8;
 
 import edu.bupt.trust.kxlab.model.UserInformation;
+import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab8.MyInformationFragment.OnActionSelectedListener;
 import android.os.Bundle;
 
@@ -21,7 +22,7 @@ public class MyInformationActivity extends BaseActivity implements OnActionSelec
 			Bundle arguments = new Bundle();
 			mFragment = new MyInformationFragment();
 			mFragment.setArguments(arguments);
-			getSupportFragmentManager().beginTransaction().add(R.id.details, mFragment).commit();
+			getSupportFragmentManager().beginTransaction().add(R.id.details, mFragment,Gegevens.FRAG_INFOVIEW).commit();
 		}
 	}
 

@@ -47,6 +47,8 @@ public class Gegevens {
 	public static final String FRAG_COMMUNITY		= "community";
 	public static final String FRAG_RECOMMEND 		= "recommended";
 	public static final String FRAG_APPLY	 		= "apply";
+	public static final String FRAG_INFOVIEW 		= "infoview";
+	public static final String FRAG_INFOEDIT 		= "infoedit";
 	
 	/** Application package names */
 	
