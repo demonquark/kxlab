@@ -6,7 +6,10 @@ import android.graphics.BitmapFactory;
 public class BitmapTools {
 	
 	public static Bitmap decodeSampledBitmapFromResource(String pathName, int reqWidth, int reqHeight) {
-
+		
+		// make sure we have valide width and height requirements
+		if(reqWidth < 0){ reqWidth = 40; } if(reqHeight < 0){ reqHeight = 40; }
+		
 	    // First decode with inJustDecodeBounds=true to check dimensions
 	    final BitmapFactory.Options options = new BitmapFactory.Options();
 	    options.inJustDecodeBounds = true;
@@ -27,12 +30,13 @@ public class BitmapTools {
 	    final int width = options.outWidth;
 	    int inSampleSize = 1;
 
-	    if (height > reqHeight || width > reqWidth) {
+
+		if (height > reqHeight || width > reqWidth) {
 	
 	        final int halfHeight = height / 2;
 	        final int halfWidth = width / 2;
-	
-	        // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+
+			// Calculate the largest inSampleSize value that is a power of 2 and keeps both
 	        // height and width larger than the requested height and width.
 	        while ((halfHeight / inSampleSize) > reqHeight
 	                && (halfWidth / inSampleSize) > reqWidth) {

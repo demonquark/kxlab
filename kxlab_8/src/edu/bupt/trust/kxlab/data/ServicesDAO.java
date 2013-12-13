@@ -1,5 +1,6 @@
 package edu.bupt.trust.kxlab.data;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +21,16 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	private ServicesDAOlocal local;
 	private ServicesDAOweb web;
 	private ServicesDAOdummy dummy;
-	private ServicesListListener 	listlistener;
-	private ServicesDetailListener 	detaillistener;
+	private WeakReference <ServicesListListener> listlistener;
+	private WeakReference <ServicesDetailListener> detaillistener;
 	
 	// Outward facing methods (used by the class requesting the data)
-	public void setServicesListListener(ServicesListListener listener) { this.listlistener = listener; }
-	public void setServicesDetailListener(ServicesDetailListener listener) { this.detaillistener = listener; }
+	public void setServicesListListener(ServicesListListener listener) { 
+		this.listlistener = new WeakReference <ServicesListListener> (listener); 
+	}
+	public void setServicesDetailListener(ServicesDetailListener listener) { 
+		this.detaillistener = new  WeakReference <ServicesDetailListener> (listener); 
+	}
 	public void setCacheDir(Context c) { local.setCacheDir(c); }	
 	
 	
@@ -34,14 +39,14 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		local = new ServicesDAOlocal(this, c);
 		web = new ServicesDAOweb(this);
 		dummy = new ServicesDAOdummy(this);
-		this.listlistener = listener;
+		this.listlistener = new WeakReference <ServicesListListener> (listener);
 	}
 	
 	protected ServicesDAO(Context c, ServicesDetailListener listener){
 		local = new ServicesDAOlocal(this, c);
 		web = new ServicesDAOweb(this);
 		dummy = new ServicesDAOdummy(this);
-		this.detaillistener = listener;
+		this.detaillistener = new  WeakReference <ServicesDetailListener>(listener);
 	}
 
 	public void readServices(Type type) { readServices(type, new String [] {}); }
@@ -134,7 +139,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 		
-		if(listlistener != null){ listlistener.onReadServices(services); }
+		if(listlistener.get() != null){ listlistener.get().onReadServices(services); }
 	}
 	@Override public void onReadService(RawResponse response) { }
 	@Override public void writeServiceScore(RawResponse response) { }

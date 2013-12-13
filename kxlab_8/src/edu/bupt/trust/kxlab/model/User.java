@@ -12,6 +12,7 @@ public class User implements Parcelable {
 	private String timeEnter;
 	private String activityScore;
 	private String Source;
+	private String phoneNumber;
 
 	public User() {
 		email = "";
@@ -22,6 +23,7 @@ public class User implements Parcelable {
 		timeEnter = "";
 		activityScore = "";
 		Source = "";
+		phoneNumber = "";
 	}
 	
 	public User(String email) {
@@ -33,6 +35,19 @@ public class User implements Parcelable {
 		timeEnter = "";
 		activityScore = "";
 		Source = "";
+		phoneNumber = "";
+	}
+	
+	public User(UserInformation userinfo){
+		email = userinfo.getUserEmail();
+		userName = userinfo.getUserName();
+		password = "";
+		photoLocation = "";
+		gender = "";
+		timeEnter = userinfo.getTimeEnter();
+		activityScore = userinfo.getActivityScore();
+		Source = userinfo.getSource();
+		phoneNumber = userinfo.getPhoneNumber();
 	}
 
     private User(Parcel in) {
@@ -45,6 +60,7 @@ public class User implements Parcelable {
 		timeEnter = in.readString();
 		activityScore = in.readString();
 		Source = in.readString();
+		phoneNumber = in.readString();
     }
 
     // this is used to regenerate your object.
@@ -66,6 +82,7 @@ public class User implements Parcelable {
     	dest.writeString(timeEnter);
     	dest.writeString(activityScore);
     	dest.writeString(Source);
+    	dest.writeString(phoneNumber);
     }
 
 	
@@ -137,5 +154,12 @@ public class User implements Parcelable {
 		Source = source;
 	}
 	
+	public String getPhoneNumber(){
+		return this.phoneNumber;
+	}
+	
+	public void setPhoneNumber(String phoneNumber){
+		if(phoneNumber != null) { this.phoneNumber = phoneNumber; }
+	}
 	
 }

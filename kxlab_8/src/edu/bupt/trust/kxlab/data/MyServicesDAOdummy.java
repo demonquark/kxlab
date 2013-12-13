@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 import android.os.AsyncTask;
@@ -18,7 +19,8 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 	private int counter;
 
 	public MyServicesDAOdummy(OnServicesRawDataReceivedListener listener){
-		cacheDir = new File(Environment.getExternalStorageDirectory(), ServicesDAOlocal.REPLACE_cachefolder);
+		cacheDir = new File(Environment.getExternalStorageDirectory(), 
+				Gegevens.FILE_USERDIRSD + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE);
 		this.listener = listener;
 		this.counter = 0;
 	}

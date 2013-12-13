@@ -1,5 +1,6 @@
 package edu.bupt.trust.kxlab8;
 
+import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.model.UserInformation;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab8.MyInformationFragment.OnActionSelectedListener;
@@ -27,7 +28,7 @@ public class MyInformationActivity extends BaseActivity implements OnActionSelec
 	}
 
 	@Override
-	public void onActionSelected(String tag, UserInformation user) {
+	public void onActionSelected(String tag, User user) {
 		// TODO Auto-generated method stub
 		
 	}

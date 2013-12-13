@@ -1,5 +1,6 @@
 package edu.bupt.trust.kxlab.data;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,16 +31,16 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	private MyServicesDAOlocal local;
 	private MyServicesDAOweb web;
 	private MyServicesDAOdummy dummy;
-	private MyServicesListListener listlistener;
-	private MyServicesDetailListener detaillistener;
+	private WeakReference <MyServicesListListener> listlistener;
+	private WeakReference <MyServicesDetailListener> detaillistener;
 
 	// Outward facing methods (used by the class requesting the data)
 	public void setServicesListListener(MyServicesListListener listener) {
-		this.listlistener = listener;
+		this.listlistener = new WeakReference <MyServicesListListener> (listener);
 	}
 
 	public void setServicesDetailListener(MyServicesDetailListener listener) {
-		this.detaillistener = listener;
+		this.detaillistener = new  WeakReference <MyServicesDetailListener>(listener);
 	}
 
 	public void setCacheDir(Context c) {
@@ -52,14 +53,14 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 		local = new MyServicesDAOlocal(this, c);
 		web = new MyServicesDAOweb(this);
 		dummy = new MyServicesDAOdummy(this);
-		this.listlistener = listener;
+		this.listlistener = new WeakReference <MyServicesListListener> (listener);
 	}
 
 	protected MyServicesDAO(Context c, MyServicesDetailListener listener) {
 		local = new MyServicesDAOlocal(this, c);
 		web = new MyServicesDAOweb(this);
 		dummy = new MyServicesDAOdummy(this);
-		this.detaillistener = listener;
+		this.detaillistener = new  WeakReference <MyServicesDetailListener>(listener);
 	}
 
 	public void readServices(Type type) {
@@ -238,8 +239,8 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (listlistener != null) {
-			listlistener.onReadServices(services);
+		if (listlistener.get() != null) {
+			listlistener.get().onReadServices(services);
 		}
 	}
 
@@ -272,11 +273,12 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 
 			JsonElement rd = jobj.get("ReplyCommentDetail");// ?
 		} else {
-			Log.e("Kris", "We encountered an error: " + response.message);
+			Loggen.e(this, "We encountered an error: " + response.message);
 		}
 
-		if (listlistener != null) {
-			listlistener.onReadService(service);
+		if (listlistener.get() != null) {
+			Loggen.v(this, "The listener object still exists.");
+			listlistener.get().onReadService(service);
 		}
 	}
 
@@ -323,8 +325,8 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (listlistener != null) {
-			listlistener.onSearchService(services);
+		if (listlistener.get() != null) {
+			listlistener.get().onSearchService(services);
 		}
 	}
 

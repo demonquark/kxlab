@@ -1,6 +1,9 @@
 package edu.bupt.trust.kxlab8;
 
+import edu.bupt.trust.kxlab.data.DaoFactory;
+import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.model.User;
+import edu.bupt.trust.kxlab.utils.Loggen;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -45,6 +48,8 @@ public class LoginActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_login);
+		mSettings.setUser(DaoFactory.getInstance().setProfileDAO(this, null).generateUser());
+		Loggen.d(this,"The user email is " + mSettings.getUser().getEmail());
 		
 	}
 

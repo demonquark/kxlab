@@ -107,7 +107,9 @@
 	<string name="myinfo_phone_text">Unknown number</string>
 	<string name="myinfo_source_title">Source</string>
 	<string name="myinfo_source_text">Unknown source</string>
-
+	<string name="myinfo_no_user_title">No / old user info</string>
+	<string name="myinfo_no_user_text">We could not download the latest user information.</string>
+	
 	<!-- xlistView refreshable -->	
 	<string name="xlistview_header_hint_normal">pull refresh</string>
     <string name="xlistview_header_hint_ready">relase to refresh</string>

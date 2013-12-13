@@ -1,97 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" 
-    android:id="@+id/myinfo_container" android:layout_width="match_parent" android:layout_height="match_parent"
-    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-    android:layout_marginRight="@dimen/activity_horizontal_margin" >
-    <TableLayout android:id="@+id/myinfo_table"
-	    android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_width="match_parent" android:layout_height="wrap_content" 
-        android:stretchColumns="1">
-        <!-- the avatar image, user name and email -->
-        <RelativeLayout android:id="@+id/myinfo_head"
-			android:layout_marginLeft="@dimen/row_header_horizontal_padding" 
-            android:layout_width="match_parent" android:layout_height="wrap_content">
-			
-			<ImageView android:id="@+id/myinfo_img"
-				android:layout_width="@dimen/fragment_img_height"
-				android:layout_height="@dimen/fragment_img_height"
-				android:layout_marginRight="@dimen/row_header_horizontal_padding"
-				android:contentDescription="@string/details_owner_img"
-				android:src="@drawable/ic_footer_myinformation"
-				android:layout_alignParentLeft="true" />
-			
-			<LinearLayout android:id="@+id/myinfo_name_container" android:orientation="vertical"
-			    android:layout_toRightOf="@id/myinfo_img" android:layout_centerVertical="true"
-			    android:layout_width="match_parent" android:layout_height="wrap_content">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+	<ScrollView android:id="@+id/myinfo_container" 
+	    android:layout_width="match_parent" android:layout_height="match_parent"
+	    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+	    android:layout_marginRight="@dimen/activity_horizontal_margin" >
+	    <TableLayout android:id="@+id/myinfo_table"
+		    android:layout_marginTop="@dimen/activity_vertical_margin"
+	        android:layout_width="match_parent" android:layout_height="wrap_content" 
+	        android:stretchColumns="1">
+	        <!-- the avatar image, user name and email -->
+	        <RelativeLayout android:id="@+id/myinfo_head"
+				android:layout_marginLeft="@dimen/row_header_horizontal_padding" 
+	            android:layout_width="match_parent" android:layout_height="wrap_content">
 				
-				<TextView android:id="@+id/myinfo_name" 
-					android:layout_width="wrap_content" android:layout_height="wrap_content"
-	            	android:textAppearance="?android:attr/textAppearanceLarge"
-	            	android:text="@string/myinfo_name_text" />
+				<ImageView android:id="@+id/myinfo_img"
+					android:layout_width="@dimen/fragment_img_height"
+					android:layout_height="@dimen/fragment_img_height"
+					android:layout_marginRight="@dimen/row_header_horizontal_padding"
+					android:contentDescription="@string/details_owner_img"
+					android:src="@drawable/ic_footer_myinformation"
+					android:layout_alignParentLeft="true" />
+				
+				<LinearLayout android:id="@+id/myinfo_name_container" android:orientation="vertical"
+				    android:layout_toRightOf="@id/myinfo_img" android:layout_centerVertical="true"
+				    android:layout_width="match_parent" android:layout_height="wrap_content">
+					
+					<TextView android:id="@+id/myinfo_name" 
+						android:layout_width="wrap_content" android:layout_height="wrap_content"
+		            	android:textAppearance="?android:attr/textAppearanceLarge"
+		            	android:text="@string/myinfo_name_text" />
+		
+					<TextView android:id="@+id/myinfo_email"
+						android:layout_width="wrap_content" android:layout_height="wrap_content"
+		            	android:textAppearance="?android:attr/textAppearanceMedium"
+		            	android:text="@string/myinfo_email_text" />
+				</LinearLayout>
+	        </RelativeLayout>
+	        
+	        <!-- the join date -->
+	        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
+	            android:layout_marginTop="@dimen/row_vertical_padding">
+				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/myinfo_joindate_title" />
+	 			<TextView android:id="@+id/myinfo_joindate" 
+	 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
+				    android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/myinfo_joindate_text" />
+	    	</TableRow>
+	    	
+	        <!-- the activity level -->
+	        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
+	            android:layout_marginTop="@dimen/row_vertical_padding">
+				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/myinfo_activitylevel_title" />
+	 			<TextView android:id="@+id/myinfo_activitylevel"
+	 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
+				    android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/myinfo_activitylevel_text" />
+	    	</TableRow>
+	        
+	        <!-- the activity record -->
+			<RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+			    android:layout_marginTop="@dimen/row_vertical_padding">
+				<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+				    android:layout_centerVertical="true" android:layout_alignParentLeft="true"
+				    android:textAppearance="?android:attr/textAppearanceMedium"
+				    android:text="@string/myinfo_activityrecord_title" />
+			    <ImageButton android:id="@+id/myinfo_btn_activityrecord" android:layout_alignParentRight="true"
+	           		android:layout_width="wrap_content" android:layout_height="wrap_content"
+	           		android:src="@drawable/ic_action_next_item" android:contentDescription="@string/niets" />
+			</RelativeLayout>
 	
-				<TextView android:id="@+id/myinfo_email"
-					android:layout_width="wrap_content" android:layout_height="wrap_content"
-	            	android:textAppearance="?android:attr/textAppearanceMedium"
-	            	android:text="@string/myinfo_email_text" />
-			</LinearLayout>
-        </RelativeLayout>
-        
-        <!-- the join date -->
-        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/row_vertical_padding">
-			<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
-			    android:text="@string/myinfo_joindate_title" />
- 			<TextView android:id="@+id/myinfo_joindate" 
- 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
-			    android:textAppearance="?android:attr/textAppearanceMedium" 
-			    android:text="@string/myinfo_joindate_text" />
-    	</TableRow>
-    	
-        <!-- the activity level -->
-        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/row_vertical_padding">
-			<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
-			    android:text="@string/myinfo_activitylevel_title" />
- 			<TextView android:id="@+id/myinfo_activitylevel"
- 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
-			    android:textAppearance="?android:attr/textAppearanceMedium" 
-			    android:text="@string/myinfo_activitylevel_text" />
-    	</TableRow>
-        
-        <!-- the activity record -->
-		<RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-		    android:layout_marginTop="@dimen/row_vertical_padding">
-			<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-			    android:layout_centerVertical="true" android:layout_alignParentLeft="true"
-			    android:textAppearance="?android:attr/textAppearanceMedium"
-			    android:text="@string/myinfo_activityrecord_title" />
-		    <ImageButton android:id="@+id/myinfo_btn_activityrecord" android:layout_alignParentRight="true"
-           		android:layout_width="wrap_content" android:layout_height="wrap_content"
-           		android:src="@drawable/ic_action_next_item" android:contentDescription="@string/niets" />
-		</RelativeLayout>
+	        <!-- the phone number -->
+			<TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
+	            android:layout_marginTop="@dimen/row_vertical_padding">
+				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/myinfo_phone_title" />
+	 			<TextView android:id="@+id/myinfo_phone"
+	 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
+				    android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/myinfo_phone_text" />
+	    	</TableRow>
+	        
+			<!-- the student source -->
+	        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
+	            android:layout_marginTop="@dimen/row_vertical_padding">
+				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/myinfo_source_title" />
+	 			<TextView android:id="@+id/myinfo_source"
+	 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
+				    android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/myinfo_source_text" />
+	    	</TableRow>
+		
+		</TableLayout>
+	</ScrollView>
 
-        <!-- the phone number -->
-		<TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/row_vertical_padding">
-			<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
-			    android:text="@string/myinfo_phone_title" />
- 			<TextView android:id="@+id/myinfo_phone"
- 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
-			    android:textAppearance="?android:attr/textAppearanceMedium" 
-			    android:text="@string/myinfo_phone_text" />
-    	</TableRow>
-        
-		<!-- the student source -->
-        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/row_vertical_padding">
-			<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
-			    android:text="@string/myinfo_source_title" />
- 			<TextView android:id="@+id/myinfo_source"
- 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
-			    android:textAppearance="?android:attr/textAppearanceMedium" 
-			    android:text="@string/myinfo_source_text" />
-    	</TableRow>
+		<ProgressBar android:id="@+id/myinfo_progress_bar" style="?android:attr/progressBarStyleLarge"
+		android:visibility="gone" android:layout_gravity="center"
+		android:layout_width="wrap_content" android:layout_height="wrap_content" />
 	
-	</TableLayout>
-    
-</ScrollView>
+</FrameLayout>

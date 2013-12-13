@@ -3,10 +3,13 @@ package edu.bupt.trust.kxlab8;
 import java.io.File;
 import java.util.List;
 
+import edu.bupt.trust.kxlab.data.DaoFactory;
+import edu.bupt.trust.kxlab.data.DaoFactory.Source;
+import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.model.Settings;
 import edu.bupt.trust.kxlab.model.User;
-import edu.bupt.trust.kxlab.model.UserInformation;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -20,11 +23,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class MyInformationFragment extends Fragment implements ProfileListener {
 	
-	private UserInformation mUser;
+	private User mUser;
 	OnActionSelectedListener mListener;
 	private View mRootView;
 	
@@ -86,15 +91,16 @@ public class MyInformationFragment extends Fragment implements ProfileListener {
 		Loggen.v(this, getTag() + " - Restoring MyInformation instance state.");
 
 		// load the user if requested (generally only if we just created the fragment)
-		if(mUser == null){
+		if(mUser == null && getActivity() != null){
 			// Load the user from the DAO
-//			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
-//			profileDAO.readUserInformation(email);
+			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
+			profileDAO.readUserInformation(Source.WEB, Settings.getInstance(getActivity()).getUser().getEmail());
 			Loggen.v(this, "Restoring saved Instancestate: Getting user from site");
-		}else{
-			// If we already have a user, just show the user information
-			showUserInformation();
 		}
+		
+		// If we already have a user, just show the user information
+		showUserInformation(mUser != null);
+
 	}
 
 	@Override public void onSaveInstanceState(Bundle outState) {
@@ -119,33 +125,56 @@ public class MyInformationFragment extends Fragment implements ProfileListener {
 		mListener = null;
 	}
 
-	private void showUserInformation() {
-		
-		if(mRootView != null && mUser != null){
-			// Set the image
-			File imgFile = new File(mUser.getPhotoImage());
-			ImageView avatar = (ImageView) mRootView.findViewById(R.id.myinfo_img);
-			if(imgFile.exists()){
-				avatar.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
-			    		imgFile.getAbsolutePath(),avatar.getWidth(), avatar.getHeight()));
-			}
+	private void showUserInformation(boolean showinfo) {
+		if(mRootView != null){
+			// show or hide the information
+			((ScrollView) mRootView.findViewById(R.id.myinfo_container))
+				.setVisibility((showinfo) ? View.VISIBLE : View.GONE);
+			((ProgressBar) mRootView.findViewById(R.id.myinfo_progress_bar))
+				.setVisibility((showinfo) ? View.GONE : View.VISIBLE);
 			
-			// Set the user information
-			((TextView) mRootView.findViewById(R.id.myinfo_name)).setText(mUser.getUserName());
-			((TextView) mRootView.findViewById(R.id.myinfo_email)).setText(mUser.getUserEmail());
-			((TextView) mRootView.findViewById(R.id.myinfo_joindate)).setText(mUser.getTimeEnter());
-			((TextView) mRootView.findViewById(R.id.myinfo_activitylevel)).setText(mUser.getActivityScore());
-			((TextView) mRootView.findViewById(R.id.myinfo_phone)).setText(mUser.getPhoneNumber());
-			((TextView) mRootView.findViewById(R.id.myinfo_source)).setText(mUser.getSource());
+			// load the user information
+			if(mUser != null && showinfo){
+					// Set the image
+					File imgFile = new File(mUser.getPhotoLocation());
+					ImageView avatar = (ImageView) mRootView.findViewById(R.id.myinfo_img);
+					if(imgFile.exists()){
+						
+						avatar.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
+					    		imgFile.getAbsolutePath(),
+					    		avatar.getLayoutParams().width, 
+					    		avatar.getLayoutParams().height));
+					}
+					
+					// Set the user information
+					((TextView) mRootView.findViewById(R.id.myinfo_name)).setText(mUser.getUserName());
+					((TextView) mRootView.findViewById(R.id.myinfo_email)).setText(mUser.getEmail());
+					((TextView) mRootView.findViewById(R.id.myinfo_joindate)).setText(mUser.getTimeEnter());
+					((TextView) mRootView.findViewById(R.id.myinfo_activitylevel)).setText(mUser.getActivityScore());
+					((TextView) mRootView.findViewById(R.id.myinfo_phone)).setText(mUser.getPhoneNumber());
+					((TextView) mRootView.findViewById(R.id.myinfo_source)).setText(mUser.getSource());
+			}
 		}
 	}
 
 	public interface OnActionSelectedListener{
-		public void onActionSelected(String tag, UserInformation user);
+		public void onActionSelected(String tag, User user);
 	}
 
 	@Override public void onReadUserInformation(User user) { 
-		
+		Loggen.v(this,"Received User information from dao.");
+		if(user != null){ 
+			// show the userinformation
+			mUser = user;
+		}else{
+			// show an error message
+			if(getActivity() != null){
+				mUser = ((BaseActivity) getActivity()).mSettings.getUser();
+				((BaseActivity) getActivity()).userMustClickOkay(
+						getString(R.string.myinfo_no_user_title), getString(R.string.myinfo_no_user_text));
+			}
+		}
+		showUserInformation(true);
 	}
 
 	// Not used

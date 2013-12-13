@@ -5,6 +5,9 @@ public class Gegevens {
 	
 	public static final boolean debug	= true;
 
+	/** Application package names */
+	public static final String APP_NAME 			= "edu.bupt.trust.kxlab8";
+	
 	/** Preferences */
 	public static final String PREF_LANGUAGE 		= "language";
 	public static final String PREF_USER 			= "defaultuser";
@@ -35,7 +38,12 @@ public class Gegevens {
 	public static final String FILE_EXT_TXT 		= ".txt";
 	public static final String FILE_EXT_LOG 		= ".log";
 	public static final String FILE_EXT_JET 		= ".jet";
+	public static final String FILE_EXT_DAT 		= ".dat";
 	public static final String FILE_SEPARATOR 		= "/"; 
+	public static final String FILE_CACHE			= "cache";
+	public static final String FILE_USERDIRPHONE	= "data" + FILE_SEPARATOR + APP_NAME; 
+	public static final String FILE_USERDIRSD 		= "Android" + FILE_SEPARATOR + "data" + FILE_SEPARATOR + APP_NAME;
+	public static final String FILE_DUMMYCHECK		= "dummycheck.dat";
 
 	/** Fragment tags */
 	public static final String FRAG_DIALOG 			= "dialog";
@@ -49,8 +57,6 @@ public class Gegevens {
 	public static final String FRAG_APPLY	 		= "apply";
 	public static final String FRAG_INFOVIEW 		= "infoview";
 	public static final String FRAG_INFOEDIT 		= "infoedit";
-	
-	/** Application package names */
 	
 	/** Frequently used URLs. Note: there is no trailing slash. */
 	public static final String URL_ANDROID_MARKET 		= "http://market.android.com";

@@ -60,7 +60,8 @@ public class ServicesArrayAdapter extends ArrayAdapter <TrustService>{
 				ImageView thumb = (ImageView) v.findViewById(android.R.id.icon1);
 				if(imgFile.exists()){
 				    thumb.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
-				    		imgFile.getAbsolutePath(),thumb.getWidth(), thumb.getHeight()));
+				    		imgFile.getAbsolutePath(),
+				    		thumb.getLayoutParams().width, thumb.getLayoutParams().height));
 				}
 				
 	        } catch (Exception e) {

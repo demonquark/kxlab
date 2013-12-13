@@ -145,9 +145,7 @@ public class MyServicesListFragment extends ListFragment
 			if(services == null){
 				// Load the services from the DAO
 				showList(false);
-				MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
-				myServicesDAO.readServices(servicesType, DaoFactory.Source.DEFAULT, new String [] {"3", "0"});//3=user email 0=list page
-				//myServicesDAO.searchService(servicesType, DaoFactory.Source.DEFAULT, new String [] {"1", "3", "0"});//1 = search keyword
+				geneData();
 				Loggen.v(this, "Restoring saved Instancestate: Hide the list");
 			}else{
 				// If we already have a list of services, just show those services
@@ -194,11 +192,13 @@ public class MyServicesListFragment extends ListFragment
 	
     private void setupSearchView() {
 
-        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-        if (searchManager != null) {
-            SearchableInfo info = searchManager.getSearchableInfo(getActivity().getComponentName());
-            mSearchView.setSearchableInfo(info);
-        }
+    	if(getActivity() != null){
+	        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+	        if (searchManager != null) {
+	            SearchableInfo info = searchManager.getSearchableInfo(getActivity().getComponentName());
+	            mSearchView.setSearchableInfo(info);
+	        }
+    	}
         mSearchView.setOnQueryTextListener(this);
     }
 
@@ -211,30 +211,32 @@ public class MyServicesListFragment extends ListFragment
 
 	private void initListView() {
 		Loggen.v(this, getTag() + " - initlistview: Create and set a list adapter for the listview.");
+		if(getActivity() != null){
+			// load a new adapter
+			ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
+					R.layout.list_item_services, android.R.id.text1, services);
+			
+			// set the adapter
+			setListAdapter(a);
+			
 
-		// load a new adapter
-		ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
-				R.layout.list_item_services, android.R.id.text1, services);
-		
-		// set the adapter
-		setListAdapter(a);
-
-		// set the choice mode and reaction to the choices 
-		mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		
-		showList(true);
-		mLoadServices = false;
+			// set the choice mode and reaction to the choices 
+			mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			
+			showList(true);
+			mLoadServices = false;
+		}
 	}
 
 	private void changeToDeleteListView() {
 		Loggen.v(this, getTag() + " - Changing to delete mode.");
-
-		// set the choice mode and reaction to the choices 
-		state = State.DELETE;
-		mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-		mActionMode = getActivity().startActionMode(new DeleteServicesMode ());
+		if(getActivity() != null){
+			// set the choice mode and reaction to the choices 
+			state = State.DELETE;
+			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+			mActionMode = getActivity().startActionMode(new DeleteServicesMode ());
+		}
 	}
-
 	
 	@Override public void onReadServices(List<TrustService> services) {
 		Loggen.i(this, getTag() + " - Returned from onReadservices. ");
@@ -261,9 +263,10 @@ public class MyServicesListFragment extends ListFragment
 	}
 	
 	private void geneData() {
-		// TODO: process refresh request (for now it just reloads the list)
-		MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
-		myServicesDAO.readServices(servicesType, DaoFactory.Source.DEFAULT, new String [] {"3","0"});
+		if(getActivity() != null){
+			MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
+			myServicesDAO.readServices(servicesType, DaoFactory.Source.DEFAULT, new String [] {"3", "0"}); //3=user email 0=list page
+		}
 	}
 
 
@@ -286,10 +289,9 @@ public class MyServicesListFragment extends ListFragment
 	    mSearchView.clearFocus();
 		showList(false);
 	    // TODO: process search (for now it just reloads the list)
-		MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
-		myServicesDAO.readServices(servicesType, DaoFactory.Source.WEB, new String [] {"3","0"});
-
-		return true; }
+		geneData();
+		return true; 
+	}
 	
 	/**
 	 * DeleteServicesMode allows you to pick items from the list and delete them.<br />
