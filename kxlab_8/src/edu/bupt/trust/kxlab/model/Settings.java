@@ -2,6 +2,8 @@ package edu.bupt.trust.kxlab.model;
 
 import java.util.Locale;
 
+import com.google.gson.GsonBuilder;
+
 import edu.bupt.trust.kxlab.utils.Gegevens;
 
 import android.content.Context;
@@ -17,7 +19,7 @@ public class Settings {
 	
 	// The current status of the application
 	public Language language;
-	public String email;
+	public User user;
 	
 	/** Get the instance of the singleton */
     public static Settings getInstance(Context c) {
@@ -30,21 +32,12 @@ public class Settings {
 
 	/** Creates a settings. This stops us from loading the preferences separately. */
     private Settings(Context c){
-
-		// Get the all the shared preferences
-    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
-    	setLanguage(prefs.getInt(Gegevens.PREF_LANGUAGE, -1));
-    	email = prefs.getString(Gegevens.PREF_EMAIL, "");
+    	loadSettingsFromSharedPreferences(c);
 	}
     
-    public String setEmail(String userEmail){
-    	if(Settings.isValidEmail(userEmail)){
-    		this.email = userEmail;
-    	}else{
-    		throw new IllegalArgumentException();
-    	}
-    	
-    	return email;
+    public User setUser(User user){
+    	if(user != null){ this.user = user; }    	
+    	return this.user;
     }
     
 	public int setLanguage(int preference) {
@@ -80,13 +73,27 @@ public class Settings {
 		return null;
 	}
 	
-    public String getEmail(){
-    	return email;
+    public User getUser(){
+    	return user;
+    }
+    
+    public void loadSettingsFromSharedPreferences(Context c){
+		// Get the all the shared preferences
+    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    	setLanguage(prefs.getInt(Gegevens.PREF_LANGUAGE, -1));
+    	
+    	String userjson = prefs.getString(Gegevens.PREF_USER, "");
+        if (userjson.equals("")) {
+        	user = new User();
+        } else {
+            user = new GsonBuilder().create().fromJson(userjson, User.class);
+        }
     }
 
-	public static boolean isValidEmail(String email){
-		java.util.regex.Pattern p = java.util.regex.Pattern.compile(".+@.+\\.[a-z]+");
-		java.util.regex.Matcher m = p.matcher(email);
-		return m.matches();
-	}
+    public void saveSettingsToSharedPreferences(Context c){
+		// Get the all the shared preferences
+    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    	prefs.edit().putInt(Gegevens.PREF_LANGUAGE, getLanguageSelectionId()).commit();
+    	prefs.edit().putString(Gegevens.PREF_USER, new GsonBuilder().create().toJson(user)).commit();
+    }
 }

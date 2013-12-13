@@ -1,6 +1,9 @@
 package edu.bupt.trust.kxlab.model;
 
-public class User {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class User implements Parcelable {
 	private String email;
 	private String userName;
 	private String password;
@@ -32,6 +35,40 @@ public class User {
 		Source = "";
 	}
 
+    private User(Parcel in) {
+    	// Note: you need to read the items in the same order that you wrote them
+    	email = in.readString();
+		userName = in.readString();
+		password = in.readString();
+		photoLocation = in.readString();
+		gender = in.readString();
+		timeEnter = in.readString();
+		activityScore = in.readString();
+		Source = in.readString();
+    }
+
+    // this is used to regenerate your object.
+    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
+        public User createFromParcel(Parcel in) { return new User(in); }
+        public User[] newArray(int size) { return new User[size]; }
+    };
+
+    @Override public int describeContents() { return 0; }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+    	// Note: you need to write the items in the same order that you intend to read them
+    	dest.writeString(email);
+    	dest.writeString(userName);
+    	dest.writeString(password);
+    	dest.writeString(photoLocation);
+    	dest.writeString(gender);
+    	dest.writeString(timeEnter);
+    	dest.writeString(activityScore);
+    	dest.writeString(Source);
+    }
+
+	
 	/**
 	 * Getter and Setters
 	 * @return

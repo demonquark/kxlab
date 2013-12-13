@@ -67,7 +67,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 
 			// contact the web
 			if(source == Source.WEB) { web.login(path); 
-			}else { dummy.login(path);  }
+			} else { dummy.login(path);  }
 		}else {
 			// no user name or password was provided. Fail by default. 
 			this.onLogin(new RawResponse(RawResponse.Error.ILLEGALARGUMENT, "", path));

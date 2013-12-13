@@ -28,7 +28,7 @@ public class ServicesArrayAdapter extends ArrayAdapter <TrustService>{
 	private List <TrustService> items;
 	
 	public ServicesArrayAdapter(Context context, int resource, int textViewResourceId, List<TrustService> objects) {
-		super(context, resource, textViewResourceId,  objects);
+		super(context, resource, textViewResourceId, objects);
 		this.items = objects;
 	}
 

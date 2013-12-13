@@ -7,7 +7,7 @@ public class Gegevens {
 
 	/** Preferences */
 	public static final String PREF_LANGUAGE 		= "language";
-	public static final String PREF_EMAIL 			= "email";
+	public static final String PREF_USER 			= "defaultuser";
 	public static final String PREF_DUMMY 			= "dummy";
 
 	/** Intent and Bundle Extras */
