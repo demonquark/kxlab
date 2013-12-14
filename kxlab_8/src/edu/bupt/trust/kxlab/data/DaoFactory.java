@@ -66,6 +66,19 @@ public class DaoFactory {
 		return myServicesDAO;
 	}
 	
+	public MyServicesDAO setMyServicesDAO(Context c, MyServicesDetailListener listener, MyServicesDAO.Type type){
+		MyServicesDAO myServicesDAO;
+		if(myServicesDAOMap.get(type) == null) {
+			myServicesDAO = new MyServicesDAO(null, listener);
+			myServicesDAOMap.put(type,myServicesDAO);
+		} else {
+			myServicesDAO = myServicesDAOMap.get(type);
+			myServicesDAO.setServicesDetailListener(listener);
+			myServicesDAO.setServicesListListener(null);
+		}
+		return myServicesDAO;
+	}
+	
 	public ProfileDAO setProfileDAO(Context c, ProfileListener listener){
 		if(profileDAO == null) { 
 			profileDAO = new ProfileDAO(null, listener); 
@@ -74,6 +87,7 @@ public class DaoFactory {
 		}
 		return profileDAO;
 	}
+
 	public ProfileDAO setProfileDAO(Context c, LoginListener listener){
 		if(profileDAO == null) { 
 			profileDAO = new ProfileDAO(null, listener); 

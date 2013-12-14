@@ -23,7 +23,6 @@ import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.ListFragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
@@ -54,7 +53,6 @@ public class ServicesListFragment extends ListFragment
 	private State state;
 	private User user;
 	private XListView mListView;
-	private Handler mHandler;
 	
 	public ServicesListFragment() {
         // Empty constructor required for ServicesListFragment
@@ -114,11 +112,13 @@ public class ServicesListFragment extends ListFragment
 		if(Gegevens.FRAG_RECOMMEND.equals(tag)){ servicesType = ServicesDAO.Type.RECOMMENDED;
 		} else if(Gegevens.FRAG_APPLY.equals(tag)){ servicesType = ServicesDAO.Type.APPLY;
 		} else { servicesType = ServicesDAO.Type.COMMUNITY; }
+
 		Settings.getInstance(getActivity()).loadSettingsFromSharedPreferences(getActivity());
 		user=Settings.getInstance(getActivity()).getUser();
 		if (user==null) {
 			user=new User();
 		}
+		
 		// load the services (Note: services remains null if it is neither in the saved state nor the arguments)
 		services = savedstate.getParcelableArrayList(Gegevens.EXTRA_SERVICES); 							
 		if(services == null){ services = arguments.getParcelableArrayList(Gegevens.EXTRA_SERVICES); } 	
@@ -140,8 +140,6 @@ public class ServicesListFragment extends ListFragment
 		mListView.setPullLoadEnable(true);
 		mListView.setXListViewListener(this);
 		mProgressContainer = (LinearLayout) rootView.findViewById(R.id.progress_container);
-		//mAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item, items);
-		mHandler = new Handler();
 
 		return rootView;
 	}
@@ -156,8 +154,7 @@ public class ServicesListFragment extends ListFragment
 			if(services == null){
 				// Load the services from the DAO
 				showList(false);
-				ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-		        servicesDAO.readServices(servicesType, DaoFactory.Page.LATEST,DaoFactory.Source.DUMMY, new String [] {});
+				geneData();
 				Loggen.v(this, "Restoring saved Instancestate: Hide the list");
 			}else{
 				// If we already have a list of services, just show those services
@@ -203,12 +200,14 @@ public class ServicesListFragment extends ListFragment
 	}
 	
     private void setupSearchView() {
-
-        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-        if (searchManager != null) {
-            SearchableInfo info = searchManager.getSearchableInfo(getActivity().getComponentName());
-            mSearchView.setSearchableInfo(info);
-        }
+    	
+    	if(getActivity() != null){
+            SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+            if (searchManager != null) {
+                SearchableInfo info = searchManager.getSearchableInfo(getActivity().getComponentName());
+                mSearchView.setSearchableInfo(info);
+            }
+    	}
         mSearchView.setOnQueryTextListener(this);
     }
 
@@ -221,33 +220,44 @@ public class ServicesListFragment extends ListFragment
 
 	private void initListView() {
 		Loggen.v(this, getTag() + " - initlistview: Create and set a list adapter for the listview.");
+		if(getActivity() != null){
+			// load a new adapter
+			ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
+					R.layout.list_item_services, android.R.id.text1, services);
+			
+			// set the adapter
+			setListAdapter(a);
 
-		// load a new adapter
-		ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
-				R.layout.list_item_services, android.R.id.text1, services);
-		
-		// set the adapter
-		setListAdapter(a);
-
-		// set the choice mode and reaction to the choices 
-		mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		
-		showList(true);
-		mLoadServices = false;
+			// set the choice mode and reaction to the choices 
+			mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			
+			showList(true);
+			mLoadServices = false;
+		}
 	}
 
 	private void changeToDeleteListView() {
 		Loggen.v(this, getTag() + " - Changing to delete mode.");
-
-		// set the choice mode and reaction to the choices 
-		state = State.DELETE;
-		mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-		mActionMode = getActivity().startActionMode(new DeleteServicesMode ());
+		if(getActivity() != null){
+			// set the choice mode and reaction to the choices 
+			state = State.DELETE;
+			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+			mActionMode = getActivity().startActionMode(new DeleteServicesMode ());
+		}
 	}
-	
 	
 	@Override public void onReadServices(List<TrustService> services) {
 		Loggen.i(this, getTag() + " - Returned from onReadservices. ");
+
+		if(mListView != null){ 
+			if(mListView.isPullLoading()){
+				mListView.stopLoadMore();
+			}
+			if(mListView.isPullRefreshing()){
+				mListView.stopRefresh(); 
+				mListView.updateHeaderTime();
+			}
+		}
 
 		// update the services
 		this.services = (ArrayList<TrustService>) ((services != null) ? services : new ArrayList <TrustService> ());
@@ -275,10 +285,8 @@ public class ServicesListFragment extends ListFragment
 		Loggen.v(this, getTag() + " - text submitted. ");
 	    mSearchView.clearFocus();
 		showList(false);
-	    // TODO: process search (for now it just reloads the list)
-		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-		servicesDAO.readServices(servicesType,DaoFactory.Page.LATEST, DaoFactory.Source.WEB, new String [] {});
-
+		// TODO: process search (for now it just reloads the list)
+	    geneData();
 		return true; }
 	
 	/**
@@ -350,36 +358,20 @@ public class ServicesListFragment extends ListFragment
 	}
 
 	private void geneData() {
-		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-		servicesDAO.readServices(servicesType,DaoFactory.Page.LATEST, DaoFactory.Source.WEB, new String [] {});
+		if(getActivity() != null){
+			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
+			servicesDAO.readServices(servicesType,DaoFactory.Page.LATEST, DaoFactory.Source.WEB, new String [] {});
+		}
 	}
 
+	@Override public void onRefresh() {
+		geneData();
+	}
 
+	@Override public void onLoadMore() {
+		geneData();
+	}
 	
-	@Override
-	public void onRefresh() {
-		mHandler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				
-				geneData();
-				mListView.stopRefresh();
-				mListView.updateHeaderTime();
-			}
-		}, 2000);
-	}
-
-	@Override
-	public void onLoadMore() {
-		mHandler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				geneData();
-				mListView.stopLoadMore();
-			}
-		}, 500);
-	}
-
 	@Override
 	public void onCreateService(boolean success) {
 		// TODO Auto-generated method stub
@@ -402,5 +394,5 @@ public class ServicesListFragment extends ListFragment
 	public void onSearchService(List<TrustService> services) {
 		// TODO Auto-generated method stub
 		
-	}
+	}	
 }

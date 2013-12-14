@@ -110,6 +110,20 @@ public class XListView extends ListView implements OnScrollListener {
 				});
 	}
 
+	public void showHeader(){
+		addHeaderView(mHeaderView);
+	}
+	public void showFooter(){
+		System.out.println("lalalal");
+		addFooterView(mFooterView);
+	}
+	public void hideHeader(){
+		removeHeaderView(mHeaderView);
+	}
+	public void hideFooter(){
+		removeFooterView(mFooterView);
+	}
+	
 	@Override
 	public void setAdapter(ListAdapter adapter) {
 		// make sure XListViewFooter is the last footer view, and only add once.

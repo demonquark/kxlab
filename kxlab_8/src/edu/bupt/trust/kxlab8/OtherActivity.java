@@ -3,7 +3,7 @@ package edu.bupt.trust.kxlab8;
 import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
-import edu.bupt.trust.kxlab8.MyServicesListFragment2.OnServiceSelectedListener;
+import edu.bupt.trust.kxlab8.MyServicesListFragment.OnServiceSelectedListener;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -50,11 +50,11 @@ public class OtherActivity extends BaseActivity implements OnServiceSelectedList
 	    	if(existingFragment == null){
 	    		// if it does not exist, create a new fragment
 				actionBar.addTab(actionBar.newTab().setText(tabTitles[i]).setTabListener(
-						new TabListener<MyServicesListFragment2>(this, mFragmentTags[i], MyServicesListFragment2.class)));
+						new TabListener<MyServicesListFragment>(this, mFragmentTags[i], MyServicesListFragment.class)));
 	    	} else {
 	    		// if it does it exist, use that fragment as the tab content
 				actionBar.addTab(actionBar.newTab().setText(tabTitles[i]).setTabListener(
-						new TabListener<MyServicesListFragment2>(this, mFragmentTags[i], existingFragment)));
+						new TabListener<MyServicesListFragment>(this, mFragmentTags[i], existingFragment)));
 	    	}
 	    }
 	    

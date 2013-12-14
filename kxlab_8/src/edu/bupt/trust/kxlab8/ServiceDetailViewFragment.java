@@ -131,7 +131,8 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 				// TODO: implement the comments DAO (not sure where this is coming from, so I did it with services)
 				showList(false);
 				MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this,MyServicesDAO.Type.COMMUNITY);
-				myServicesDAO.readServices(MyServicesDAO.Type.APPLY, DaoFactory.Source.DUMMY, new String [] {});
+				myServicesDAO.readServices(MyServicesDAO.Type.COMMUNITY, DaoFactory.Page.LATEST, DaoFactory.Source.WEB, 
+						new String [] {((BaseActivity)getActivity()).mSettings.getUser().getEmail()});
 				Loggen.v(this, "Restoring saved Instancestate: Hide the list");
 			}else{
 				// If we already have a list of comments, just show those comments
@@ -263,12 +264,6 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 	}
 
 	public void saveComment(String valueOf) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onReadService(TrustService service) {
 		// TODO Auto-generated method stub
 		
 	}
