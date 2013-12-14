@@ -5,6 +5,7 @@ import java.util.HashMap;
 import android.content.Context;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesDetailListener;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
+import edu.bupt.trust.kxlab.data.ProfileDAO.LoginListener;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesDetailListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
@@ -13,6 +14,9 @@ public class DaoFactory {
 	
 	public enum DAO { SERVICES, PEOPLE, COMMENT};
 	public enum Source { DEFAULT, WEB, LOCAL, DUMMY };
+	public enum Page {
+		PREVIOUS, LATEST
+	};
 	
 	private static DaoFactory mInstance = null;
  
@@ -61,25 +65,20 @@ public class DaoFactory {
 		}
 		return myServicesDAO;
 	}
-
-	public MyServicesDAO setMyServicesDAO(Context c, MyServicesDetailListener listener, MyServicesDAO.Type type){
-		MyServicesDAO myServicesDAO;
-		if(myServicesDAOMap.get(type) == null) {
-			myServicesDAO = new MyServicesDAO(null, listener);
-			myServicesDAOMap.put(type,myServicesDAO);
-		} else {
-			myServicesDAO = myServicesDAOMap.get(type);
-			myServicesDAO.setServicesDetailListener(listener);
-			myServicesDAO.setServicesListListener(null);
-		}
-		return myServicesDAO;
-	}
-
+	
 	public ProfileDAO setProfileDAO(Context c, ProfileListener listener){
 		if(profileDAO == null) { 
 			profileDAO = new ProfileDAO(null, listener); 
 		} else {
 			profileDAO.setProfileListener(listener);
+		}
+		return profileDAO;
+	}
+	public ProfileDAO setProfileDAO(Context c, LoginListener listener){
+		if(profileDAO == null) { 
+			profileDAO = new ProfileDAO(null, listener); 
+		} else {
+			profileDAO.setLoginListener(listener);
 		}
 		return profileDAO;
 	}

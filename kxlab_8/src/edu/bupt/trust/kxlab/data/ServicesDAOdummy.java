@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
-import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 import android.os.AsyncTask;
@@ -19,8 +18,7 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 	private int counter;
 
 	public ServicesDAOdummy(OnServicesRawDataReceivedListener listener){
-		cacheDir = new File(Environment.getExternalStorageDirectory(), 
-				Gegevens.FILE_USERDIRSD + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE);
+		cacheDir = new File(Environment.getExternalStorageDirectory(), ServicesDAOlocal.REPLACE_cachefolder);
 		this.listener = listener;
 		this.counter = 0;
 	}
@@ -40,7 +38,7 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 			@Override protected void onPostExecute(Void v) {
 				String response = null;
 				if(path != null){
-					String filename = (path.contains(".")) ? path : path + Gegevens.FILE_EXT_DAT; 
+					String filename = (path.contains(".")) ? path : path + ServicesDAOlocal.REPLACE_extension; 
 					response = readFromFile(filename);
 				}
 				
@@ -101,6 +99,24 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 
 	@Override
 	protected void searchService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void editService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void createService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void deleteService(String path) {
 		// TODO Auto-generated method stub
 		
 	}

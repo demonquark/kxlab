@@ -1,5 +1,8 @@
 package edu.bupt.trust.kxlab.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -14,6 +17,7 @@ public class Comment implements Parcelable  {
 	private long commenttime;
 	private int recommentid;
 	private int rootcommentid;
+	private ArrayList<Comment> detailComments;
 	
 	private Comment(Parcel in) {
     	// Note: you need to read the items in the same order that you wrote them
@@ -25,7 +29,9 @@ public class Comment implements Parcelable  {
 		commentdetail = in.readString();
 		commenttime = in.readLong();
 		recommentid = in.readInt();
-		rootcommentid = in.readInt();	
+		rootcommentid = in.readInt();
+		detailComments = new ArrayList <Comment> ();
+		in.readList(detailComments, null);
     }
 
     public Comment() {
@@ -38,6 +44,7 @@ public class Comment implements Parcelable  {
     	commenttime = -1;
     	recommentid = -1;
     	rootcommentid = -1;
+    	detailComments = new ArrayList<Comment>();
     }
     
     // this is used to regenerate your object.
@@ -115,6 +122,18 @@ public class Comment implements Parcelable  {
 	}
 	public void setRootcommentid(int rootcommentid) {
 		this.rootcommentid = rootcommentid;
+	}
+
+	public List<Comment> getDetailComments() {
+		return detailComments;
+	}
+
+	public void setDetailComments(ArrayList<Comment> detailComments) {
+		this.detailComments = detailComments;
+	}
+
+	public void setCommenttime(long commenttime) {
+		this.commenttime = commenttime;
 	}
 	
 	

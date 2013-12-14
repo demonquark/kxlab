@@ -4,6 +4,8 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import edu.bupt.trust.kxlab.data.MyServicesDAOweb.ServicesResponseHandler;
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -35,6 +37,47 @@ class ServicesDAOweb extends ServicesDAOabstract{
 		this.listener = listener;
 	}
 
+	@Override
+	protected void createService(String path) {
+		// TODO Auto-generated method stub
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onCreateService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onCreateService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
+	}
+
+	@Override
+	protected void deleteService(String path) {
+		// TODO Auto-generated method stub
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onDeleteService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onDeleteService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
+	}
+	
+	public void editService(String path) {
+		// TODO Auto-generated method stub
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onEditService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onEditService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
+	}
+
 	@Override protected void readServices(String path) {
 		// Send the request to the server 
 		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
@@ -47,22 +90,62 @@ class ServicesDAOweb extends ServicesDAOabstract{
 					listener.onReadServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
 		});
 	}
+	
+	@Override
+	protected void searchService(String path) {
+		// TODO Auto-generated method stub
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onSearchServices(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onSearchServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
+	}
 
 	@Override protected void readService(String path) {
 		// TODO Auto-generated method stub
-		
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onReadService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onReadService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
 	}
 
+	
+	
 	@Override
 	public void updateServiceScore(String path) {
 		// TODO Auto-generated method stub
-		
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.writeServiceScore(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.writeServiceScore(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
 	}
 
 	@Override
 	protected void createServiceComment(String path) {
 		// TODO Auto-generated method stub
-		
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.writeServiceComment(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.writeServiceComment(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
 	}
 	
 	/** Check if we have network connectivity. No point in trying anything if we have no connection. */
@@ -99,9 +182,4 @@ class ServicesDAOweb extends ServicesDAOabstract{
 	}
 
 
-	@Override
-	protected void searchService(String path) {
-		// TODO Auto-generated method stub
-		
-	} 
 }

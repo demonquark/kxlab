@@ -43,7 +43,7 @@ public class TabListener<T extends Fragment> implements android.support.v7.app.A
 
 /** The following are each of the ActionBar.TabListener call backs */
     public void onTabSelected(Tab tab, FragmentTransaction ft) {
-    	
+    	FragmentTransaction localft = mActivity.getSupportFragmentManager().beginTransaction();
         // Check if the fragment is already initialized
         if (mFragment == null) {
             Loggen.v(this, "Fragment does not exist. creating a new one." );
@@ -54,18 +54,23 @@ public class TabListener<T extends Fragment> implements android.support.v7.app.A
 
     		// If not, instantiate and add it to the activity
             mFragment = Fragment.instantiate(mActivity, mClass.getName(), arguments);
-            ft.add(android.R.id.content, mFragment, mTag);
+            localft.add(android.R.id.content, mFragment, mTag);
         } else {
             // If it exists, simply attach it in order to show it
             Loggen.v(this, "Fragment does exist. adding an existing one." );
-            ft.attach(mFragment);
+            localft.attach(mFragment);
         }
+        localft.commit();
     }
 
     @Override public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-        if (mFragment != null) {
+    	FragmentTransaction localft = mActivity.getSupportFragmentManager().beginTransaction();
+    	if (mFragment != null) {
             // Detach the fragment, because another one is being attached
-            ft.detach(mFragment);
+    		localft.detach(mFragment);
+            //ft.remove(mFragment);
+            //kris you forgot commit
+    		localft.commit();
         }
     }
 

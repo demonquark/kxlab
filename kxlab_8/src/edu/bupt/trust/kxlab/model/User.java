@@ -1,9 +1,6 @@
 package edu.bupt.trust.kxlab.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-public class User implements Parcelable {
+public class User {
 	private String email;
 	private String userName;
 	private String password;
@@ -12,7 +9,9 @@ public class User implements Parcelable {
 	private String timeEnter;
 	private String activityScore;
 	private String Source;
-	private String phoneNumber;
+	private boolean isLogin;
+
+
 
 	public User() {
 		email = "";
@@ -23,7 +22,7 @@ public class User implements Parcelable {
 		timeEnter = "";
 		activityScore = "";
 		Source = "";
-		phoneNumber = "";
+		isLogin=false;
 	}
 	
 	public User(String email) {
@@ -35,57 +34,9 @@ public class User implements Parcelable {
 		timeEnter = "";
 		activityScore = "";
 		Source = "";
-		phoneNumber = "";
-	}
-	
-	public User(UserInformation userinfo){
-		email = userinfo.getUserEmail();
-		userName = userinfo.getUserName();
-		password = "";
-		photoLocation = "";
-		gender = "";
-		timeEnter = userinfo.getTimeEnter();
-		activityScore = userinfo.getActivityScore();
-		Source = userinfo.getSource();
-		phoneNumber = userinfo.getPhoneNumber();
+		isLogin=false;
 	}
 
-    private User(Parcel in) {
-    	// Note: you need to read the items in the same order that you wrote them
-    	email = in.readString();
-		userName = in.readString();
-		password = in.readString();
-		photoLocation = in.readString();
-		gender = in.readString();
-		timeEnter = in.readString();
-		activityScore = in.readString();
-		Source = in.readString();
-		phoneNumber = in.readString();
-    }
-
-    // this is used to regenerate your object.
-    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
-        public User createFromParcel(Parcel in) { return new User(in); }
-        public User[] newArray(int size) { return new User[size]; }
-    };
-
-    @Override public int describeContents() { return 0; }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-    	// Note: you need to write the items in the same order that you intend to read them
-    	dest.writeString(email);
-    	dest.writeString(userName);
-    	dest.writeString(password);
-    	dest.writeString(photoLocation);
-    	dest.writeString(gender);
-    	dest.writeString(timeEnter);
-    	dest.writeString(activityScore);
-    	dest.writeString(Source);
-    	dest.writeString(phoneNumber);
-    }
-
-	
 	/**
 	 * Getter and Setters
 	 * @return
@@ -153,13 +104,12 @@ public class User implements Parcelable {
 	public void setSource(String source) {
 		Source = source;
 	}
-	
-	public String getPhoneNumber(){
-		return this.phoneNumber;
+	public boolean isLogin() {
+		return isLogin;
 	}
-	
-	public void setPhoneNumber(String phoneNumber){
-		if(phoneNumber != null) { this.phoneNumber = phoneNumber; }
+
+	public void setLogin(boolean isLogin) {
+		this.isLogin = isLogin;
 	}
 	
 }

@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Random;
 
-import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 import android.content.Context;
@@ -27,6 +26,11 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 	protected String fileReadServices 	= pathToFileName(Urls.pathServiceList);
 	protected String fileReadService 	= pathToFileName(Urls.pathServiceDetail);
 	
+	static String REPLACE_appname = "edu.bupt.trust.kxlab8";  
+	static String REPLACE_separator = "/";  
+	static String REPLACE_extension = ".dat";
+	static String REPLACE_cachefolder = "Android" + REPLACE_separator + "data" 
+								 + REPLACE_separator + REPLACE_appname + REPLACE_separator + "cache";
 	int maxTimeInCache = 48 * 60 * 60 * 1000; // Ignore anything that has been cached for more than 48 hours
 	
 	/**
@@ -83,8 +87,7 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 				cacheDir = c.getExternalCacheDir();
 			} else {
 				// If we have access to the external card. Create a folder there. 
-				cacheDir = new File(Environment.getExternalStorageDirectory(), 
-						Gegevens.FILE_USERDIRSD + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE);
+				cacheDir = new File(Environment.getExternalStorageDirectory(), REPLACE_cachefolder);
 			}
 		} else {
 			// If we have no access to the external card. Create a subfolder in the data folder
@@ -92,8 +95,7 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 				cacheDir = c.getCacheDir();
 			} else {
 				// If we have no access to the external card. Create a subfolder in the data folder 
-				cacheDir = new File(Environment.getDataDirectory(), 
-						Gegevens.FILE_USERDIRPHONE + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE);
+				cacheDir = new File(Environment.getDataDirectory(), "data"+REPLACE_separator+ REPLACE_appname+REPLACE_separator+"cache");
 			}
 		}
 
@@ -102,12 +104,12 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 	}
 
 	public boolean fileExists(String filename) {
-		File file = new File (cacheDir, filename + Gegevens.FILE_EXT_DAT);
+		File file = new File (cacheDir, filename + REPLACE_extension);
 		return (file.exists() && file.lastModified() > System.currentTimeMillis() - maxTimeInCache);
 	}
 
 	public void writeToFile(String filename, String message) {
-        File file = new File(cacheDir, filename  + Gegevens.FILE_EXT_DAT);
+        File file = new File(cacheDir, filename + REPLACE_extension);
         Loggen.v(this, "Writing to file: " + file.getName());
 		BufferedWriter writer = null;
 		try {// write the output to the file
@@ -122,7 +124,7 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 	}
 
 	public String readFromFile(String filename) {
-        File file = new File(cacheDir, filename +  Gegevens.FILE_EXT_DAT);
+        File file = new File(cacheDir, filename + REPLACE_extension);
         byte[] b  = new byte[(int)file.length()];
 		int len = b.length;
         Loggen.v(this, "Reading from file: " + file.getName());
@@ -150,6 +152,27 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 
 	@Override
 	protected void searchService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	protected void editService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	protected void createService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	protected void deleteService(String path) {
 		// TODO Auto-generated method stub
 		
 	}

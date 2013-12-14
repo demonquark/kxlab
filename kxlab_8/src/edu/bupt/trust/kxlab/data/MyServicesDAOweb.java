@@ -35,6 +35,47 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 		asyncHttpClient = new AsyncHttpClient();
 		this.listener = listener;
 	}
+	
+	@Override
+	protected void createService(String path) {
+		// TODO Auto-generated method stub
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onCreateService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onCreateService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
+	}
+
+	@Override
+	protected void deleteService(String path) {
+		// TODO Auto-generated method stub
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onDeleteService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onDeleteService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
+	}
+	
+	public void editService(String path) {
+		// TODO Auto-generated method stub
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onEditService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onEditService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
+	}
 
 	@Override protected void readServices(String path) {
 		// Send the request to the server 
@@ -47,31 +88,6 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 				if(listener != null){
 					listener.onReadServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
 		});
-	}
-
-	@Override protected void readService(String path) {
-		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
-		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
-			@Override public void onSuccess(String response) {
-				if(listener != null){
-					listener.onReadServices(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
-			@Override public void onFailure(Throwable error, String content) {
-				if(listener != null){
-					listener.onReadServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
-		});
-	}
-
-	@Override
-	public void updateServiceScore(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void createServiceComment(String path) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	@Override
@@ -87,6 +103,20 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 					listener.onSearchServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
 		});
 	}
+
+	@Override protected void readService(String path) {
+		// TODO Auto-generated method stub
+		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onReadService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onReadService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+		});
+	}
+	
 	
 	/** Check if we have network connectivity. No point in trying anything if we have no connection. */
 	protected static boolean isNetworkAvailable(Context c) {
@@ -113,13 +143,32 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 	 * This just forwards the HTTP response to the ServicesDAOweb methods
 	 * @author Krishna
 	 */
-	private class ServicesResponseHandler extends AsyncHttpResponseHandler {
+	public class ServicesResponseHandler extends AsyncHttpResponseHandler {
 		@Override public void onStart() { Log.v("DAOweb" , "onStart: not implemented."); }
 		@Override public void onSuccess(String response) { Log.v("DAOweb" , "onSuccess: not implemented."); }
 		@Override public void onFailure(Throwable error, String content) { Log.e("DAOweb" , "onFailure: not implemented."); }
 		@Override public void onFinish() { Log.v("DAOweb" , "onFinish: not implemented."); }		
 
 	}
+
+
+	@Override
+	protected void updateServiceScore(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void createServiceComment(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	
+
+
+	
 
 
 	 

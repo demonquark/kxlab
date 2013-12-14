@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
-import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 import android.os.AsyncTask;
@@ -19,8 +18,7 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 	private int counter;
 
 	public MyServicesDAOdummy(OnServicesRawDataReceivedListener listener){
-		cacheDir = new File(Environment.getExternalStorageDirectory(), 
-				Gegevens.FILE_USERDIRSD + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE);
+		cacheDir = new File(Environment.getExternalStorageDirectory(), ServicesDAOlocal.REPLACE_cachefolder);
 		this.listener = listener;
 		this.counter = 0;
 	}
@@ -108,6 +106,24 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 
 	@Override
 	protected void searchService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void editService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void createService(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void deleteService(String path) {
 		// TODO Auto-generated method stub
 		
 	}

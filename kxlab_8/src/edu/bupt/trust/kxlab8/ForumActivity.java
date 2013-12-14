@@ -1,5 +1,7 @@
 package edu.bupt.trust.kxlab8;
 
+import edu.bupt.trust.kxlab.model.User;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -21,7 +23,18 @@ public class ForumActivity extends BaseActivity {
 		int id = view.getId();
 		switch(id){
 			case R.id.btnLogin:
-				userMustClickOkay("Forum", "This is the forum page. Still to be implemented.");
+				//userMustClickOkay("Forum", "This is the forum page. Still to be implemented.");
+				mSettings.loadSettingsFromSharedPreferences(this);
+				User user = mSettings.getUser();
+				if (user==null) {
+					user = new User();
+				}
+				user.setLogin(false);
+				mSettings.setUser(user);
+				mSettings.saveSettingsToSharedPreferences(this);
+				Intent backToLogin = new Intent(ForumActivity.this,LoginActivity.class);
+				startActivity(backToLogin);
+				finish();
 			break;
 			default:
 				super.onBtnClick(view);

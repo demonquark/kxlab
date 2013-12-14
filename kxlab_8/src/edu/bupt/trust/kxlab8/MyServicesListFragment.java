@@ -7,7 +7,9 @@ import edu.bupt.trust.kxlab.adapters.ServicesArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.MyServicesDAO;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
+import edu.bupt.trust.kxlab.model.Settings;
 import edu.bupt.trust.kxlab.model.TrustService;
+import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
@@ -20,9 +22,11 @@ import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ListFragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.SearchView.OnCloseListener;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -36,7 +40,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 public class MyServicesListFragment extends ListFragment 
-						implements MyServicesListListener, BasicDialogListener, OnQueryTextListener,IXListViewListener{
+						implements MyServicesListListener, BasicDialogListener, OnQueryTextListener,IXListViewListener,OnCloseListener{
 	
 	private enum State { DELETE, LOADING, IDLE };
 	
@@ -48,8 +52,10 @@ public class MyServicesListFragment extends ListFragment
 	ArrayList<TrustService> services;
 	MyServicesDAO.Type servicesType;
 	private State state;
-	
+	private int requestType=0;
+	private User user;
 	private XListView mListView;
+	private Handler mHandler;
 	
 	public MyServicesListFragment() {
         // Empty constructor required for ServicesListFragment
@@ -68,7 +74,10 @@ public class MyServicesListFragment extends ListFragment
 	    
 		// set up the search view
 		MenuItem searchItem = menu.findItem(R.id.action_search);
+		
 	    mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+	    mSearchView.setOnCloseListener(this);
+	
 	    setupSearchView();
 	}
 
@@ -79,7 +88,7 @@ public class MyServicesListFragment extends ListFragment
     	if(state != State.LOADING){
             switch (itemId) {
             	case R.id.action_create:
-            		if(mListener != null) { mListener.onCreateService(getTag()); }
+            		mListener.onCreateService(getTag());
                 break;
             	case R.id.action_delete:
             		if (mActionMode == null) { changeToDeleteListView(); }
@@ -103,7 +112,11 @@ public class MyServicesListFragment extends ListFragment
 		// convert the saved state to an empty bundle to avoid errors later on
 		Bundle savedstate = (savedInstanceState != null) ? savedInstanceState : new Bundle();
 		Bundle arguments = (getArguments() != null) ? getArguments() : new Bundle();
-		
+		Settings.getInstance(getActivity()).loadSettingsFromSharedPreferences(getActivity());
+		user=Settings.getInstance(getActivity()).getUser();
+		if (user==null) {
+			user=new User();
+		}
 		// Use the tag to determine the service type
 		String tag = getTag();
 		if(Gegevens.FRAG_RECOMMEND.equals(tag)){ servicesType = MyServicesDAO.Type.RECOMMENDED;
@@ -131,7 +144,8 @@ public class MyServicesListFragment extends ListFragment
 		mListView.setPullLoadEnable(true);
 		mListView.setXListViewListener(this);
 		mProgressContainer = (LinearLayout) rootView.findViewById(R.id.progress_container);
-
+		//mAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item, items);
+		mHandler = new Handler();
 		return rootView;
 	}
 
@@ -145,7 +159,9 @@ public class MyServicesListFragment extends ListFragment
 			if(services == null){
 				// Load the services from the DAO
 				showList(false);
-				geneData();
+				MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
+				myServicesDAO.readServices(servicesType,DaoFactory.Page.LATEST,DaoFactory.Source.WEB, new String [] {user.getEmail(), "0"});//3=user email 0=list page
+				//myServicesDAO.searchService(servicesType, DaoFactory.Source.DEFAULT, new String [] {"1", "3", "0"});//1 = search keyword
 				Loggen.v(this, "Restoring saved Instancestate: Hide the list");
 			}else{
 				// If we already have a list of services, just show those services
@@ -192,13 +208,11 @@ public class MyServicesListFragment extends ListFragment
 	
     private void setupSearchView() {
 
-    	if(getActivity() != null){
-	        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-	        if (searchManager != null) {
-	            SearchableInfo info = searchManager.getSearchableInfo(getActivity().getComponentName());
-	            mSearchView.setSearchableInfo(info);
-	        }
-    	}
+        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+        if (searchManager != null) {
+            SearchableInfo info = searchManager.getSearchableInfo(getActivity().getComponentName());
+            mSearchView.setSearchableInfo(info);
+        }
         mSearchView.setOnQueryTextListener(this);
     }
 
@@ -211,62 +225,71 @@ public class MyServicesListFragment extends ListFragment
 
 	private void initListView() {
 		Loggen.v(this, getTag() + " - initlistview: Create and set a list adapter for the listview.");
-		if(getActivity() != null){
-			// load a new adapter
-			ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
-					R.layout.list_item_services, android.R.id.text1, services);
-			
-			// set the adapter
-			setListAdapter(a);
-			
 
-			// set the choice mode and reaction to the choices 
-			mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-			
-			showList(true);
-			mLoadServices = false;
-		}
+		// load a new adapter
+		ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
+				R.layout.list_item_services, android.R.id.text1, services);
+		
+		// set the adapter
+		setListAdapter(a);
+
+		// set the choice mode and reaction to the choices 
+		mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+		
+		showList(true);
+		mLoadServices = false;
 	}
 
 	private void changeToDeleteListView() {
 		Loggen.v(this, getTag() + " - Changing to delete mode.");
-		if(getActivity() != null){
-			// set the choice mode and reaction to the choices 
-			state = State.DELETE;
-			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-			mActionMode = getActivity().startActionMode(new DeleteServicesMode ());
-		}
+
+		// set the choice mode and reaction to the choices 
+		state = State.DELETE;
+		mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		mActionMode = getActivity().startActionMode(new DeleteServicesMode ());
 	}
+
 	
 	@Override public void onReadServices(List<TrustService> services) {
 		Loggen.i(this, getTag() + " - Returned from onReadservices. ");
-
-		if(mListView != null){ 
-			if(mListView.isPullLoading()){
-				mListView.stopLoadMore();
-			}
-			if(mListView.isPullRefreshing()){
-				mListView.stopRefresh(); 
-				mListView.updateHeaderTime();
+		//System.out.println("requsetType :"+requestType+services.toString());
+		
+		ArrayList<TrustService> servicesTemp = new ArrayList <TrustService> ();
+		// update the services
+		servicesTemp = (ArrayList<TrustService>) ((services != null) ? services : new ArrayList <TrustService> ());
+		//System.out.println("tempServices :"+requestType+services.toString());
+		if (requestType==0) {
+			//System.out.println("tempServices :"+requestType+servicesTemp.toString());
+			this.services=servicesTemp;
+			//System.out.println("this.Services :"+requestType+this.services.get(0).getServiceid());
+		}else {
+			for (TrustService s:servicesTemp) {
+				this.services.add(s);
 			}
 		}
-		
-		// update the services
-		this.services = (ArrayList<TrustService>) ((services != null) ? services : new ArrayList <TrustService> ());
-		
 		// update the UI
 		initListView();
 	}
 
-	@Override public void onRefresh() {
-		geneData();
-	}
-	
-	private void geneData() {
-		if(getActivity() != null){
-			MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
-			myServicesDAO.readServices(servicesType, DaoFactory.Source.DEFAULT, new String [] {"3", "0"}); //3=user email 0=list page
+  /**
+   * 
+   * @param flag 0 means latest services,1 means previous services
+   */
+	private void geneData(int flag) {
+		// TODO: process refresh request (for now it just reloads the list)
+		MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
+		switch (flag) {
+		case 0:
+			myServicesDAO.readServices(servicesType,DaoFactory.Page.LATEST, DaoFactory.Source.WEB, new String [] {user.getEmail()});
+			break;
+		case 1:
+			myServicesDAO.readServices(servicesType,DaoFactory.Page.PREVIOUS, DaoFactory.Source.WEB, new String [] {user.getEmail()});
+			break;
+		default:
+			myServicesDAO.readServices(servicesType,DaoFactory.Page.LATEST, DaoFactory.Source.WEB, new String [] {user.getEmail()});
+			break;
 		}
+		
 	}
 
 
@@ -289,9 +312,10 @@ public class MyServicesListFragment extends ListFragment
 	    mSearchView.clearFocus();
 		showList(false);
 	    // TODO: process search (for now it just reloads the list)
-		geneData();
-		return true; 
-	}
+		MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
+		myServicesDAO.searchService(servicesType, DaoFactory.Page.LATEST,new String[]{arg0,user.getEmail()});
+
+		return true; }
 	
 	/**
 	 * DeleteServicesMode allows you to pick items from the list and delete them.<br />
@@ -362,15 +386,28 @@ public class MyServicesListFragment extends ListFragment
 		public void onCreateService(String tag);
 	}
 
-	@Override
-	public void onReadService(TrustService service) {
-		// TODO Auto-generated method stub
-		
+	@Override public void onRefresh() {
+		mHandler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				requestType=0;
+				geneData(requestType);
+				mListView.stopRefresh();
+				mListView.updateHeaderTime();
+			}
+		}, 2000);
 	}
 
 	@Override
 	public void onLoadMore() {
-		geneData();
+		mHandler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				requestType=1;
+				geneData(requestType);
+				mListView.stopLoadMore();
+			}
+		}, 500);
 	}
 
 	@Override
@@ -393,9 +430,18 @@ public class MyServicesListFragment extends ListFragment
 
 	@Override
 	public void onSearchService(List<TrustService> services) {
+		mListView.hideFooter();
+		mListView.hideHeader();
 		this.services = (ArrayList<TrustService>) ((services != null) ? services : new ArrayList <TrustService> ()); 
-
-		// update the UI
 		initListView();
+		
+	}
+
+	@Override
+	public boolean onClose() {
+		mListView.showFooter();
+		mListView.showHeader();
+		onRefresh();
+		return false;
 	}
 }

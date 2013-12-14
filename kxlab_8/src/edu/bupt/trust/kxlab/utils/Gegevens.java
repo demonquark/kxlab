@@ -10,7 +10,10 @@ public class Gegevens {
 	
 	/** Preferences */
 	public static final String PREF_LANGUAGE 		= "language";
-	public static final String PREF_USER 			= "defaultuser";
+	public static final String PREF_ISLOGIN			= "islogin";
+	public static final String PREF_ISREMEMBER	    ="isremember";
+	public static final String PREF_USER	        ="defaultuser";
+	public static final String PREF_USERFACE		="userface";
 	public static final String PREF_DUMMY 			= "dummy";
 
 	/** Intent and Bundle Extras */

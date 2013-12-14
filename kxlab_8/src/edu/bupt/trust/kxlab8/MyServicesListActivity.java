@@ -72,7 +72,7 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 		// This keeps the MyServicesListFragment completely independent of the ServicesDetailFragment (i.e. low cohesion)
 		// In our case we show the service details in a new activity. 
 		// This can easily be modified to a local fragment for tablet devices
-
+		System.out.println("Into startDetails");
 		// Put the necessary arguments in a bundle
 		Bundle b = new Bundle();
 		b.putInt(Gegevens.EXTRA_FOOTERID,  R.id.footer_myservice);
@@ -89,6 +89,7 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 
 	@Override public void onItemSelected(String tag, int position, TrustService service) {
 		Loggen.v(this, "User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid() );
+		System.out.println("User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid());
 		startDetailsActivity(tag, ServiceDetailActivity.Type.VIEW, service);
 	}
 	

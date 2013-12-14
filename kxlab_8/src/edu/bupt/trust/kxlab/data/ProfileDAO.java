@@ -1,19 +1,16 @@
 package edu.bupt.trust.kxlab.data;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.google.gson.Gson;
 import com.loopj.android.http.RequestParams;
 
 import android.content.Context;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.model.ActivityHistory;
 import edu.bupt.trust.kxlab.model.User;
-import edu.bupt.trust.kxlab.model.UserInformation;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedListener{
@@ -21,17 +18,13 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	ProfileDAOweb web;
 	ProfileDAOlocal local;
 	ProfileDAOdummy dummy;
-	WeakReference <LoginListener> loginlistener;
-	WeakReference <ProfileListener> profileListener;
+	LoginListener loginlistener;
+	ProfileListener profileListener;
 	
 	
 	// Outward facing methods (used by the class requesting the data)
-	public void setLoginListener(LoginListener listener) { 
-		this.loginlistener = new WeakReference <LoginListener> (listener); 
-	}
-	public void setProfileListener(ProfileListener listener) { 
-		this.profileListener = new WeakReference <ProfileListener> (listener); 
-	}
+	public void setLoginListener(LoginListener listener) { this.loginlistener = listener; }
+	public void setProfileListener(ProfileListener listener) { this.profileListener = listener; }
 	public void setCacheDir(Context c) { local.setCacheDir(c); }
 	
 	// Inward facing methods (used to communicate with the class providing the data)
@@ -39,19 +32,14 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		local = new ProfileDAOlocal(this, c);
 		web = new ProfileDAOweb(this);
 		dummy = new ProfileDAOdummy(this);
-		this.loginlistener = new WeakReference <LoginListener> (listener);
+		this.loginlistener = listener;
 	}
 	
 	protected ProfileDAO(Context c, ProfileListener listener){
 		local = new ProfileDAOlocal(this, c);
 		web = new ProfileDAOweb(this);
 		dummy = new ProfileDAOdummy(this);
-		this.profileListener = new WeakReference <ProfileListener> (listener);
-	}
-	
-	
-	public User generateUser(){
-		return dummy.randomUser();
+		this.profileListener = listener;
 	}
 
 	public void login(String email, String password){
@@ -73,13 +61,13 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		if(email != null && password != null){
 			// build the query
 			RequestParams params = new RequestParams();
-			params.put(Urls.paramUserEmail, email);
+			params.put(Urls.paramEmail, email);
 			params.put(Urls.paramProfilePassword, password);
 			path = ServicesDAOweb.getPath(true, path, params);
 
 			// contact the web
 			if(source == Source.WEB) { web.login(path); 
-			} else { dummy.login(path);  }
+			}else { dummy.login(path);  }
 		}else {
 			// no user name or password was provided. Fail by default. 
 			this.onLogin(new RawResponse(RawResponse.Error.ILLEGALARGUMENT, "", path));
@@ -104,7 +92,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 			// build the query
 			RequestParams params = new RequestParams();
 			params.put(Urls.paramUserEmail, email);
-			path = ServicesDAOweb.getPath(false, path, params);
+			path = ServicesDAOweb.getPath(true, path, params);
 
 			// contact the web
 			if(source == Source.WEB) { 
@@ -122,7 +110,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	}
 
 	@Override public void onLogin(RawResponse response) {
-		Loggen.v(this, "Got a response onLogin: " + response.message);
+		Loggen.i(this, "Got a response: " + response.message + " (" + response.errorStatus + ")");
 		
 		// set the default values
 		boolean success = false;
@@ -131,18 +119,24 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		if(response.errorStatus == RawResponse.Error.NONE){
 			try { // Check the JSON for incidence of the loginOrNot variable
 				JSONObject login = new JSONObject(response.message);
-				success = (login.has(Urls.jsonLoginOrNot)) ? login.getBoolean(Urls.jsonLoginOrNot) : false;
+				int successInt = (login.has(Urls.jsonLoginOrNot)) ? login.getInt(Urls.jsonLoginOrNot) : 0;
+				success = (successInt > 0); 
 				errorMessage = (login.has(Urls.jsonLoginErrorMessage)) ? (String) login.get(Urls.jsonLoginErrorMessage) : "";
 			} catch (JSONException e){
+				errorMessage = e.toString();
 				Loggen.e(this, "We were given an invalid JSON string.");
 			} catch (ClassCastException e){
+				errorMessage = e.toString();
 				Loggen.e(this, "The error message could not be parsed to a string.");
 			}
 		} else {
-			Loggen.e(this, "We encountered an error onLogin: " + response.errorStatus.toString());
+			errorMessage = response.errorStatus.toString();
+			Loggen.e(this, "We encountered an error: " + response.message);
 		}
 		
-		if(loginlistener.get() != null){ loginlistener.get().onLogin(success, errorMessage); }
+		if(loginlistener != null){ 
+			loginlistener.onLogin(success, errorMessage); 
+		}
 	}
 	
 	@Override public void onReadUserList(RawResponse response) {
@@ -150,28 +144,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	}
 	
 	@Override public void onReadUserInformation(RawResponse response) {
-		Loggen.v(this, "Got a response onReadUserInformation: " + response.message);
 		
-		User user = null;
-		
-		if(response.errorStatus == RawResponse.Error.NONE){
-			try { 
-				// Try to convert the JSON to userInformation and save it to user object 
-				UserInformation userinfo = new Gson().fromJson(response.message, UserInformation.class);
-				user = new User(userinfo);
-				
-				// TODO: save the image to file (Right now we discard the results and pick a random image)
-				user.setPhotoLocation(dummy.randomPic().getAbsolutePath());
-				
-			} catch (com.google.gson.JsonSyntaxException e){
-				Loggen.e(this, "We were given an invalid JSON string.");
-			}
-		} else {
-			Loggen.e(this, "We encountered an error onReadUserInformation: " + response.errorStatus.toString());
-		}
-		
-		// send the user back
-		if (profileListener.get() != null){ profileListener.get().onReadUserInformation(user); }
 	}
 	
 	@Override public void onReadActivityHistory(RawResponse response) {
