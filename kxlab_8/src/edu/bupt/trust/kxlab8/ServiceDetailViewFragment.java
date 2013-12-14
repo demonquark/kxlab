@@ -9,8 +9,11 @@ import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.MyServicesDAO;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
 import edu.bupt.trust.kxlab.model.TrustService;
+import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
+import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
+import edu.bupt.trust.kxlab.widgets.DialogFragmentScore;
 import android.app.Activity;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -20,21 +23,24 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class ServiceDetailViewFragment extends ListFragment implements MyServicesListListener {
+public class ServiceDetailViewFragment extends ListFragment implements MyServicesListListener, OnClickListener {
 	
 	boolean mLoadComments;
 	OnActionSelectedListener mListener;
+	ServiceDetailActivity.ServiceType mServiceType;
 	private ListView mServiceList;
 	private LinearLayout mProgressContainer;
 	private LinearLayout mListHolder;
 	TrustService mService;
-	MyServicesDAO.Type servicesType;
 	ArrayList<TrustService> comments;
 	
 	public ServiceDetailViewFragment (){
@@ -50,6 +56,7 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		super.onCreateOptionsMenu(menu, inflater);
 	
 		// add the services menu
+		if(mServiceType == ServiceDetailActivity.ServiceType.MYSERVICE)
 		inflater.inflate(R.menu.service_detail_view, menu);
 	}
 	
@@ -83,6 +90,15 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		comments = savedstate.getParcelableArrayList(Gegevens.EXTRA_COMMENTS); 							
 		if(comments == null){ comments = arguments.getParcelableArrayList(Gegevens.EXTRA_COMMENTS); } 	
 
+		// load the service type. This determines what the user can do while viewing the service details.
+		if(savedstate.containsKey(Gegevens.EXTRA_SERVICETYPE)){
+			mServiceType = (ServiceDetailActivity.ServiceType) savedstate.getSerializable(Gegevens.EXTRA_SERVICETYPE);
+		} else if(arguments.containsKey(Gegevens.EXTRA_SERVICETYPE)) {
+			mServiceType = (ServiceDetailActivity.ServiceType) arguments.getSerializable(Gegevens.EXTRA_SERVICETYPE);
+		} else {
+			mServiceType = ServiceDetailActivity.ServiceType.SERVICE;
+		}
+		
 		// We just created a fragment. So reset the list on restore
 		mLoadComments = true;
 
@@ -97,6 +113,8 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		mProgressContainer = (LinearLayout) rootView.findViewById(R.id.progress_container);
 		mServiceList = (ListView) rootView.findViewById(android.R.id.list);
 		mServiceList.addHeaderView(LayoutInflater.from(getActivity()).inflate(R.layout.list_header_service_details, null));
+		((ImageButton) rootView.findViewById(R.id.details_service_btn_comment)).setOnClickListener(this);
+		((Button) rootView.findViewById(R.id.details_service_btn_score)).setOnClickListener(this);		
 		loadHeaderContent(rootView);
 		
 		return rootView;
@@ -108,11 +126,11 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		Loggen.v(this, getTag() + " - Restoring ServiceDetailView instance state.");
 
 		// load the services list if requested (generally only if we just created the fragment)
-		if(mLoadComments){
+		if(mLoadComments) {
 			if(comments == null){
 				// TODO: implement the comments DAO (not sure where this is coming from, so I did it with services)
 				showList(false);
-				MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
+				MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this,MyServicesDAO.Type.COMMUNITY);
 				myServicesDAO.readServices(MyServicesDAO.Type.APPLY, DaoFactory.Source.DUMMY, new String [] {});
 				Loggen.v(this, "Restoring saved Instancestate: Hide the list");
 			}else{
@@ -128,6 +146,7 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		// save the list of comments to the instance state
 		outState.putParcelableArrayList(Gegevens.EXTRA_COMMENTS, comments);
 		outState.putParcelable(Gegevens.EXTRA_SERVICE, mService);
+		outState.putSerializable(Gegevens.EXTRA_SERVICETYPE, mServiceType);
 	}
 	
 	@Override public void onAttach(Activity activity) {
@@ -196,10 +215,58 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		
 	}
 
-
 	public interface OnActionSelectedListener{
 		public void onActionSelected(String tag, TrustService service);
 	}
+	
+	@Override public void onClick(View view) {
+		int id = view.getId();
+		
+		switch(id){
+			case R.id.details_service_btn_comment:
+			case R.id.details_service_btn_score:
+				// create a are you sure confirm dialog 
+				DialogFragmentBasic.newInstance(true)
+					.setTitle("Are you sure")
+					.setMessage("Only participating users are allowed to do this?")
+					.setPositiveButtonText(getString(R.string.ok))
+					.setNegativeButtonText(getString(R.string.cancel))
+					.setObject(Integer.valueOf(id))
+					.show(getFragmentManager(), Gegevens.FRAG_CONFIRM);
+			break;
+			default:
+				((BaseActivity) getActivity()).onBtnClick(view);
+		}
+		
+	}
+	
+	public void launchDialog(int id){
+		switch(id){
+			case R.id.details_service_btn_comment:
+				// TODO: call the fragment that allows you to leave a comment
+			break;
+			case R.id.details_service_btn_score:
+				// call the fragment that allows you to score
+				DialogFragmentScore scorer =  (DialogFragmentScore) DialogFragmentScore.newInstance(true)
+					.setTitle("Score the service")
+					.setMessage("Please rate the service's credibility you have used")
+					.setPositiveButtonText(getString(R.string.submit))
+					.setNegativeButtonText(getString(R.string.cancel));
+				scorer.setCancelable(false);
+				scorer.show(getFragmentManager(), Gegevens.FRAG_SCORE);
+			break;
+		}
+	}
+	
+	public void saveScore(int score){
+		// contact the server to save the score
+	}
+
+	public void saveComment(String valueOf) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	@Override
 	public void onReadService(TrustService service) {
 		// TODO Auto-generated method stub

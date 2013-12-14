@@ -2,7 +2,7 @@ package edu.bupt.trust.kxlab.data;
 
 final class Urls {
 
-	protected static final String urlBASE = "http://10.108.21.97:8080/trustworthy-community/t"; 
+	protected static final String urlBASE = "http://10.108.21.97:8080/trustworthy-community/t/userManagementByPhone"; 
 	protected static final String pathProfileLogin = "login";					// path for "/userInformation"
 	protected static final String pathProfileUserInfo = "userInformation";		// path for "/userInformation"
 	protected static final String pathProfileHistory = "activityHistory";		// path for "/activityHistory"
@@ -19,7 +19,7 @@ final class Urls {
 	protected static final String paramProfilePassword = "password";			// param for "/login"
 	protected static final String jsonLoginOrNot = "loginOrNot";				// json response for "/login"
 	protected static final String jsonLoginErrorMessage = "loginErrorMessage";	// json response for "/login"
-	protected static final String paramUserEmail = "useremail";
+	protected static final String paramUserEmail = "email";
 	
 	protected static final String build(String... parts){
 		String finalURL = ( parts.length > 0 ) ? parts[0] : "";

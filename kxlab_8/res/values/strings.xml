@@ -43,6 +43,7 @@
 	<string name="on">ON</string>
 	<string name="off">OFF</string>
 	<string name="and">and</string>
+	<string name="submit">SUBMIT</string>
 	<string name="back">Back</string>
 	<string name="reset">Reset</string>
 	<string name="error">Error</string>
@@ -95,6 +96,12 @@
 	<string name="details_service_number">Number of users:</string>
 	<string name="details_service_description">这里是详情页面  this the details of this service</string>
 	<string name="details_empty_list">No comments</string>
+	
+	<!-- service score dialogfragment -->
+	<string name="details_score_text01">-1:不可信</string>
+	<string name="details_score_text02">0:不确定</string>
+	<string name="details_score_text03">+1:可信</string>
+	
 	<!-- myinfo activity -->
 	<string name="myinfo_name_text">Unknown name</string>
 	<string name="myinfo_email_text">Unknown email</string>

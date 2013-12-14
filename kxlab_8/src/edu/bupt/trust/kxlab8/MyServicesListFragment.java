@@ -79,7 +79,7 @@ public class MyServicesListFragment extends ListFragment
     	if(state != State.LOADING){
             switch (itemId) {
             	case R.id.action_create:
-            		mListener.onCreateService(getTag());
+            		if(mListener != null) { mListener.onCreateService(getTag()); }
                 break;
             	case R.id.action_delete:
             		if (mActionMode == null) { changeToDeleteListView(); }

@@ -29,6 +29,7 @@ public class Gegevens {
 	public static final String EXTRA_TYPE			= "type";
 	public static final String EXTRA_RESULT			= "result";
 	public static final String EXTRA_COMMENTS		= "comments";
+	public static final String EXTRA_SERVICETYPE	= "servicetype";
 	public static final String EXTRA_USER			= "user";
 	
 	/** Folder and file names */
@@ -47,6 +48,8 @@ public class Gegevens {
 
 	/** Fragment tags */
 	public static final String FRAG_DIALOG 			= "dialog";
+	public static final String FRAG_COMMENT 		= "dialogcomment";
+	public static final String FRAG_SCORE 			= "dialogscore";
 	public static final String FRAG_DELETE			= "dialogdelete";
 	public static final String FRAG_CONFIRM			= "dialogconfirm";
 	public static final String FRAG_FOOTERLINK		= "dialogfooterexit";

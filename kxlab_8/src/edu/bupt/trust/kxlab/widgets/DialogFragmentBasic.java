@@ -3,6 +3,9 @@ package edu.bupt.trust.kxlab.widgets;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -89,6 +92,11 @@ public class DialogFragmentBasic extends DialogFragment {
 
     @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
     	
+    	// return the dialog
+        return buildDialog(savedInstanceState).create();
+    }
+    
+    protected AlertDialog.Builder buildDialog(Bundle savedInstanceState){
     	// Make sure we have a valid string
     	if(savedInstanceState == null) { savedInstanceState = getArguments();}
     	if( mDialogStrings == null) { mDialogStrings = savedInstanceState.getStringArray(Gegevens.EXTRA_STRINGS); }
@@ -119,11 +127,11 @@ public class DialogFragmentBasic extends DialogFragment {
 		    		});
     	}
     	
-    	// return the dialog
-        return builder.create();
+    	return builder;
     }
     
-    public DialogFragmentBasic setHasNegativeButton(boolean hasNegativeButton){
+   
+	public DialogFragmentBasic setHasNegativeButton(boolean hasNegativeButton){
     	return this;
     }
 

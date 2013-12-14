@@ -11,6 +11,7 @@ import edu.bupt.trust.kxlab8.ServiceDetailViewFragment.OnActionSelectedListener;
 public class ServiceDetailActivity extends BaseActivity implements OnActionSelectedListener{
 	
 	public enum Type { VIEW, EDIT, NEW }; // not so sure about new...  
+	public enum ServiceType { MYSERVICE, SERVICE};
 
 	private ServiceDetailViewFragment mFragment;
 	private Type mType; 
@@ -28,9 +29,18 @@ public class ServiceDetailActivity extends BaseActivity implements OnActionSelec
 		int footerid = b.getInt(Gegevens.EXTRA_FOOTERID, -1);
 		if(footerid > 0) { findViewById(footerid).setEnabled(false); }
 		
+		// select the service type based on which footer item is selected 
+		// (i.e. if the user selected myservice, this is a service from myservice)
+		ServiceType servicetype;
+		if(footerid == R.id.footer_myservice){
+			servicetype = ServiceType.MYSERVICE; 
+		} else {
+			servicetype = ServiceType.SERVICE;
+		}
+
 		// get the service and the tag (identifying which tab this is from)
 		TrustService service = b.getParcelable(Gegevens.EXTRA_SERVICE);
-		// String tag = b.getString(Gegevens.EXTRA_TAG);
+		String tag = b.getString(Gegevens.EXTRA_TAG);
 		mType = (Type) b.getSerializable(Gegevens.EXTRA_TYPE);
 		if(mType == null) { mType = Type.VIEW; }
 		
@@ -45,6 +55,7 @@ public class ServiceDetailActivity extends BaseActivity implements OnActionSelec
 			if(mType == Type.VIEW){
 				Bundle arguments = new Bundle();
 				arguments.putParcelable(Gegevens.EXTRA_SERVICE, service);
+				arguments.putSerializable(Gegevens.EXTRA_SERVICETYPE, servicetype);
 				mFragment = new ServiceDetailViewFragment();
 				mFragment.setArguments(arguments);
 				getSupportFragmentManager().beginTransaction().add(R.id.details, mFragment).commit();
@@ -97,6 +108,14 @@ public class ServiceDetailActivity extends BaseActivity implements OnActionSelec
 	}
 	
 	@Override public void onBasicPositiveButtonClicked(String tag, Object o) { 
+		
+		if(Gegevens.FRAG_CONFIRM.equals(tag) && o != null && mFragment != null){
+			mFragment.launchDialog(Integer.parseInt(String.valueOf(o)));
+		} else if (Gegevens.FRAG_SCORE.equals(tag) && o != null && mFragment != null) {
+			mFragment.saveScore(Integer.parseInt(String.valueOf(o)));
+		} else if (Gegevens.FRAG_COMMENT.equals(tag) && o != null && mFragment != null) {
+			mFragment.saveComment(String.valueOf(o));
+		} else {
 		// set the result
 		setResult(mResult);
 
@@ -108,6 +127,7 @@ public class ServiceDetailActivity extends BaseActivity implements OnActionSelec
 			finish();
 		} else if (Gegevens.FRAG_BACKPRESSED.equals(tag)){
 			finish();
+			}
 		}
 	}
 	@Override public void onBasicNegativeButtonClicked(String tag, Object o) { }
