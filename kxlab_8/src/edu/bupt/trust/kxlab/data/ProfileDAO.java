@@ -131,14 +131,18 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		if(response.errorStatus == RawResponse.Error.NONE){
 			try { // Check the JSON for incidence of the loginOrNot variable
 				JSONObject login = new JSONObject(response.message);
-				success = (login.has(Urls.jsonLoginOrNot)) ? login.getBoolean(Urls.jsonLoginOrNot) : false;
+				int successInt = (login.has(Urls.jsonLoginOrNot)) ? login.getInt(Urls.jsonLoginOrNot) : 0;
+				success = (successInt > 0); 
 				errorMessage = (login.has(Urls.jsonLoginErrorMessage)) ? (String) login.get(Urls.jsonLoginErrorMessage) : "";
 			} catch (JSONException e){
+				errorMessage = e.toString();
 				Loggen.e(this, "We were given an invalid JSON string.");
 			} catch (ClassCastException e){
+				errorMessage = e.toString();
 				Loggen.e(this, "The error message could not be parsed to a string.");
 			}
 		} else {
+			errorMessage = response.errorStatus.toString();
 			Loggen.e(this, "We encountered an error onLogin: " + response.errorStatus.toString());
 		}
 		

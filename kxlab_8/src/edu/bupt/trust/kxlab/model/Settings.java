@@ -5,6 +5,8 @@ import java.util.Locale;
 
 import com.google.gson.GsonBuilder;
 
+import edu.bupt.trust.kxlab.data.DaoFactory;
+import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.utils.FileManager;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -58,6 +60,13 @@ public class Settings {
     private Settings(Context c){
     	loadSettingsFromSharedPreferences(c);
 		if(Gegevens.debug){
+			
+			if(user == null || user.getUserName().equals("")){
+				//generate a new user
+				setUser(DaoFactory.getInstance().setProfileDAO(c,(ProfileDAO.ProfileListener)null).generateUser());
+				this.saveSettingsToSharedPreferences(c);
+			}
+			
 			// Get the application directory
 			File appdir = new File(Environment.getExternalStorageDirectory(),Gegevens.FILE_USERDIRSD);
 			

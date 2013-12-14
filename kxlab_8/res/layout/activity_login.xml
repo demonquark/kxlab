@@ -24,9 +24,9 @@
 
 	        <ImageView
 	            android:id="@+id/login_img_face"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:background="@drawable/login_default_avatar" />
+	            android:layout_width="@dimen/fragment_img_width"
+	            android:layout_height="@dimen/fragment_img_height"
+	            android:contentDescription="@string/niets" />
 
 	        <EditText
 	            android:id="@+id/login_edit_account"

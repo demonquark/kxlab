@@ -14,6 +14,7 @@ import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -21,13 +22,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class MyInformationFragment extends Fragment implements ProfileListener {
+public class MyInformationFragment extends Fragment implements ProfileListener, OnClickListener {
 	
 	private User mUser;
 	OnActionSelectedListener mListener;
@@ -81,7 +84,10 @@ public class MyInformationFragment extends Fragment implements ProfileListener {
 
 		// Inflate the root view and save references to useful views as class variables
 		mRootView = inflater.inflate(R.layout.frag_myinformation, container, false);
-
+		
+		// set the on click listener for the log out button
+		((Button) mRootView.findViewById(R.id.myinfo_btn_logout)).setOnClickListener(this);
+		
 		return mRootView;
 	}
 	
@@ -185,5 +191,23 @@ public class MyInformationFragment extends Fragment implements ProfileListener {
 	@Override public void onChangePhonenumber(boolean success, String errorMessage) {	}
 	@Override public void onChangeSource(boolean success, String errorMessage) {	}
 	@Override public void onLocalFallback() { }
+
+	@Override
+	public void onClick(View v) {
+		int id = v.getId();
+		if(id == R.id.myinfo_btn_logout){
+			mUser.setLogin(false);
+			if(getActivity() != null){
+				
+				// Save the current user to our shared preferences
+				BaseActivity parentActivity = (BaseActivity) getActivity();
+				parentActivity.mSettings.setUser(mUser);
+				parentActivity.mSettings.saveSettingsToSharedPreferences(parentActivity);
+				
+				// return to the login activity
+				parentActivity.openActivity(new Intent(parentActivity, LoginActivity.class));
+			}
+		}
+	}
 	
 }

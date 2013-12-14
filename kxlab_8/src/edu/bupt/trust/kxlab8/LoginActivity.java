@@ -1,14 +1,15 @@
 package edu.bupt.trust.kxlab8;
 
+import java.io.File;
+
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
+import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO.LoginListener;
 import edu.bupt.trust.kxlab.model.User;
-import edu.bupt.trust.kxlab.utils.Gegevens;
-import edu.bupt.trust.kxlab.utils.Tools;
-import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
+import edu.bupt.trust.kxlab.utils.BitmapTools;
+import edu.bupt.trust.kxlab.utils.Loggen;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -20,9 +21,6 @@ import android.widget.Toast;
 
 public class LoginActivity extends BaseActivity implements LoginListener{
 
-	
-	
-	DialogFragmentBasic x;
 	/**
 	 * 用户 保存用户名和密码
 	 */
@@ -60,6 +58,7 @@ public class LoginActivity extends BaseActivity implements LoginListener{
 	     
 	     mSettings.loadSettingsFromSharedPreferences(this);
 	     user=mSettings.getUser();
+	     Loggen.i(this, "passsword is: " + user.getPassword());
 	     isRemmber=mSettings.isRemmber();
 	     userFace=mSettings.getUserFace();
 	     if (user==null) {
@@ -110,7 +109,18 @@ public class LoginActivity extends BaseActivity implements LoginListener{
     private void recoveryUserInfo() {
     	editAccount.setText(user.getEmail());
     	boxRemember.setChecked(isRemmber);
-    	imageviewFace.setImageResource(userFace);
+    	File avatar = new File(user.getPhotoLocation());
+    	
+    	// try to load the image from file
+    	if(avatar.exists()){ 
+    		imageviewFace.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
+    			avatar.getAbsolutePath(),
+    			imageviewFace.getLayoutParams().width, 
+    			imageviewFace.getLayoutParams().height));
+    	} else {
+    		imageviewFace.setImageResource(userFace);
+    	}
+    	
     	if (boxRemember.isChecked()) {
     		editPassword.setText(user.getPassword());
 		}
@@ -153,7 +163,7 @@ public class LoginActivity extends BaseActivity implements LoginListener{
 			}*/
 			user.setEmail(mUsername);
 			user.setPassword(mPassword);
-			pDao.login(mUsername, mPassword);
+			pDao.login(Source.DUMMY, mUsername, mPassword);
 			System.out.println("success do login");
 			/*if(mUsername == null || mPassword == null 
 					|| mUsername.equals("") || mPassword.equals("") ){

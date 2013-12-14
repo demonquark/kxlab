@@ -94,7 +94,15 @@
 				    android:textAppearance="?android:attr/textAppearanceMedium" 
 				    android:text="@string/myinfo_source_text" />
 	    	</TableRow>
-		
+	        
+	        <!-- the activity record -->
+			<RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+			    android:layout_marginTop="@dimen/row_vertical_padding">
+			    <Button android:id="@+id/myinfo_btn_logout" android:layout_centerInParent="true"
+	           		android:layout_width="wrap_content" android:layout_height="wrap_content"
+	           		android:text="@string/myinfo_btn_logout" />
+			</RelativeLayout>
+	        		
 		</TableLayout>
 	</ScrollView>
 

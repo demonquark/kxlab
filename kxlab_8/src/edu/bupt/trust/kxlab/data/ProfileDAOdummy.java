@@ -42,7 +42,8 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 			}
 
 			@Override protected void onPostExecute(Void v) {
-				String response = "{\"vote\":[],\"loginOrNot\":" + counter(2) + "}";
+				String response = "{\"vote\":[],\"loginOrNot\":" + counter(2) 
+						+ ", \"loginerrormessage\":\"This is a test result, try again\"}";
 				String urlFilename = urlToFileName(Urls.build(ProfileDAOweb.urlBase, path));
 				listener.onLogin(new RawResponse(response, urlFilename));
 			}
@@ -116,7 +117,7 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 		UserInformation userinfo = new Gson().fromJson(randomUserInformation(), UserInformation.class);
 		User user = new User(userinfo);
 		user.setPhotoLocation(randomPic().getAbsolutePath());
-		
+		user.setPassword("xxxxx");
 		return user;
 	}
 	
