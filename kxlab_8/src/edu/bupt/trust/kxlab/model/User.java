@@ -54,6 +54,19 @@ public class User implements Parcelable {
 		isLogin=false;
 	}
 
+	public User(User newUser){
+		email = newUser.getEmail();
+		userName = newUser.getUserName();
+		password = newUser.getPassword();
+		photoLocation = newUser.getPhotoLocation();
+		gender = newUser.getGender();
+		timeEnter = newUser.getTimeEnter();
+		activityScore = newUser.getActivityScore();
+		Source = newUser.getSource();
+		phoneNumber = newUser.getPhoneNumber();
+		isLogin=newUser.isLogin;
+	}
+
     private User(Parcel in) {
     	// Note: you need to read the items in the same order that you wrote them
     	email = in.readString();

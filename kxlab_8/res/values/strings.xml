@@ -130,8 +130,8 @@
 	<string name="myinfo_btn_save">save profile</string>
 	<string name="myinfo_edit_title">Edit your profile</string>
 	<string name="myinfo_eror_user_edit">An error occurred while trying to load the user information</string>
-	<string name="myinfo_edit_confirm_title">Save your changes</string>
-	<string name="myinfo_edit_confirm_text">Are you sure you want to save these changes your profile?</string>
+	<string name="myinfo_edit_confirm_title">Changes not saved</string>
+	<string name="myinfo_edit_confirm_text">Would you like to save the changes made to your profile?</string>
 	<string name="myinfo_edit_confirm_password_title">Confirm your password</string>
 	<string name="myinfo_edit_confirm_password_text">Please verify your identity by entering your current password.</string>
 

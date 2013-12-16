@@ -5,17 +5,21 @@ import edu.bupt.trust.kxlab8.R;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
 
-public class DialogFragmentScore extends DialogFragmentBasic implements OnCheckedChangeListener {
+public class DialogFragmentComment extends DialogFragmentBasic implements OnCheckedChangeListener {
     
 	RadioGroup scRadioGroup;
+	RadioButton scBtn01;
+	RadioButton scBtn02;
+	RadioButton scBtn03;
 	
-	public DialogFragmentScore() {
+	public DialogFragmentComment() {
         // Empty constructor required for DialogFragment
     }
 	
@@ -25,7 +29,7 @@ public class DialogFragmentScore extends DialogFragmentBasic implements OnChecke
      * 	Hence if the associated activity wants to do something after the user has clicked a dialog button
      *  it should just implement the BasicDialogListener. </p>
      */
-    public static DialogFragmentScore newInstance(boolean hasNegativeButton) {
+    public static DialogFragmentComment newInstance(boolean hasNegativeButton) {
         return newInstance(hasNegativeButton, null);
     }
     
@@ -36,8 +40,8 @@ public class DialogFragmentScore extends DialogFragmentBasic implements OnChecke
      * 	The listenerFragment must implement the BasicDialogListener. If the fragment has not implemented the
      *  BasicDialogListener, the class assigns the associated Activity as the listener </p>
      */
-    public static DialogFragmentScore newInstance(boolean hasNegativeButton, Fragment listenerFragment) {
-    	DialogFragmentScore f = new DialogFragmentScore();
+    public static DialogFragmentComment newInstance(boolean hasNegativeButton, Fragment listenerFragment) {
+    	DialogFragmentComment f = new DialogFragmentComment();
     	f.mListener = null;
     	f.mDialogStrings = new String [4];
     	f.mListenerFragmentTag = (listenerFragment != null) ? listenerFragment.getTag() : null; 

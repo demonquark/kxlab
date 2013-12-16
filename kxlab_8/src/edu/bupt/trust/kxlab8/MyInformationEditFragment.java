@@ -8,6 +8,8 @@ import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -62,7 +64,7 @@ public class MyInformationEditFragment extends BaseDetailFragment {
 		newUser = savedstate.getParcelable(Gegevens.EXTRA_USER2); 							
 		if(newUser == null){ 
 			newUser = arguments.getParcelable(Gegevens.EXTRA_USER2);
-			if(newUser == null){ newUser = oldUser;}
+			if(newUser == null){ newUser = new User(oldUser);}
 		}
 		
 		// load wether or not the user has changed the password
@@ -78,13 +80,9 @@ public class MyInformationEditFragment extends BaseDetailFragment {
 		// set the on click listener for the log out button
 		((Button) mRootView.findViewById(R.id.myinfo_btn_save)).setOnClickListener(this);
 		((ImageView) mRootView.findViewById(R.id.myinfo_btn_img)).setOnClickListener(this);
-		EditText edittext = (EditText) mRootView.findViewById(R.id.myinfo_edit_password);
-		if(!allowPasswordEditing){
-			edittext.setFocusable(false); edittext.setFocusableInTouchMode(false);
-			edittext.setOnClickListener(this);
-		}
 
 		// If we already have a user, just show the user information
+		enablePasswordEditing(allowPasswordEditing);
 		showUserInformation();
 
 		return mRootView;
@@ -117,6 +115,16 @@ public class MyInformationEditFragment extends BaseDetailFragment {
 			((EditText) mRootView.findViewById(R.id.myinfo_edit_phone)).setText(newUser.getPhoneNumber());
 			((EditText) mRootView.findViewById(R.id.myinfo_edit_source)).setText(newUser.getSource());
 			((EditText) mRootView.findViewById(R.id.myinfo_edit_password)).setText(newUser.getPassword());
+			
+			// set the profile watchers
+			((EditText) mRootView.findViewById(R.id.myinfo_edit_name))
+				.addTextChangedListener(new UserProfileWatcher(R.id.myinfo_edit_name));
+			((EditText) mRootView.findViewById(R.id.myinfo_edit_phone))
+				.addTextChangedListener(new UserProfileWatcher(R.id.myinfo_edit_phone));
+			((EditText) mRootView.findViewById(R.id.myinfo_edit_source))
+				.addTextChangedListener(new UserProfileWatcher(R.id.myinfo_edit_source));
+			((EditText) mRootView.findViewById(R.id.myinfo_edit_password))
+				.addTextChangedListener(new UserProfileWatcher(R.id.myinfo_edit_password));
 		}
 	}
 
@@ -130,43 +138,11 @@ public class MyInformationEditFragment extends BaseDetailFragment {
 			.show(getFragmentManager(), Gegevens.FRAG_PASSWORD);
 	}
 	
-	private void enablePasswordEditing(){
-		
-	}
-
-	@Override public void onClick(View v) {
-		int id = v.getId();
-		switch(id){
-			case R.id.myinfo_btn_save:
-				
-			break;
-			case R.id.myinfo_edit_password:
-				verifyPassword();
-			break;
-			case R.id.myinfo_btn_img:
-				registerForContextMenu(v); 
-			    v.showContextMenu();
-			    unregisterForContextMenu(v);
-			break;
-		}
-	}
-	
-	@Override public void onBasicPositiveButtonClicked(String tag, Object o) {
-		if(Gegevens.FRAG_PASSWORD.equals(tag)){
-			
-		}else if (Gegevens.FRAG_CONFIRM.equals(tag)){
-			mListener.performBackPress();	
-		}
-	}
-	
-	@Override public void onBasicNegativeButtonClicked(String tag, Object o) { }
-	
-	@Override public boolean onNavigateUp(){ return allowBackPressed(); }
-	
-	@Override public boolean allowBackPressed(){
-		
+	private boolean verifySaveUser() {
 		// Check if anything has changed
 		boolean allow = (oldUser != null && oldUser.equals(newUser));
+		Loggen.v(this, getTag() + " - newUser is " + newUser.getUserName() + " | " + allow);
+		
 		
 		// If the user has changed anything, ask for confirmation
 		if(!allow){
@@ -179,5 +155,79 @@ public class MyInformationEditFragment extends BaseDetailFragment {
 		}
 		
 		return allow;
+	}
+	
+	private void saveUser(){
+		mListener.performBackPress();
+	}
+	
+	private void enablePasswordEditing(boolean enableEditing){
+		allowPasswordEditing = enableEditing;
+
+		if(mRootView != null){
+			EditText edittext = (EditText) mRootView.findViewById(R.id.myinfo_edit_password);
+			edittext.setFocusable(allowPasswordEditing); 
+			edittext.setFocusableInTouchMode(allowPasswordEditing);
+			edittext.setOnClickListener((allowPasswordEditing) ? null : this);
+			if(allowPasswordEditing) { edittext.requestFocus(); }
+		}
+	}
+
+	@Override public void onClick(View v) {
+		int id = v.getId();
+		switch(id){
+			case R.id.myinfo_btn_save:
+				saveUser();
+			break;
+			case R.id.myinfo_edit_password:
+				verifyPassword();
+			break;
+			case R.id.myinfo_btn_img:
+				registerForContextMenu(v); 
+			    v.showContextMenu();
+			    unregisterForContextMenu(v);
+			break;
+		}
+	}
+	
+	@Override public boolean onNavigateUp(){ return verifySaveUser(); }
+	
+	@Override public boolean allowBackPressed(){ return verifySaveUser(); }
+
+	@Override public void onBasicPositiveButtonClicked(String tag, Object o) {
+		if(Gegevens.FRAG_PASSWORD.equals(tag) && o instanceof String){
+			enablePasswordEditing(((String)o).equals(oldUser.getPassword()));
+		}else if (Gegevens.FRAG_CONFIRM.equals(tag)){
+			saveUser();
+		}
+	}
+	
+	@Override public void onBasicNegativeButtonClicked(String tag, Object o) { }
+	
+
+	private class UserProfileWatcher implements TextWatcher{
+
+	    private int viewId;
+	    private UserProfileWatcher(int id) { this.viewId = id; }
+	    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+	    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+	    public void afterTextChanged(Editable editable) {
+			Loggen.v(this, getTag() + " - Called profile watcher.");
+	        switch(viewId){
+            case R.id.myinfo_edit_name:
+                newUser.setUserName(editable.toString());
+                break;
+            case R.id.myinfo_edit_phone:
+                newUser.setPhoneNumber(editable.toString());
+                break;
+            case R.id.myinfo_edit_source:
+                newUser.setSource(editable.toString());
+                break;
+            case R.id.myinfo_edit_password:
+                newUser.setPassword(editable.toString());
+                break;
+        }
+	    }
 	}
 }
