@@ -13,16 +13,13 @@ import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -30,10 +27,9 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class MyInformationFragment extends Fragment implements ProfileListener, OnClickListener {
+public class MyInformationFragment extends BaseDetailFragment implements ProfileListener {
 	
 	private User mUser;
-	OnActionSelectedListener mListener;
 	private View mRootView;
 	
 	public MyInformationFragment(){
@@ -91,8 +87,7 @@ public class MyInformationFragment extends Fragment implements ProfileListener, 
 		return mRootView;
 	}
 	
-	@Override
-	public void onViewStateRestored(Bundle savedInstanceState) {
+	@Override public void onViewStateRestored(Bundle savedInstanceState) {
 		super.onViewStateRestored(savedInstanceState);
 		Loggen.v(this, getTag() + " - Restoring MyInformation instance state.");
 
@@ -100,7 +95,7 @@ public class MyInformationFragment extends Fragment implements ProfileListener, 
 		if(mUser == null && getActivity() != null){
 			// Load the user from the DAO
 			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
-			profileDAO.readUserInformation(Source.WEB, Settings.getInstance(getActivity()).getUser().getEmail());
+			profileDAO.readUserInformation(Source.DUMMY, Settings.getInstance(getActivity()).getUser().getEmail());
 			Loggen.v(this, "Restoring saved Instancestate: Getting user from site");
 		}
 		
@@ -116,21 +111,6 @@ public class MyInformationFragment extends Fragment implements ProfileListener, 
 		outState.putParcelable(Gegevens.EXTRA_USER, mUser);
 	}
 	
-	@Override public void onAttach(Activity activity) {
-		super.onAttach(activity);
-
-		// Activities containing this fragment must implement its callbacks.
-		if (!(activity instanceof OnActionSelectedListener)) {
-			throw new IllegalStateException( "Activity must implement fragment's callbacks.");
-		}
-		mListener = (OnActionSelectedListener) activity;
-	}
-	
-	@Override public void onDetach() {
-		super.onDetach();
-		mListener = null;
-	}
-
 	private void showUserInformation(boolean showinfo) {
 		if(mRootView != null){
 			// show or hide the information
@@ -141,30 +121,52 @@ public class MyInformationFragment extends Fragment implements ProfileListener, 
 			
 			// load the user information
 			if(mUser != null && showinfo){
-					// Set the image
-					File imgFile = new File(mUser.getPhotoLocation());
-					ImageView avatar = (ImageView) mRootView.findViewById(R.id.myinfo_img);
-					if(imgFile.exists()){
-						
-						avatar.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
-					    		imgFile.getAbsolutePath(),
-					    		avatar.getLayoutParams().width, 
-					    		avatar.getLayoutParams().height));
-					}
+				// Set the image
+				File imgFile = new File(mUser.getPhotoLocation());
+				ImageView avatar = (ImageView) mRootView.findViewById(R.id.myinfo_img);
+				if(imgFile.exists()){
 					
-					// Set the user information
-					((TextView) mRootView.findViewById(R.id.myinfo_name)).setText(mUser.getUserName());
-					((TextView) mRootView.findViewById(R.id.myinfo_email)).setText(mUser.getEmail());
-					((TextView) mRootView.findViewById(R.id.myinfo_joindate)).setText(mUser.getTimeEnter());
-					((TextView) mRootView.findViewById(R.id.myinfo_activitylevel)).setText(mUser.getActivityScore());
-					((TextView) mRootView.findViewById(R.id.myinfo_phone)).setText(mUser.getPhoneNumber());
-					((TextView) mRootView.findViewById(R.id.myinfo_source)).setText(mUser.getSource());
+					avatar.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
+				    		imgFile.getAbsolutePath(),
+				    		avatar.getLayoutParams().width, 
+				    		avatar.getLayoutParams().height));
+				}
+				
+				// Set the user information
+				((TextView) mRootView.findViewById(R.id.myinfo_name)).setText(mUser.getUserName());
+				((TextView) mRootView.findViewById(R.id.myinfo_email)).setText(mUser.getEmail());
+				((TextView) mRootView.findViewById(R.id.myinfo_joindate)).setText(mUser.getTimeEnter());
+				((TextView) mRootView.findViewById(R.id.myinfo_activitylevel)).setText(mUser.getActivityScore());
+				((TextView) mRootView.findViewById(R.id.myinfo_phone)).setText(mUser.getPhoneNumber());
+				((TextView) mRootView.findViewById(R.id.myinfo_source)).setText(mUser.getSource());
 			}
 		}
 	}
+	
+	private void logoutUser(){
+		mUser.setLogin(false);
+		if(getActivity() != null){
+			
+			// Save the current user to our shared preferences
+			BaseActivity parentActivity = (BaseActivity) getActivity();
+			parentActivity.mSettings.setUser(mUser);
+			parentActivity.mSettings.saveSettingsToSharedPreferences(parentActivity);
+			
+			// return to the login activity
+			parentActivity.openActivity(new Intent(parentActivity, LoginActivity.class));
+		}
+	}
 
-	public interface OnActionSelectedListener{
-		public void onActionSelected(String tag, User user);
+	@Override public void onClick(View v) {
+		int id = v.getId();
+		switch(id){
+			case R.id.myinfo_btn_logout:
+				logoutUser();
+			break;
+			default:
+				super.onClick(v);
+			break;
+		}
 	}
 
 	@Override public void onReadUserInformation(User user) { 
@@ -191,23 +193,4 @@ public class MyInformationFragment extends Fragment implements ProfileListener, 
 	@Override public void onChangePhonenumber(boolean success, String errorMessage) {	}
 	@Override public void onChangeSource(boolean success, String errorMessage) {	}
 	@Override public void onLocalFallback() { }
-
-	@Override
-	public void onClick(View v) {
-		int id = v.getId();
-		if(id == R.id.myinfo_btn_logout){
-			mUser.setLogin(false);
-			if(getActivity() != null){
-				
-				// Save the current user to our shared preferences
-				BaseActivity parentActivity = (BaseActivity) getActivity();
-				parentActivity.mSettings.setUser(mUser);
-				parentActivity.mSettings.saveSettingsToSharedPreferences(parentActivity);
-				
-				// return to the login activity
-				parentActivity.openActivity(new Intent(parentActivity, LoginActivity.class));
-			}
-		}
-	}
-	
 }

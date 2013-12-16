@@ -159,6 +159,11 @@ public class DialogFragmentBasic extends DialogFragment {
     	mGenericObject = o;
     	return this;
     }
+    
+    public DialogFragmentBasic setCancelableAndReturnSelf(boolean cancelable){
+    	setCancelable(cancelable);
+    	return this;
+    }
 
     /** listener interface for DialogFragmentBasic */
     public interface BasicDialogListener {

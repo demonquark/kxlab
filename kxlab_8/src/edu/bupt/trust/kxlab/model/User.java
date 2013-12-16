@@ -175,4 +175,30 @@ public class User implements Parcelable {
 	public void setLogin(boolean isLogin) {
 		this.isLogin = isLogin;
 	}
+	
+	@Override 
+	public boolean equals(Object aThat) {
+		if ( this == aThat ) return true;
+
+	    //use instanceof instead of getClass here for two reasons
+	    if ( !(aThat instanceof User) ) return false;
+
+	    //cast to native object is now safe
+	    User that = (User)aThat;
+
+	    //now a proper field-by-field evaluation can be made
+	    return
+	    	((this.email != null) ? this.email.equals(that.email) : that.email == null) &&
+	    	((this.userName != null) ? this.userName.equals(that.userName) : that.userName == null) &&
+	    	((this.password != null) ? this.password.equals(that.password) : that.password == null) &&
+	    	((this.photoLocation != null) ? this.photoLocation.equals(that.photoLocation) : that.photoLocation == null) &&
+	    	((this.gender != null) ? this.gender.equals(that.gender) : that.gender == null) &&
+	    	((this.timeEnter != null) ? this.timeEnter.equals(that.timeEnter) : that.timeEnter == null) &&
+	    	((this.activityScore != null) ? this.activityScore.equals(that.activityScore) : that.activityScore == null) &&
+	    	((this.Source != null) ? this.Source.equals(that.Source) : that.Source == null) &&
+	    	((this.phoneNumber != null) ? this.phoneNumber.equals(that.phoneNumber) : that.phoneNumber == null) &&
+	    	(this.isLogin == that.isLogin);
+	}
+
+
 }

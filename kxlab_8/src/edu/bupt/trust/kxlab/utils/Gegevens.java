@@ -34,6 +34,7 @@ public class Gegevens {
 	public static final String EXTRA_COMMENTS		= "comments";
 	public static final String EXTRA_SERVICETYPE	= "servicetype";
 	public static final String EXTRA_USER			= "user";
+	public static final String EXTRA_USER2			= "user2";
 	
 	/** Folder and file names */
 	public static final String FILE_EXT_MP3 		= ".mp3";
@@ -55,6 +56,7 @@ public class Gegevens {
 	public static final String FRAG_SCORE 			= "dialogscore";
 	public static final String FRAG_DELETE			= "dialogdelete";
 	public static final String FRAG_CONFIRM			= "dialogconfirm";
+	public static final String FRAG_PASSWORD		= "dialogpassword";
 	public static final String FRAG_FOOTERLINK		= "dialogfooterexit";
 	public static final String FRAG_BACKPRESSED		= "dialogbackpressed";
 	public static final String FRAG_FINISH 			= "finish";

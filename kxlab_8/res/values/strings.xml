@@ -44,7 +44,7 @@
 	<string name="on">ON</string>
 	<string name="off">OFF</string>
 	<string name="and">and</string>
-	<string name="submit">SUBMIT</string>
+	<string name="submit">Submit</string>
 	<string name="back">Back</string>
 	<string name="reset">Reset</string>
 	<string name="error">Error</string>
@@ -61,6 +61,8 @@
 	<string name="action_create">create</string>
 	<string name="action_delete">delete</string>
 	<string name="action_edit">edit</string>
+	<string name="context_img_from_gallery">Choose photo from Gallery</string>
+	<string name="context_img_from_camera">Take a photo</string>
 	<string name="footer_services">Services</string>
 	<string name="footer_myservice">My Services</string>
 	<string name="footer_forum">Discussion Forum</string>
@@ -104,7 +106,9 @@
 	<string name="details_score_text03">+1:可信</string>
 	
 	<!-- myinfo activity -->
+	<string name="myinfo_name_title">Name</string>
 	<string name="myinfo_name_text">Unknown name</string>
+	<string name="myinfo_name_hint">Your name</string>
 	<string name="myinfo_email_text">Unknown email</string>
 	<string name="myinfo_joindate_title">Join date</string>
 	<string name="myinfo_joindate_text">Unknown date</string>
@@ -113,12 +117,24 @@
 	<string name="myinfo_activityrecord_title">Activity record</string>
 	<string name="myinfo_phone_title">Phone number</string>
 	<string name="myinfo_phone_text">Unknown number</string>
+	<string name="myinfo_phone_hint">Your phone number</string>
 	<string name="myinfo_source_title">Source</string>
 	<string name="myinfo_source_text">Unknown source</string>
+	<string name="myinfo_source_hint">School source</string>
+	<string name="myinfo_password_title">Password</string>
+	<string name="myinfo_password_text">No password</string>
+	<string name="myinfo_password_hint">Your password</string>
 	<string name="myinfo_no_user_title">No / old user info</string>
 	<string name="myinfo_no_user_text">We could not download the latest user information.</string>
 	<string name="myinfo_btn_logout">log out</string>
-		
+	<string name="myinfo_btn_save">save profile</string>
+	<string name="myinfo_edit_title">Edit your profile</string>
+	<string name="myinfo_eror_user_edit">An error occurred while trying to load the user information</string>
+	<string name="myinfo_edit_confirm_title">Save your changes</string>
+	<string name="myinfo_edit_confirm_text">Are you sure you want to save these changes your profile?</string>
+	<string name="myinfo_edit_confirm_password_title">Confirm your password</string>
+	<string name="myinfo_edit_confirm_password_text">Please verify your identity by entering your current password.</string>
+
 	<!-- xlistView refreshable -->	
 	<string name="xlistview_header_hint_normal">pull refresh</string>
     <string name="xlistview_header_hint_ready">relase to refresh</string>
