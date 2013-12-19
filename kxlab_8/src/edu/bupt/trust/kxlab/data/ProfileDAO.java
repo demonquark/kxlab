@@ -1,6 +1,7 @@
 package edu.bupt.trust.kxlab.data;
 
 import java.lang.ref.WeakReference;
+import java.util.Calendar;
 import java.util.List;
 
 import org.json.JSONException;
@@ -13,6 +14,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.model.UserInformation;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -142,8 +144,32 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 			}
 	
 		}.execute();
+	}
 
+	/** Reads the activity history of the given user.
+	 *  Note: only the email variable of the user is used to get the history. */
+	public void readActivityHistory(User user){
 		
+		final ActivityHistory history = new ActivityHistory();
+		for (int i = 0; i < 30; i++){
+			Calendar x = Calendar.getInstance();
+			x.set(2000 + i, i % 12, (i * 2 ) % 28);
+			ActivityRecord r = new ActivityRecord(x.getTimeInMillis(), "a string for " + i, (i % 3) - (i % 4));
+			history.addRecord(r);
+		}
+		
+		// determine the path to send to the server
+		new AsyncTask<Void, Integer, Void>  (){
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				if(profileListener.get() != null){ profileListener.get().onReadActivityHistory(history); }
+			}
+	
+		}.execute();
 	}
 
 	@Override public void onLogin(RawResponse response) {

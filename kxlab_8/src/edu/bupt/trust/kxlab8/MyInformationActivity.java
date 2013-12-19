@@ -42,14 +42,18 @@ public class MyInformationActivity extends BaseActivity implements OnActionSelec
 		}
 	}
 
-	/**
-	 * This implementation only processes on use case of the action selected, namely <br />
-	 * - The user selected the edit button in the action bar.
-	 * @param tag - The tag of the fragment. Note: should also be the name in the back stack
+	/** Callback from the fragment
+	 * This implementation processes two use cases: <br />
+	 * From: FRAG_INFOVIEW
+	 * - Goal = FRAG_INFOEDIT: The user selected the edit button in the action bar.
+	 * - Goal = FRAG_INFOLIST: The user selected the activity records button
+	 * @param from - The tag of the sending fragment. Note: should also be the name in the back stack
+	 * @param to - The tag of the target fragment. Note: should also be the name in the back stack
 	 * @param o - The method expects this to be an instance of User. 
 	 */
-	@Override public void onActionSelected(String tag, Object user) {
-		if(Gegevens.FRAG_INFOVIEW.equals(tag)){
+	@Override public void onActionSelected(String from, String to, Object user) {
+		if((Gegevens.FRAG_INFOEDIT.equals(to) || Gegevens.FRAG_INFOLIST.equals(to))
+				&& Gegevens.FRAG_INFOVIEW.equals(from)){
 			// create a bundle and add the provided user to it
 			Bundle arguments = new Bundle();
 			if(user instanceof User) { 
@@ -58,12 +62,21 @@ public class MyInformationActivity extends BaseActivity implements OnActionSelec
 				this.postToast(getString(R.string.myinfo_eror_user_edit));
 			}
 			
-			// launch the edit fragment
-			MyInformationEditFragment editFragment = new MyInformationEditFragment();
-			editFragment.setArguments(arguments);
 			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.replace(R.id.details, editFragment,Gegevens.FRAG_INFOEDIT);
-			ft.addToBackStack(Gegevens.FRAG_INFOEDIT);
+			if(Gegevens.FRAG_INFOEDIT.equals(to)){
+				// launch the edit fragment
+				MyInformationEditFragment editFragment = new MyInformationEditFragment();
+				editFragment.setArguments(arguments);
+				ft.replace(R.id.details, editFragment, Gegevens.FRAG_INFOEDIT);
+				ft.addToBackStack(Gegevens.FRAG_INFOEDIT);
+			} else if (Gegevens.FRAG_INFOLIST.equals(to)) {
+				// launch the edit fragment
+				MyInformationRecordsFragment editFragment = new MyInformationRecordsFragment();
+				editFragment.setArguments(arguments);
+				ft.replace(R.id.details, editFragment, Gegevens.FRAG_INFOLIST);
+				ft.addToBackStack(Gegevens.FRAG_INFOLIST);
+			}
+			
 			ft.commit();
 		}
 	}

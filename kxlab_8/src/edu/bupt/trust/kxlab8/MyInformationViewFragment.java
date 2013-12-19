@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -52,7 +53,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
     	int itemId = item.getItemId();
         switch (itemId) {
         	case R.id.action_edit:
-        		mListener.onActionSelected(getTag(), mUser);
+        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOEDIT, mUser); }
             break;
             default:
             	return super.onOptionsItemSelected(item);
@@ -79,11 +80,12 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 		Loggen.v(this, getTag() + " - Creating the MyInformation view. ");
 
 		// Inflate the root view and save references to useful views as class variables
-		mRootView = inflater.inflate(R.layout.frag_myinformation, container, false);
+		mRootView = inflater.inflate(R.layout.frag_myinformation_view, container, false);
 		
 		// set the on click listener for the log out button
 		((Button) mRootView.findViewById(R.id.myinfo_btn_logout)).setOnClickListener(this);
-		
+		((ImageButton) mRootView.findViewById(R.id.myinfo_btn_activityrecord)).setOnClickListener(this);
+
 		return mRootView;
 	}
 	
@@ -168,7 +170,11 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 		switch(id){
 			case R.id.myinfo_btn_logout:
 				logoutUser();
-			break;
+				break;
+			case R.id.myinfo_btn_activityrecord:
+				Loggen.v(this,"Clicked activity record.");
+        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, mUser); }
+				break;
 			default:
 				super.onClick(v);
 			break;

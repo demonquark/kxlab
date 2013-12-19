@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list_item_activityrecords"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/activatedBackgroundIndicator"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingLeft="@dimen/list_item_horizontal_padding"
+    android:paddingRight="@dimen/list_item_horizontal_padding"
+    android:paddingTop="@dimen/list_record_vertical_padding"
+    android:paddingBottom="@dimen/list_record_vertical_padding" >
+    
+	<TextView android:id="@android:id/title" android:textAppearance="?android:attr/textAppearanceMedium" 
+		android:layout_width="0dp" android:layout_weight="3" android:layout_height="wrap_content"
+     	android:gravity="center" android:layout_marginRight="@dimen/list_item_horizontal_padding" />
+    
+	<TextView android:id="@android:id/text1" android:textAppearance="?android:attr/textAppearanceMedium" 
+		android:layout_width="0dp" android:layout_weight="5" android:layout_height="wrap_content" 
+    	android:gravity="center" android:layout_marginRight="@dimen/list_item_horizontal_padding" />
+	
+	<TextView android:id="@android:id/text2" android:textAppearance="?android:attr/textAppearanceMedium"
+		android:gravity="center" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+	
+</LinearLayout>

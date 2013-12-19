@@ -72,7 +72,7 @@ public class BaseDetailFragment extends Fragment  implements OnClickListener, Ba
 	}
 
 	public interface OnActionSelectedListener{
-		public void onActionSelected(String tag, Object o);
+		public void onActionSelected(String tag, String goal, Object o);
 		public void performBackPress();
 	}
 

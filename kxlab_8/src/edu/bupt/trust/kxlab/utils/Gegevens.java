@@ -36,6 +36,7 @@ public class Gegevens {
 	public static final String EXTRA_USER			= "user";
 	public static final String EXTRA_USER2			= "user2";
 	public static final String EXTRA_CAMERAIMG		= "trustkxlab8cameraphoto";
+	public static final String EXTRA_RECORDS		= "records";
 	
 	/** Folder and file names */
 	public static final String FILE_EXT_MP3 		= ".mp3";
@@ -67,6 +68,7 @@ public class Gegevens {
 	public static final String FRAG_APPLY	 		= "apply";
 	public static final String FRAG_INFOVIEW 		= "infoview";
 	public static final String FRAG_INFOEDIT 		= "infoedit";
+	public static final String FRAG_INFOLIST 		= "infolist";
 	
 	/** Request and result codes */
 	public static final int CODE_GALLERY			= 59701;
