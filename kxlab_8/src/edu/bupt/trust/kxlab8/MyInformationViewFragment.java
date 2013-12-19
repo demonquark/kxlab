@@ -27,12 +27,12 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class MyInformationFragment extends BaseDetailFragment implements ProfileListener {
+public class MyInformationViewFragment extends BaseDetailFragment implements ProfileListener {
 	
 	private User mUser;
 	private View mRootView;
 	
-	public MyInformationFragment(){
+	public MyInformationViewFragment(){
 		// Empty constructor required for MyInformationFragment
 	}
 	
@@ -111,6 +111,17 @@ public class MyInformationFragment extends BaseDetailFragment implements Profile
 		outState.putParcelable(Gegevens.EXTRA_USER, mUser);
 	}
 	
+	@Override public void onPause() {
+		if(getActivity() != null){
+			// Save the current user to our shared preferences
+			BaseActivity parentActivity = (BaseActivity) getActivity();
+			parentActivity.mSettings.setUser(mUser);
+			parentActivity.mSettings.saveSettingsToSharedPreferences(parentActivity);
+		}
+		super.onPause(); 
+	}
+
+	
 	private void showUserInformation(boolean showinfo) {
 		if(mRootView != null){
 			// show or hide the information
@@ -146,13 +157,8 @@ public class MyInformationFragment extends BaseDetailFragment implements Profile
 	private void logoutUser(){
 		mUser.setLogin(false);
 		if(getActivity() != null){
-			
-			// Save the current user to our shared preferences
-			BaseActivity parentActivity = (BaseActivity) getActivity();
-			parentActivity.mSettings.setUser(mUser);
-			parentActivity.mSettings.saveSettingsToSharedPreferences(parentActivity);
-			
 			// return to the login activity
+			BaseActivity parentActivity = (BaseActivity) getActivity();
 			parentActivity.openActivity(new Intent(parentActivity, LoginActivity.class));
 		}
 	}
@@ -193,4 +199,10 @@ public class MyInformationFragment extends BaseDetailFragment implements Profile
 	@Override public void onChangePhonenumber(boolean success, String errorMessage) {	}
 	@Override public void onChangeSource(boolean success, String errorMessage) {	}
 	@Override public void onLocalFallback() { }
+
+	@Override
+	public void onChangeUser(User newUser, String errorMessage) {
+		// TODO Auto-generated method stub
+		
+	}
 }

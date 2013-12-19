@@ -98,6 +98,20 @@
 				    android:text="@string/niets" />
 	    	</TableRow>
 	        
+	        <!-- the password confirmation -->
+	        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
+	            android:layout_marginTop="@dimen/row_vertical_padding" android:visibility="gone"
+	            android:id="@+id/myinfo_row_confirm_password" >
+				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/myinfo_password_confirm_title" />
+	 			<EditText android:id="@+id/myinfo_edit_confirm_password"
+	 			    android:inputType="textPassword"
+	 			    android:hint="@string/myinfo_password_hint"
+	 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
+				    android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/niets" />
+	    	</TableRow>
+	        
 	        <!-- the activity record -->
 			<RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
 			    android:layout_marginTop="@dimen/row_vertical_padding">

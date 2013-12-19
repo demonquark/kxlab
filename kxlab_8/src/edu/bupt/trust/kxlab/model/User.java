@@ -55,16 +55,7 @@ public class User implements Parcelable {
 	}
 
 	public User(User newUser){
-		email = newUser.getEmail();
-		userName = newUser.getUserName();
-		password = newUser.getPassword();
-		photoLocation = newUser.getPhotoLocation();
-		gender = newUser.getGender();
-		timeEnter = newUser.getTimeEnter();
-		activityScore = newUser.getActivityScore();
-		Source = newUser.getSource();
-		phoneNumber = newUser.getPhoneNumber();
-		isLogin=newUser.isLogin;
+		setFromUser(newUser);
 	}
 
     private User(Parcel in) {
@@ -187,6 +178,19 @@ public class User implements Parcelable {
 	
 	public void setLogin(boolean isLogin) {
 		this.isLogin = isLogin;
+	}
+	
+	public void setFromUser(User otherUser){
+		email = otherUser.getEmail();
+		userName = otherUser.getUserName();
+		password = otherUser.getPassword();
+		photoLocation = otherUser.getPhotoLocation();
+		gender = otherUser.getGender();
+		timeEnter = otherUser.getTimeEnter();
+		activityScore = otherUser.getActivityScore();
+		Source = otherUser.getSource();
+		phoneNumber = otherUser.getPhoneNumber();
+		isLogin= otherUser.isLogin;
 	}
 	
 	@Override 

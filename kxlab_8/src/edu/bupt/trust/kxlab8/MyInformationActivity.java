@@ -8,11 +8,12 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
+import android.content.Intent;
 import android.os.Bundle;
 
 public class MyInformationActivity extends BaseActivity implements OnActionSelectedListener, OnBackStackChangedListener{
 
-	MyInformationFragment viewFragment;
+	MyInformationViewFragment viewFragment;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +34,7 @@ public class MyInformationActivity extends BaseActivity implements OnActionSelec
 			if(mSettings.getUser() != null){ arguments.putParcelable(Gegevens.EXTRA_USER, mSettings.getUser()); }
 			
 			// launch the view fragment
-			viewFragment = new MyInformationFragment();
+			viewFragment = new MyInformationViewFragment();
 			viewFragment.setArguments(arguments);
 			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 			ft.add(R.id.details, viewFragment,Gegevens.FRAG_INFOVIEW);
@@ -141,5 +142,9 @@ public class MyInformationActivity extends BaseActivity implements OnActionSelec
 		} else {
 			super.onBasicNegativeButtonClicked(tag, o);
 		}
+	}
+	
+	@Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode,resultCode, data);
 	}
 }

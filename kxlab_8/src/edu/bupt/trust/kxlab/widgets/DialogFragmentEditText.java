@@ -3,23 +3,22 @@ package edu.bupt.trust.kxlab.widgets;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab8.R;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.RadioButton;
+import android.widget.EditText;
 import android.widget.RadioGroup;
-import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
 
-public class DialogFragmentComment extends DialogFragmentBasic implements OnCheckedChangeListener {
+public class DialogFragmentEditText extends DialogFragmentBasic implements TextWatcher {
     
-	RadioGroup scRadioGroup;
-	RadioButton scBtn01;
-	RadioButton scBtn02;
-	RadioButton scBtn03;
+	RadioGroup mEditText;
+	int mlayoutResource;
 	
-	public DialogFragmentComment() {
+	public DialogFragmentEditText() {
         // Empty constructor required for DialogFragment
     }
 	
@@ -29,8 +28,8 @@ public class DialogFragmentComment extends DialogFragmentBasic implements OnChec
      * 	Hence if the associated activity wants to do something after the user has clicked a dialog button
      *  it should just implement the BasicDialogListener. </p>
      */
-    public static DialogFragmentComment newInstance(boolean hasNegativeButton) {
-        return newInstance(hasNegativeButton, null);
+    public static DialogFragmentEditText newInstance(boolean hasNegativeButton) {
+        return newInstance(hasNegativeButton, null, 0);
     }
     
 
@@ -40,11 +39,13 @@ public class DialogFragmentComment extends DialogFragmentBasic implements OnChec
      * 	The listenerFragment must implement the BasicDialogListener. If the fragment has not implemented the
      *  BasicDialogListener, the class assigns the associated Activity as the listener </p>
      */
-    public static DialogFragmentComment newInstance(boolean hasNegativeButton, Fragment listenerFragment) {
-    	DialogFragmentComment f = new DialogFragmentComment();
+    public static DialogFragmentEditText newInstance(boolean hasNegativeButton, Fragment listenerFragment, 
+    		int layoutResource) {
+    	DialogFragmentEditText f = new DialogFragmentEditText();
     	f.mListener = null;
     	f.mDialogStrings = new String [4];
-    	f.mListenerFragmentTag = (listenerFragment != null) ? listenerFragment.getTag() : null; 
+    	f.mListenerFragmentTag = (listenerFragment != null) ? listenerFragment.getTag() : null;
+    	f.mlayoutResource = layoutResource;
     	
         // Supply style input as an argument.
         Bundle args = new Bundle();
@@ -62,25 +63,19 @@ public class DialogFragmentComment extends DialogFragmentBasic implements OnChec
     	
     	// inflate the custom view into dialog
     	LayoutInflater inflater = getActivity().getLayoutInflater();
-    	View view = inflater.inflate(R.layout.dialog_score, null);
+    	View view = inflater.inflate(mlayoutResource == 0 ? R.layout.dialog_comment : mlayoutResource, null);
+    	((EditText) view.findViewById(R.id.dialog_edit_text)).addTextChangedListener(this);
     	builder.setView(view);
     	
     	// return the dialog
         return builder.create();
     }
-   
 
-	@Override
-	public void onCheckedChanged(RadioGroup arg0, int checkedId) {
-		// TODO Auto-generated method stub
-		if(checkedId == R.id.score01){
-			mGenericObject = Integer.valueOf(-1);
-		}
-		else if(checkedId == R.id.score02){
-			mGenericObject = Integer.valueOf(0);
-		}
-		else{
-			mGenericObject = Integer.valueOf(1);
-		}
+	@Override public void afterTextChanged(Editable s) { 
+		mGenericObject = s.toString();
 	}
+
+	@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+	@Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
 }

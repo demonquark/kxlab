@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.loopj.android.http.RequestParams;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.model.ActivityHistory;
 import edu.bupt.trust.kxlab.model.User;
@@ -121,6 +122,30 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 
 	}
 
+	/** Update from the old user to the new user. 
+	 *  Because each change to the user is an individual server request, 
+	 *  we will only send requests for the changes provided.
+	 *  If the old user is null, we will update all the values of the given user. */
+	public void updateUser(User oldUser, User newUser){
+		
+		final User updatedUser = new User(newUser);
+		
+		// determine the path to send to the server
+		new AsyncTask<Void, Integer, Void>  (){
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				if(profileListener.get() != null){ profileListener.get().onChangeUser(updatedUser, null); }
+			}
+	
+		}.execute();
+
+		
+	}
+
 	@Override public void onLogin(RawResponse response) {
 		Loggen.v(this, "Got a response onLogin: " + response.message);
 		
@@ -211,6 +236,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		public void onReadUserList(List <User> users);
 		public void onReadUserInformation(User user);
 		public void onReadActivityHistory(ActivityHistory history);
+		public void onChangeUser(User newUser, String errorMessage);
 		public void onChangePhoto(boolean success, String errorMessage);
 		public void onChangePassword(boolean success, String errorMessage);
 		public void onChangePhonenumber(boolean success, String errorMessage);

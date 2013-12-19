@@ -3,7 +3,9 @@
 	android:id="@+id/dialog_edit_text"
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content"
-	android:singleLine="true"
-	android:inputType="textPassword"
+	android:singleLine="false"
+	android:lines="5"
+	android:gravity="top|left"
+	android:inputType="textMultiLine"
 	android:scrollHorizontally="false" 
 />

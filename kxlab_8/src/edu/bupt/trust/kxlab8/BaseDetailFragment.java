@@ -1,5 +1,7 @@
 package edu.bupt.trust.kxlab8;
 
+import edu.bupt.trust.kxlab.utils.Gegevens;
+import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic.BasicDialogListener;
 import android.app.Activity;
 import android.support.v4.app.Fragment;
@@ -28,6 +30,23 @@ public class BaseDetailFragment extends Fragment  implements OnClickListener, Ba
 	@Override public void onDetach() {
 		super.onDetach();
 		mListener = null;
+	}
+	
+	/** Launch a confirmation dialog from the activity context */
+	protected void userMustClickOkay(String title, String message){
+		DialogFragmentBasic.newInstance(false).setTitle(title).setMessage(message)
+			.setPositiveButtonText(getString(R.string.ok))
+			.show(getFragmentManager(), Gegevens.FRAG_DIALOG);
+	}
+
+	/** Launch a confirmation dialog from the activity context */
+	protected void userMustConfirm(String title, String message){
+		DialogFragmentBasic.newInstance(true)
+			.setTitle(getString(R.string.myinfo_edit_confirm_title))
+			.setMessage(getString(R.string.myinfo_edit_confirm_text))
+			.setPositiveButtonText(getString(R.string.yes))
+			.setNegativeButtonText(getString(R.string.no))
+			.show(getFragmentManager(), Gegevens.FRAG_CONFIRM);
 	}
 
 	/**

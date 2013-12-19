@@ -11,9 +11,9 @@ public class Gegevens {
 	/** Preferences */
 	public static final String PREF_LANGUAGE 		= "language";
 	public static final String PREF_ISLOGIN			= "islogin";
-	public static final String PREF_ISREMEMBER	    ="isremember";
-	public static final String PREF_USER	        ="defaultuser";
-	public static final String PREF_USERFACE		="userface";
+	public static final String PREF_ISREMEMBER	    = "isremember";
+	public static final String PREF_USER	        = "defaultuser";
+	public static final String PREF_USERFACE		= "userface";
 	public static final String PREF_DUMMY 			= "dummy";
 
 	/** Intent and Bundle Extras */
@@ -35,6 +35,7 @@ public class Gegevens {
 	public static final String EXTRA_SERVICETYPE	= "servicetype";
 	public static final String EXTRA_USER			= "user";
 	public static final String EXTRA_USER2			= "user2";
+	public static final String EXTRA_CAMERAIMG		= "trustkxlab8cameraphoto";
 	
 	/** Folder and file names */
 	public static final String FILE_EXT_MP3 		= ".mp3";
@@ -43,6 +44,7 @@ public class Gegevens {
 	public static final String FILE_EXT_TXT 		= ".txt";
 	public static final String FILE_EXT_LOG 		= ".log";
 	public static final String FILE_EXT_JET 		= ".jet";
+	public static final String FILE_EXT_JPG 		= ".jpg";
 	public static final String FILE_EXT_DAT 		= ".dat";
 	public static final String FILE_SEPARATOR 		= "/"; 
 	public static final String FILE_CACHE			= "cache";
@@ -65,6 +67,10 @@ public class Gegevens {
 	public static final String FRAG_APPLY	 		= "apply";
 	public static final String FRAG_INFOVIEW 		= "infoview";
 	public static final String FRAG_INFOEDIT 		= "infoedit";
+	
+	/** Request and result codes */
+	public static final int CODE_GALLERY			= 59701;
+	public static final int CODE_CAMERA				= 59702;
 	
 	/** Frequently used URLs. Note: there is no trailing slash. */
 	public static final String URL_ANDROID_MARKET 		= "http://market.android.com";
