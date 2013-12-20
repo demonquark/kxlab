@@ -40,6 +40,8 @@ public class MyInformationActivity extends BaseActivity implements OnActionSelec
 			ft.add(R.id.details, viewFragment,Gegevens.FRAG_INFOVIEW);
 			ft.commit();
 		}
+		
+		onBackStackChanged();
 	}
 
 	/** Callback from the fragment

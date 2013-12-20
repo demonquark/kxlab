@@ -2,7 +2,6 @@ package edu.bupt.trust.kxlab.data;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import android.content.Context;
@@ -18,11 +17,9 @@ import com.google.gson.reflect.TypeToken;
 import com.loopj.android.http.RequestParams;
 
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
-import edu.bupt.trust.kxlab.data.MyServicesDAO.Type;
 import edu.bupt.trust.kxlab.data.ServicesDAOabstract.OnServicesRawDataReceivedListener;
 import edu.bupt.trust.kxlab.model.Comment;
 import edu.bupt.trust.kxlab.model.TrustService;
-import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 public class ServicesDAO implements OnServicesRawDataReceivedListener {

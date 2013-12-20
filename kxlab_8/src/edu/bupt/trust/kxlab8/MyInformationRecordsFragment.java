@@ -1,5 +1,6 @@
 package edu.bupt.trust.kxlab8;
 
+import java.io.File;
 import java.util.List;
 
 import edu.bupt.trust.kxlab.adapters.ActivityRecordsArrayAdapter;
@@ -8,6 +9,7 @@ import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.model.ActivityHistory;
 import edu.bupt.trust.kxlab.model.User;
+import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import android.content.Intent;
@@ -15,7 +17,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -92,7 +94,6 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 		if(mRootView != null){
 			// show or hide the information
 			Loggen.v(this, getTag() + " - Showing: progress container = " + showinfo + " | list = " + showinfo);
-
 			((RelativeLayout) mRootView.findViewById(R.id.progress_container))
 				.setVisibility((showinfo) ? View.GONE : View.VISIBLE);
 			((RelativeLayout) mRootView.findViewById(R.id.list_holder))
@@ -100,17 +101,40 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 			((TextView) mRootView.findViewById(android.R.id.empty))
 				.setVisibility( (mHistory != null && mHistory.getRecords().size() > 0 ) ? View.GONE : View.VISIBLE);
 			
+			
 			// load the user information
+			if(mUser != null && showinfo){
+				// Set the image
+				File imgFile = new File(mUser.getPhotoLocation());
+				ImageView avatar = (ImageView) mRootView.findViewById(R.id.myinfo_owner_img);
+				if(imgFile.exists()){
+					avatar.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
+				    		imgFile.getAbsolutePath(),
+				    		avatar.getLayoutParams().width, 
+				    		avatar.getLayoutParams().height));
+				}
+				
+				// Set the user information
+				((TextView) mRootView.findViewById(R.id.myinfo_owner_name)).setText(mUser.getUserName());
+				((TextView) mRootView.findViewById(R.id.myinfo_owner_time))
+					.setText(getString(R.string.myinfo_joindate_title) + "\n" + mUser.getTimeEnter());
+				String grade = (mHistory != null) ? String.valueOf(mHistory.getFinalGrade()) : mUser.getActivityScore();
+				((TextView) mRootView.findViewById(R.id.myinfo_owner_score))
+					.setText(getString(R.string.myinfo_activityrecord_title) + ": " + grade );
+			}
+			
+			
+			// load the activity history
 			if(mHistory != null && getActivity() != null && showinfo){
 				
 				// get the list
 				ListView activityList = ((ListView) mRootView.findViewById(android.R.id.list));
-
+				
 				// load and set the adapter
 				Loggen.v(this, getTag() + " - Loading the adapter with " + mHistory.getRecords().size() + " items.");
 				activityList.setAdapter(new ActivityRecordsArrayAdapter(getActivity(), 
 						R.layout.list_item_activityrecord, android.R.id.text1, mHistory.getRecords()));
-
+				
 				// set the choice mode and reaction to the choices 
 				activityList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 			}
@@ -142,6 +166,12 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 	}
 
 	@Override public void onReadActivityHistory(ActivityHistory history) {
+		// Inform the user of any failures
+		if(history == null){
+			userMustClickOkay(getString(R.string.myinfo_no_records_title), getString(R.string.myinfo_no_records_text));
+		}
+		
+		// update the list
 		mHistory = history;
 		showList(true);
 	}

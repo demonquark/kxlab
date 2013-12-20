@@ -272,7 +272,7 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 				edittext.setText("");
 				edittext.requestFocus();
 				if(getActivity() != null){
-					getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+					getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 				}
 			} else {
 				((TableRow) mRootView.findViewById(R.id.myinfo_row_confirm_password)).setVisibility(View.GONE);

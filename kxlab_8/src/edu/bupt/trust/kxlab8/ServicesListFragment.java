@@ -360,7 +360,7 @@ public class ServicesListFragment extends ListFragment
 	private void geneData() {
 		if(getActivity() != null){
 			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-			servicesDAO.readServices(servicesType,DaoFactory.Page.LATEST, DaoFactory.Source.WEB, new String [] {});
+			servicesDAO.readServices(servicesType, DaoFactory.Page.LATEST, DaoFactory.Source.DUMMY, new String [] {});
 		}
 	}
 

@@ -146,7 +146,9 @@
 	<string name="myinfo_update_fail_text">We could not update all of the user information. Please try updating your profile again.</string>
 	<string name="myinfo_update_failures_text">Could not update</string>
 	<string name="myinfo_records_empty">No records</string>
-					
+	<string name="myinfo_no_records_title">No records</string>
+	<string name="myinfo_no_records_text">We could not download the activity history.</string>
+						
 	<!-- xlistView refreshable -->	
 	<string name="xlistview_header_hint_normal">pull refresh</string>
     <string name="xlistview_header_hint_ready">relase to refresh</string>

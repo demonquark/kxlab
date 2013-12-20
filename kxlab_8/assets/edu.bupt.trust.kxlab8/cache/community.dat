@@ -1,10 +1,1 @@
-Tabs in the action bar make it easy for users to explore and switch between different views in your app. 
-The tabs provided by the ActionBar are ideal because they adapt to different screen sizes. 
-For example, when the screen is wide enough the tabs appear in the action bar alongside the action buttons
-while when on a narrow screen they appear in a separate bar. 
-In some cases, the Android system will instead show your tab items as a drop-down list to ensure the best fit in the action bar.
-To get started, your layout must include a ViewGroup in which you place each Fragment associated with a tab.
-Be sure the ViewGroup has a resource ID so you can reference it from your code and swap the tabs within it. 
-Alternatively, if the tab content will fill the activity layout.
-then your activity doesn't need a layout at all (you don't even need to call setContentView()). 
-Instead, you can place each fragment in the default root view, which you can refer to with the android.R.id.content ID.
+﻿[{"serviceid":114,"servicetype":1,"servicetitle":"eerste titel","servicedetail":"Eerste beschrijving","servicecreatetime":1385365825000,"servicelastedittime":1385365825000,"credibilityScore":"0","servicephoto":null,"useremail":"3","servicestatus":1},{"serviceid":115,"servicetype":1,"servicetitle":"Tweede titel","servicedetail":"前天，在《咱们结婚吧扭，但也算是个能得不对了","servicecreatetime":1385114472000,"servicelastedittime":1385114472000,"credibilityScore":"20","servicephoto":null,"useremail":"3","servicestatus":1},{"serviceid":837,"servicetype":1,"servicetitle":"1","servicedetail":"前天，在《咱们结婚吧》里头听到妞儿说的一句话，“结婚就是两个人搭伙过日子，你要谈到什么爱不爱的，那就不对了，跑题了。”当时虽然觉得这话有点凄凉、有点别扭，但也算是个能让自己生活好过一些的箴言。昨天，我看了韩寒主编的《很高兴见到你》里头的一篇文章，突然就觉得不对了，西式婚礼的誓词是什么，“我愿意爱他、安慰他、尊重他、保护他，像你爱自己一样。不论他生病或是健康、富有或贫穷，始终忠於他，直到离开世界！”这才是婚姻的真谛啊，爱是排在第一位的啊。 所以，我将帖子发在这里，只是想提醒广大征友者以及应征者，相亲也是为了在千万人中找到那个彼此说出“我愿意”的人，千万不要让婚姻变了味道。 发牢骚完毕","servicecreatetime":1385049600000,"servicelastedittime":1385085600000,"credibilityScore":"0","servicephoto":null,"useremail":"3","servicestatus":1},{"serviceid":134,"servicetype":1,"servicetitle":"13","servicedetail":"Beschrijving van 13. Tabs in the action bar make it easy for users to explore and switch between different views in your app. ","servicecreatetime":1383840000000,"servicelastedittime":1383879600000,"credibilityScore":"0","servicephoto":null,"useremail":"1@qq.com","servicestatus":1}]

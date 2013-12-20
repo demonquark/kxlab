@@ -30,7 +30,7 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 		new AsyncTask<Void, Integer, Void>  (){
 			@Override protected Void doInBackground(Void... params) {
 				try {
-					Thread.sleep(200);
+					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -39,12 +39,19 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 
 			@Override protected void onPostExecute(Void v) {
 				String response = null;
+				String filename = "random";
 				if(path != null){
-					String filename = (path.contains(".")) ? path : path + Gegevens.FILE_EXT_DAT;  
+					filename = (path.contains(".")) ? path : path + Gegevens.FILE_EXT_DAT;  
+			        Loggen.v(this, "Reading from dummy: " + filename);
 					response = readFromFile(filename);
+					filename = filename.substring(0, path.length() - 4);
+					
+					while(response.contains("\"servicephoto\":null")){
+						response = response.replaceFirst("\"servicephoto\":null", "\"servicephoto\":\"" + randomPic() + "\"");
+					}
 				}
 				
-				listener.onReadServices(new RawResponse(response, path));
+				listener.onReadServices(new RawResponse(response, filename));
 			}
 	
 		}.execute();
@@ -96,32 +103,10 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 		}
 		
 		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
-		
 	}
 
-	@Override
-	protected void searchService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void editService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void createService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void deleteService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
+	@Override protected void searchService(String path) { }
+	@Override protected void editService(String path) { }
+	@Override protected void createService(String path) { }
+	@Override protected void deleteService(String path) { }
 }
