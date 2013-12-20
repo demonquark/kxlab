@@ -47,7 +47,7 @@ public class ActivityRecordsArrayAdapter extends ArrayAdapter <ActivityRecord>{
 				String title = record.getDateString();
 				String text1 = record.getType();
 				String text2 = String.valueOf(record.getScore());
-				Loggen.d(this,  "title: " + title + " | " + "text: " + text1 + " | " + text2 );
+//				Loggen.d(this,  "title: " + title + " | " + "text: " + text1 + " | " + text2 );
 				
 				// Set the text
 				((TextView) titleText).setText(title);

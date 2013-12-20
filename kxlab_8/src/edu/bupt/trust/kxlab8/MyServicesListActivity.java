@@ -67,7 +67,7 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 	    }
 	}
 	
-	private void startDetailsActivity(String tag, ServiceDetailActivity.Type type, TrustService service){
+	private void startDetailsActivity(String tag, TrustService service){
 		// Note: The Activity handles delegating the service details to ServicesDetailFragment. 
 		// This keeps the MyServicesListFragment completely independent of the ServicesDetailFragment (i.e. low cohesion)
 		// In our case we show the service details in a new activity. 
@@ -78,7 +78,6 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 		b.putInt(Gegevens.EXTRA_FOOTERID,  R.id.footer_myservice);
 		b.putString(Gegevens.EXTRA_TAG, tag);
 		if(service != null) { b.putParcelable(Gegevens.EXTRA_SERVICE, service); }
-		b.putSerializable(Gegevens.EXTRA_TYPE, type);
 		
 		// Send the bundle off to the detail activity
 		Intent detailIntent = new Intent(this, ServiceDetailActivity.class);
@@ -90,7 +89,7 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 	@Override public void onItemSelected(String tag, int position, TrustService service) {
 		Loggen.v(this, "User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid() );
 		System.out.println("User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid());
-		startDetailsActivity(tag, ServiceDetailActivity.Type.VIEW, service);
+		startDetailsActivity(tag, service);
 	}
 	
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -111,9 +110,7 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 
 	@Override
 	public void onCreateService(String tag) {
-		startDetailsActivity(tag, ServiceDetailActivity.Type.NEW, new TrustService());
-		
+		startDetailsActivity(tag, new TrustService());
 	}
-
 
 }

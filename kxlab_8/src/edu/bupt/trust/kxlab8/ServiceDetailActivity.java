@@ -1,21 +1,29 @@
 package edu.bupt.trust.kxlab8;
 
 import android.os.Bundle;
-import android.view.View;
+import android.support.v4.app.FragmentTransaction;
 import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
-import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
-import edu.bupt.trust.kxlab8.ServiceDetailViewFragment.OnActionSelectedListener;
 
-public class ServiceDetailActivity extends BaseActivity implements OnActionSelectedListener{
+/**
+ *  The activity expects the following items in its arguments: <br />
+ *  - EXTRA_MSG: A bundle added to the intent. The bundle contains all the actual data. Acts as a savedInstanceState. <br />
+ *  The bundle should contain the following:
+ *  - EXTRA_FOOTERID: The id of our place in the footer. Should be one of the items in the widget_footer layout. <br />
+ *  - EXTRA_SERVICE: A service object <br />
+ *  - EXTRA_TYPE: The type of request. There are three possible requests VIEW, EDIT or NEW. <br />
+ *  - EXTRA_TAG: The tag identifies which tab it is from (community, recommended, apply)<br />
+ * @author Krishna
+ *
+ */
+public class ServiceDetailActivity extends BaseDetailActivity {
 	
-	public enum Type { VIEW, EDIT, NEW }; // not so sure about new...  
 	public enum ServiceType { MYSERVICE, SERVICE};
 
-	private ServiceDetailViewFragment mFragment;
-	private Type mType; 
-	private int mResult;
+	private ServiceDetailViewFragment viewFragment;
+	private ServiceType mServiceType;
+	private String mCategoryTag;
 	
 	@Override protected void onCreate(Bundle savedInstanceState) {
 		Loggen.v(this, "Creating services detail activity.");
@@ -25,118 +33,91 @@ public class ServiceDetailActivity extends BaseActivity implements OnActionSelec
 		Bundle b = (savedInstanceState != null) ? savedInstanceState : getIntent().getBundleExtra(Gegevens.EXTRA_MSG);
 		b.setClassLoader(getClass().getClassLoader());
 
-		// disable the footer button of the calling activity
-		int footerid = b.getInt(Gegevens.EXTRA_FOOTERID, -1);
-		if(footerid > 0) { findViewById(footerid).setEnabled(false); }
-		
-		// select the service type based on which footer item is selected 
-		// (i.e. if the user selected myservice, this is a service from myservice)
-		ServiceType servicetype;
-		if(footerid == R.id.footer_myservice){
-			servicetype = ServiceType.MYSERVICE; 
-		} else {
-			servicetype = ServiceType.SERVICE;
-		}
+		// get the service type 
+		mServiceType = (ServiceType) b.getSerializable(Gegevens.EXTRA_SERVICETYPE);
+		if(mServiceType == null){ mServiceType = ServiceType.MYSERVICE; }
 
+		// disable the footer button based on the service type
+		int footerid = 0;
+		switch(mServiceType){
+			case MYSERVICE: footerid = R.id.footer_myservice; break;
+			case SERVICE: footerid = R.id.footer_services; break;
+		}
+		if( footerid > 0) { findViewById(footerid).setEnabled(false); }
+		
 		// get the service and the tag (identifying which tab this is from)
 		TrustService service = b.getParcelable(Gegevens.EXTRA_SERVICE);
-		String tag = b.getString(Gegevens.EXTRA_TAG);
-		mType = (Type) b.getSerializable(Gegevens.EXTRA_TYPE);
-		if(mType == null) { mType = Type.VIEW; }
-		
-		// get the result state
-		 mResult = b.getInt(Gegevens.EXTRA_RESULT, BaseActivity.RESULT_CANCELED);
+		mCategoryTag = b.getString(Gegevens.EXTRA_TAG);
 		
 		// Create the detail fragment and add it to the activity using a fragment transaction.
 		if (savedInstanceState == null) {
 
-			if(service == null) { service = new TrustService(); }
-			
-			if(mType == Type.VIEW){
+			if(service == null) { 
+				// If no service was provided, assume that this is a request to create new service
+				onActionSelected(null, Gegevens.FRAG_INFOEDIT, null); 
+			} else {
+				// Launch the view fragment for the existing service 
 				Bundle arguments = new Bundle();
 				arguments.putParcelable(Gegevens.EXTRA_SERVICE, service);
-				arguments.putSerializable(Gegevens.EXTRA_SERVICETYPE, servicetype);
-				mFragment = new ServiceDetailViewFragment();
-				mFragment.setArguments(arguments);
-				getSupportFragmentManager().beginTransaction().add(R.id.details, mFragment).commit();
-			} else {
-				showConfirmationDialog(Gegevens.FRAG_BACKPRESSED, String.valueOf(-1));
+				arguments.putSerializable(Gegevens.EXTRA_SERVICETYPE, mServiceType);
+				arguments.putString(Gegevens.EXTRA_TAG, mCategoryTag);
+				viewFragment = new ServiceDetailViewFragment();
+				viewFragment.setArguments(arguments);
+				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+				ft.add(R.id.details, viewFragment, Gegevens.FRAG_INFOVIEW);
+				ft.addToBackStack(Gegevens.FRAG_INFOVIEW);
+				ft.commit();
 			}
-			
+		} else {
+			// this instance state was restored. Call the onBackStackChanged method to 
+			displayHomeAsUpEnabled();
 		}
 	}
 	
+	/** Checks if we should display a "back" arrow in the action bar. */
+	@Override public void onBackStackChanged() {
+		super.onBackStackChanged();
+		if(getSupportFragmentManager().getBackStackEntryCount() == 0){ finish(); }
+	}
+	
+	/** Callback from the fragment
+	 * This implementation processes one use case: <br />
+	 * From: FRAG_INFOVIEW or null
+	 * - Goal = FRAG_INFOEDIT: The user selected the edit button in the action bar.
+	 * @param from - The tag of the sending fragment. Note: should also be the name in the back stack
+	 * @param to - The tag of the target fragment. Note: should also be the name in the back stack
+	 * @param o - The method expects this to be an instance of Service. 
+	 */
+	@Override public void onActionSelected(String from, String to, Object service) {
+		if(Gegevens.FRAG_INFOEDIT.equals(to)){
+			// create a bundle and add the provided Service to it
+			Bundle arguments = new Bundle();
+			arguments.putSerializable(Gegevens.EXTRA_SERVICETYPE, mServiceType);
+			arguments.putString(Gegevens.EXTRA_TAG, mCategoryTag);
+			if(service instanceof TrustService) { 
+				arguments.putParcelable(Gegevens.EXTRA_SERVICE, (TrustService) service); 
+			} else if(service != null) {
+				this.postToast(getString(R.string.details_eror_service_edit));
+			}
+			
+			// launch the edit fragment
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+			ServiceDetailEditFragment editFragment = new ServiceDetailEditFragment();
+			editFragment.setArguments(arguments);
+			ft.replace(R.id.details, editFragment, Gegevens.FRAG_INFOEDIT);
+			ft.addToBackStack(Gegevens.FRAG_INFOEDIT);
+			ft.commit();
+		}
+
+		Loggen.v(this, "User clicked edit - switch to edit fragment.");
+	}
+
 	@Override protected void onSaveInstanceState(Bundle outState) {
-		Loggen.v(this, "Saving instance state of the services activity.");
-		// save the selected tab to the instance state
-		outState.putInt(Gegevens.EXTRA_RESULT, mResult);
-		outState.putSerializable(Gegevens.EXTRA_TYPE, mType);
+		Loggen.v(this, "Saving instance state of the service details activity.");
+		// save the service type of the service
+		outState.putSerializable(Gegevens.EXTRA_SERVICETYPE, mServiceType);
+		outState.putString(Gegevens.EXTRA_TAG, mCategoryTag);
 		
 		super.onSaveInstanceState(outState);
 	}
-	
-	public void showConfirmationDialog(String dialogtag, String footerid){
-    	DialogFragmentBasic.newInstance(true)
-			.setTitle(getString(R.string.details_confirm_close_title))
-			.setMessage(getString(R.string.details_confirm_close_text))
-			.setObject(footerid)
-			.setPositiveButtonText(getString(R.string.yes))
-			.setNegativeButtonText(getString(R.string.no))
-			.show(getSupportFragmentManager(), dialogtag);
-	}
-	
-    /** Processes the default button pressed method. By default it assumes it is an unknown buttons. */
-	public void onBtnClick(View view) {
-		int id = view.getId();
-		// Do a check if this is a footer button
-		if(mType != Type.VIEW && (id == R.id.footer_services || id == R.id.footer_myservice 
-				|| id == R.id.footer_forum || id == R.id.footer_myinformation || id == R.id.footer_other)){
-			
-			showConfirmationDialog(Gegevens.FRAG_FOOTERLINK, String.valueOf(id));
-		} else {
-			// all other buttons can be handled by the super
-			super.onBtnClick(view);
-		}
-	}
-
-	@Override public void onBackPressed() {
-		if(mType != Type.VIEW){
-			showConfirmationDialog(Gegevens.FRAG_BACKPRESSED, String.valueOf(-1));
-		} else {
-			super.onBackPressed();
-		}
-	}
-	
-	@Override public void onBasicPositiveButtonClicked(String tag, Object o) { 
-		
-		if(Gegevens.FRAG_CONFIRM.equals(tag) && o != null && mFragment != null){
-			mFragment.launchDialog(Integer.parseInt(String.valueOf(o)));
-		} else if (Gegevens.FRAG_SCORE.equals(tag) && o != null && mFragment != null) {
-			mFragment.saveScore(Integer.parseInt(String.valueOf(o)));
-		} else if (Gegevens.FRAG_COMMENT.equals(tag) && o != null && mFragment != null) {
-			mFragment.saveComment(String.valueOf(o));
-		} else {
-		// set the result
-		setResult(mResult);
-
-		// exit either the back pressed option or the footer menu
-		if(Gegevens.FRAG_FOOTERLINK.equals(tag)){ 
-			setResult(BaseActivity.RESULT_FINISH);
-			int footerid = Integer.parseInt(String.valueOf(o));
-			super.onBtnClick(findViewById(footerid));
-			finish();
-		} else if (Gegevens.FRAG_BACKPRESSED.equals(tag)){
-			finish();
-			}
-		}
-	}
-	@Override public void onBasicNegativeButtonClicked(String tag, Object o) { }
-
-	@Override
-	public void onActionSelected(String tag, TrustService service) {
-		Loggen.v(this, "User clicked edit - TODO: switch to edit fragment.");
-		
-	}
-
-	
 }

@@ -102,6 +102,4 @@
             android:textSize="@dimen/list_header_text_large" />
 
 	</RelativeLayout>
-
-
 </LinearLayout>

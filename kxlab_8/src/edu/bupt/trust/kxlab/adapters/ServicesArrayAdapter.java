@@ -50,7 +50,7 @@ public class ServicesArrayAdapter extends ArrayAdapter <TrustService>{
 				String text1 = service.getServicetitle();
 				String text2 = service.getServicedetail();
 				File imgFile = new File(service.getServicephoto() != null ? service.getServicephoto() : "");
-				Loggen.d(this, "text: " + text1 + " | " + text2 + " | file: " + imgFile.getAbsolutePath());
+//				Loggen.d(this, "text: " + text1 + " | " + text2 + " | file: " + imgFile.getAbsolutePath());
 				
 				// Set the text
 				((TextView) firstText).setText(text1);

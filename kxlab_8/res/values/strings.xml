@@ -99,7 +99,13 @@
 	<string name="details_service_number">Number of users:</string>
 	<string name="details_service_description">这里是详情页面  this the details of this service</string>
 	<string name="details_empty_list">No comments</string>
-	
+	<string name="details_eror_service_edit">An error occurred while trying to load the service information</string>
+	<string name="details_comments_empty_list">No comments found</string>
+	<string name="details_error_title">Error loading data</string>
+	<string name="details_error_text">An error occurred while trying to load the service details</string>	
+	<string name="myinfo_no_comments_title">No comments</string>
+	<string name="myinfo_no_comments_text">We could not download the comments.</string>
+		
 	<!-- service score dialogfragment -->
 	<string name="details_score_text01">-1:不可信</string>
 	<string name="details_score_text02">0:不确定</string>

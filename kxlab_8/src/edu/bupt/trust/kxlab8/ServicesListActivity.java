@@ -77,7 +77,6 @@ public class ServicesListActivity extends BaseActivity implements OnServiceSelec
 		b.putInt(Gegevens.EXTRA_FOOTERID,  R.id.footer_services);
 		b.putString(Gegevens.EXTRA_TAG, tag);
 		b.putParcelable(Gegevens.EXTRA_SERVICE, service);
-		b.putSerializable(Gegevens.EXTRA_TYPE, ServiceDetailActivity.Type.VIEW);
 		
 		// Send the bundle off to the detail activity
 		Intent detailIntent = new Intent(this, ServiceDetailActivity.class);

@@ -188,6 +188,8 @@ public class ServicesListFragment extends ListFragment
 	
 	@Override public void onListItemClick(ListView listView, View view, int position, long id) {
 		super.onListItemClick(listView, view, position, id);
+		
+		
 		// only keep the items activated if we're in the delete state
 		if(state != State.DELETE){ listView.setItemChecked(position, false); }
 
@@ -195,7 +197,11 @@ public class ServicesListFragment extends ListFragment
 		if(state == State.IDLE){
 			// TODO: edit this to get the service details from the server (?)
 			// Now it just passes the service we have now. Which might be out of date or incomplete.
-			mListener.onItemSelected(getTag(), position, services.get(position)); 
+			if(position > 0 && position <= services.size()){
+				// TODO: Figure out why the method is returning the wrong position
+				position--; 
+				mListener.onItemSelected(getTag(), position, services.get(position));
+			}
 		}
 	}
 	

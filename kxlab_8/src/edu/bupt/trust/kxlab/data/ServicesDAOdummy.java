@@ -30,7 +30,7 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 		new AsyncTask<Void, Integer, Void>  (){
 			@Override protected Void doInBackground(Void... params) {
 				try {
-					Thread.sleep(2000);
+					Thread.sleep(300);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -74,8 +74,8 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 		String filename = "service";
 
 		counter ++;
-		int i = counter % 8;
-		filename += (i < 3) ? i + ".jpg" : (i == 4) ? "0.png" : (i == 6) ? "0.gif" : ".dat";
+		int i = counter % 7;
+		filename += (i < 4) ? i + ".jpg" : (i == 4) ? "0.png" : (i == 5) ? "0.gif" : ".dat";
 		
 		return new File(cacheDir, filename).getAbsolutePath();
 	}

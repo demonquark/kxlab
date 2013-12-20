@@ -5,42 +5,40 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.bupt.trust.kxlab.adapters.ServicesArrayAdapter;
-import edu.bupt.trust.kxlab.data.DaoFactory;
-import edu.bupt.trust.kxlab.data.MyServicesDAO;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
+import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
+import edu.bupt.trust.kxlab.model.ActivityHistory;
 import edu.bupt.trust.kxlab.model.TrustService;
+import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentScore;
-import android.app.Activity;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class ServiceDetailViewFragment extends ListFragment implements MyServicesListListener, OnClickListener {
+public class ServiceDetailViewFragment extends BaseDetailFragment implements MyServicesListListener, ProfileListener{
 	
-	boolean mLoadComments;
 	OnActionSelectedListener mListener;
 	ServiceDetailActivity.ServiceType mServiceType;
-	private ListView mServiceList;
-	private LinearLayout mProgressContainer;
-	private LinearLayout mListHolder;
+	private ListView mCommentsList;
+	private View mRootView;
 	TrustService mService;
+	User mOwner;
+	User mUser;
 	ArrayList<TrustService> comments;
 	
 	public ServiceDetailViewFragment (){
@@ -49,6 +47,7 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 	
     @Override public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        ((BaseActivity) getActivity()).mSettings.getUser();
         setHasOptionsMenu(true);
     }
 
@@ -57,14 +56,14 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 	
 		// add the services menu
 		if(mServiceType == ServiceDetailActivity.ServiceType.MYSERVICE)
-		inflater.inflate(R.menu.service_detail_view, menu);
+			inflater.inflate(R.menu.service_detail_view, menu);
 	}
 	
     @Override public boolean onOptionsItemSelected(MenuItem item) {
     	int itemId = item.getItemId();
         switch (itemId) {
         	case R.id.action_edit:
-        		mListener.onActionSelected(getTag(), mService);
+        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOEDIT, mService); }
             break;
             default:
             	return super.onOptionsItemSelected(item);
@@ -99,25 +98,25 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 			mServiceType = ServiceDetailActivity.ServiceType.SERVICE;
 		}
 		
-		// We just created a fragment. So reset the list on restore
-		mLoadComments = true;
-
+		// load the service author. (Note: author remains null if it is neither in the saved state nor the arguments)
+		mOwner = savedstate.getParcelable(Gegevens.EXTRA_USER); 							
+		if(mOwner == null){ mOwner = arguments.getParcelable(Gegevens.EXTRA_USER); } 
+		
+		// TODO: figure out if we need the categoryTag. For now: assume NO.
+		
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Loggen.v(this, getTag() + " - Creating the ServiceDetailView view. ");
 
 		// Inflate the root view and save references to useful views as class variables
-		View rootView = inflater.inflate(R.layout.frag_services_details_view, container, false);
-		mListHolder = (LinearLayout) rootView.findViewById(R.id.list_holder);
-		mProgressContainer = (LinearLayout) rootView.findViewById(R.id.progress_container);
-		mServiceList = (ListView) rootView.findViewById(android.R.id.list);
-		mServiceList.addHeaderView(LayoutInflater.from(getActivity()).inflate(R.layout.list_header_service_details, null));
-		((ImageButton) rootView.findViewById(R.id.details_service_btn_comment)).setOnClickListener(this);
-		((Button) rootView.findViewById(R.id.details_service_btn_score)).setOnClickListener(this);		
-		loadHeaderContent(rootView);
+		mRootView = inflater.inflate(R.layout.frag_services_details_view, container, false);
+		mCommentsList = (ListView) mRootView.findViewById(android.R.id.list);
+		mCommentsList.addHeaderView(LayoutInflater.from(getActivity()).inflate(R.layout.list_header_service_details, null));
+		((ImageButton) mRootView.findViewById(R.id.details_service_btn_comment)).setOnClickListener(this);
+		((Button) mRootView.findViewById(R.id.details_service_btn_score)).setOnClickListener(this);		
 		
-		return rootView;
+		return mRootView;
 	}
 
 	@Override
@@ -125,20 +124,16 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		super.onViewStateRestored(savedInstanceState);
 		Loggen.v(this, getTag() + " - Restoring ServiceDetailView instance state.");
 
-		// load the services list if requested (generally only if we just created the fragment)
-		if(mLoadComments) {
-			if(comments == null){
-				// TODO: implement the comments DAO (not sure where this is coming from, so I did it with services)
-				showList(false);
-				MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this,MyServicesDAO.Type.COMMUNITY);
-				myServicesDAO.readServices(MyServicesDAO.Type.COMMUNITY, DaoFactory.Page.LATEST, DaoFactory.Source.WEB, 
-						new String [] {((BaseActivity)getActivity()).mSettings.getUser().getEmail()});
-				Loggen.v(this, "Restoring saved Instancestate: Hide the list");
-			}else{
-				// If we already have a list of comments, just show those comments
-				initListView();
-			}
+		// TODO: Add an else contact DAO call to each of them.
+		if(mOwner != null) { showAuthor(); }
+		if(mService != null) { showService(); } 
+		if(comments != null) { 
+			showComments(); 
+		} else {
+			onReadServices(null);
 		}
+		showInformation(comments != null);
+		
 	}
 	
 	@Override public void onSaveInstanceState(Bundle outState) {
@@ -147,79 +142,96 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		// save the list of comments to the instance state
 		outState.putParcelableArrayList(Gegevens.EXTRA_COMMENTS, comments);
 		outState.putParcelable(Gegevens.EXTRA_SERVICE, mService);
+		outState.putParcelable(Gegevens.EXTRA_USER, mOwner);
 		outState.putSerializable(Gegevens.EXTRA_SERVICETYPE, mServiceType);
 	}
-	
-	@Override public void onAttach(Activity activity) {
-		super.onAttach(activity);
 
-		// Activities containing this fragment must implement its callbacks.
-		if (!(activity instanceof OnActionSelectedListener)) {
-			throw new IllegalStateException( "Activity must implement fragment's callbacks.");
+	private void showInformation(boolean showinfo) {
+		if(mRootView != null){
+			// show or hide the progress bar
+			((ProgressBar) mRootView.findViewById(R.id.progress_bar)).setVisibility((showinfo) ? View.GONE : View.VISIBLE);
+			((LinearLayout) mRootView.findViewById(R.id.list_holder)).setVisibility((showinfo) ? View.VISIBLE : View.GONE);
+			((TextView) mRootView.findViewById(android.R.id.empty))
+				.setVisibility( (comments == null || comments.size() > 0) ? View.GONE : View.VISIBLE);
+		} else {
+			userMustClickOkay(getString(R.string.details_error_title), getString(R.string.details_error_text));
 		}
-		mListener = (OnActionSelectedListener) activity;
 	}
 	
-	@Override public void onDetach() {
-		super.onDetach();
-		mListener = null;
-	}
-
-	private void showList(boolean showlist) {
-		mListHolder.setVisibility((showlist) ? View.VISIBLE : View.GONE);
-		mProgressContainer.setVisibility( (!showlist) ? View.VISIBLE : View.GONE);
-	}
-
-	private void initListView() {
-		Loggen.v(this, getTag() + " - initlistview: Create and set a list adapter for the listview.");
-
-		// load a new adapter
-		ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
-				R.layout.list_item_services, android.R.id.text1, comments);
-		
-		
-		// set the adapter
-		setListAdapter(a);
-
-		// set the choice mode and reaction to the choices 
-		mServiceList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		
-		showList(true);
-		mLoadComments = false;
-	}
-
-	private void loadHeaderContent(View rootView) {
-		
-		//Set the image
-		File imgFile = new File(mService.getServicephoto());
-		ImageView serviceImg = (ImageView) rootView.findViewById(R.id.details_service_img);
-		if(imgFile.exists()){
-			serviceImg.setImageBitmap(BitmapFactory.decodeFile(imgFile.getAbsolutePath()));
+	private void showAuthor(){
+		// load the user information
+		if(mOwner != null && mRootView != null){
+			// Set the image
+			File imgFile = new File(mOwner.getPhotoLocation());
+			ImageView avatar = (ImageView) mRootView.findViewById(R.id.details_owner_img);
+			if(imgFile.exists()){
+				avatar.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
+			    		imgFile.getAbsolutePath(),
+			    		avatar.getLayoutParams().width, 
+			    		avatar.getLayoutParams().height));
+			}
+			
+			// Set the user information
+			((TextView) mRootView.findViewById(R.id.details_owner_name)).setText(mOwner.getUserName());
+			((TextView) mRootView.findViewById(R.id.details_owner_time)).setText(mOwner.getTimeEnter());
+			((TextView) mRootView.findViewById(R.id.details_owner_score)).setText(mOwner.getActivityScore());
 		}
 		
-		// Set the text
-		((TextView) rootView.findViewById(R.id.details_service_title)).setText(mService.getServicetitle());
-		((TextView) rootView.findViewById(R.id.details_service_description)).setText(mService.getServicedetail());
+		// hide the progress bar
+		showInformation(comments != null);
+	}
+	
+	private void showComments(){
+		// show the comments list 
+		if(comments != null && mCommentsList != null && getActivity() != null){
+			Loggen.v(this, getTag() + " - Loading the adapter with " + comments.size() + " items.");
 
+			// load and set the adapter
+			mCommentsList.setAdapter(new ServicesArrayAdapter(getActivity(), 
+					R.layout.list_item_services, android.R.id.text1, comments));
+		}
+
+		// hide the progress bar
+		showInformation(comments != null);
+	}
+	
+	private void showService(){
+		if(mService != null && mRootView != null){
+			//Set the image
+			File imgFile = new File(mService.getServicephoto());
+			ImageView serviceImg = (ImageView) mRootView.findViewById(R.id.details_service_img);
+			Loggen.v(this, getTag() + " - Showing service with image: " + imgFile.getAbsolutePath());
+			if(imgFile.exists()){
+				serviceImg.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
+			    		imgFile.getAbsolutePath(),
+			    		serviceImg.getLayoutParams().width, 
+			    		serviceImg.getLayoutParams().height));
+			}
+			
+			// Set the text TODO: Figure out what service score and number of users are??? 
+			((TextView) mRootView.findViewById(R.id.details_service_title)).setText(mService.getServicetitle());
+			((TextView) mRootView.findViewById(R.id.details_service_description)).setText(mService.getServicedetail());
+			((TextView) mRootView.findViewById(R.id.details_service_score)).setText(String.valueOf(mService.getServicestatus()));
+		}
+
+		// hide the progress bar
+		showInformation(comments != null);
 	}
 
-	@Override
-	public void onReadServices(List<TrustService> services) {
+	@Override public void onReadServices(List<TrustService> services) {
 		Loggen.i(this, getTag() + " - Returned from onReadservices. ");
 
+		// Inform the user of any failures
+		if(services == null){
+			userMustClickOkay(getString(R.string.myinfo_no_comments_title), getString(R.string.myinfo_no_comments_text));
+		}
 		
 		// update the services
 		this.comments = (ArrayList<TrustService>) ((services != null) ? services : new ArrayList <TrustService> ());
-		
-		// update the UI
-		initListView();
+		showComments();
 		
 	}
 
-	public interface OnActionSelectedListener{
-		public void onActionSelected(String tag, TrustService service);
-	}
-	
 	@Override public void onClick(View view) {
 		int id = view.getId();
 		
@@ -259,38 +271,20 @@ public class ServiceDetailViewFragment extends ListFragment implements MyService
 		}
 	}
 	
-	public void saveScore(int score){
-		// contact the server to save the score
-	}
+	public void saveScore(int score){ }
+	public void saveComment(String valueOf) { }
 
-	public void saveComment(String valueOf) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onCreateService(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onDeleteService(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onEditService(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSearchService(List<TrustService> services) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
+	@Override public void onCreateService(boolean success) { }
+	@Override public void onDeleteService(boolean success) { }
+	@Override public void onEditService(boolean success) { }
+	@Override public void onSearchService(List<TrustService> services) { }
+	@Override public void onReadUserList(List<User> users) {}
+	@Override public void onReadUserInformation(User user) {}
+	@Override public void onReadActivityHistory(ActivityHistory history) {}
+	@Override public void onChangeUser(User newUser, String errorMessage) {}
+	@Override public void onChangePhoto(boolean success, String errorMessage) {}
+	@Override public void onChangePassword(boolean success, String errorMessage) {}
+	@Override public void onChangePhonenumber(boolean success, String errorMessage) {}
+	@Override public void onChangeSource(boolean success, String errorMessage) {}
+	@Override public void onLocalFallback() {}
 }
