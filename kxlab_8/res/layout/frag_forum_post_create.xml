@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+	<ScrollView android:id="@+id/post_container" 
+	    android:layout_width="match_parent" android:layout_height="match_parent" >
+	    <LinearLayout android:id="@+id/post_create_holder" android:orientation="vertical" 
+	        android:layout_width="match_parent" android:layout_height="wrap_content"
+	        android:padding="@dimen/activity_horizontal_margin" android:gravity="center_horizontal">
+	        <TextView android:id="@+id/forum_create_post_title" 
+				android:layout_width="match_parent" android:layout_height="wrap_content"
+            	android:textAppearance="?android:attr/textAppearanceMedium"
+            	android:text="@string/forum_create_post_title" android:gravity="center"
+            	android:layout_marginBottom="@dimen/activity_vertical_margin" />
+			<EditText android:id="@+id/forum_post_text"
+			    android:layout_width="match_parent" android:layout_height="wrap_content"
+				android:singleLine="false" android:lines="10" android:inputType="textMultiLine"
+				android:gravity="top|left" android:scrollHorizontally="false" 
+				android:hint="@string/forum_post_detail_hint" android:text="@string/niets"
+			    android:textAppearance="?android:attr/textAppearanceMedium" 
+			    android:layout_marginTop="@dimen/activity_vertical_margin" />
+		<Button android:id="@+id/forum_btn_save"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:text="@string/forum_post_btn_save" />
+	    </LinearLayout>
+	</ScrollView>
+
+	<ProgressBar android:id="@+id/forum_progress_bar" style="?android:attr/progressBarStyleLarge"
+	android:visibility="gone" android:layout_gravity="center"
+	android:layout_width="wrap_content" android:layout_height="wrap_content" />
+	
+</FrameLayout>

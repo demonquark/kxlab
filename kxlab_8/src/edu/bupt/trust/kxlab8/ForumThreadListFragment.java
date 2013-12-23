@@ -1,44 +1,22 @@
 package edu.bupt.trust.kxlab8;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.bupt.trust.kxlab.adapters.ActivityRecordsArrayAdapter;
-import edu.bupt.trust.kxlab.adapters.CommentsArrayAdapter;
 import edu.bupt.trust.kxlab.adapters.PostArrayAdapter;
-import edu.bupt.trust.kxlab.adapters.ServicesArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ForumDAO;
 import edu.bupt.trust.kxlab.data.ForumDAO.ForumListener;
-import edu.bupt.trust.kxlab.data.ServicesDAO;
-import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
-import edu.bupt.trust.kxlab.model.ActivityHistory;
 import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
-import edu.bupt.trust.kxlab.model.Settings;
-import edu.bupt.trust.kxlab.model.TrustService;
-import edu.bupt.trust.kxlab.model.User;
-import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
-import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.XListView;
-import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic.BasicDialogListener;
 import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
 
-import android.app.Activity;
-import android.app.SearchManager;
-import android.app.SearchableInfo;
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.SearchView.OnQueryTextListener;
-import android.util.SparseBooleanArray;
-import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -48,10 +26,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.HeaderViewListAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -80,8 +54,10 @@ public class ForumThreadListFragment extends BaseListFragment
 	@Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 
-		// add the services menu
-		inflater.inflate(R.menu.forum, menu);
+		// add the forum menu
+		if(mPostType == PostType.FORUM || mPostType == PostType.SUGGESTION){
+			inflater.inflate(R.menu.forum, menu);
+		}
 	}
 
     @Override public boolean onOptionsItemSelected(MenuItem item) {
@@ -90,6 +66,7 @@ public class ForumThreadListFragment extends BaseListFragment
     	int itemId = item.getItemId();
         switch (itemId) {
         	case R.id.action_create:
+        		startPostActivity(null);
             break;
             default:
             	return super.onOptionsItemSelected(item);
@@ -122,6 +99,11 @@ public class ForumThreadListFragment extends BaseListFragment
 
 		// Inflate the root view and save references to useful views as class variables
 		mRootView = inflater.inflate(R.layout.frag_generic_xlist, container, false);
+		
+		// add some padding for the footer 
+		int bottomPadding = (int) getResources().getDimension(R.dimen.footer_height);
+		mRootView.findViewById(R.id.list_top_container).setPadding(0,0,0,bottomPadding);
+		
 		mListView = (XListView) mRootView.findViewById(android.R.id.list);
 		mListView.setPullLoadEnable(true);
 		mListView.setXListViewListener(this);
@@ -190,56 +172,44 @@ public class ForumThreadListFragment extends BaseListFragment
 			forumDAO.readPostList(Source.DUMMY, mPostType);
 		}
 	}
+	
+	private void startPostActivity(Post post){
+		if(getActivity() != null){
+			// Bundle the post and send it off to the detail activity
+			Bundle b = new Bundle();
+			if(post != null) { b.putParcelable(Gegevens.EXTRA_POST, post);
+			} else { b.putSerializable(Gegevens.EXTRA_POSTTYPE, mPostType); }
+			Intent intent = new Intent(getActivity(), ForumPostActivity.class);
+			intent.putExtra(Gegevens.EXTRA_MSG, b);
+			startActivity(intent);
+		}
+	}
 
 	@Override public void onRefresh() { }
 
 	@Override public void onLoadMore() { }
 
-	@Override public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-		
+	@Override public void onItemClick(AdapterView<?> listView, View view, int position, long id) {
+		if(position > 0 && position <= mPosts.size()){
+			position--; 
+			// TODO: Figure out why the method is returning the wrong position
+			Loggen.v(this, getTag() + " - onItemClick for: " + mPosts.get(position).getPostTitle());
+			startPostActivity(mPosts.get(position));
+		}
 	}
 
-	@Override
-	public void onCreatePost(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onCreateReply(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onCreateVote(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onReadPostList(List<Post> posts) {
+	@Override public void onReadPostList(List<Post> posts) {
 		Loggen.v(this, "Got a response onReadPostList. posts exist? " + (posts != null));
 		mPosts = (ArrayList<Post>) posts;
 		showList(true);
 		
 	}
 
-	@Override
-	public void onReadPost(Post post) {
-		// TODO Auto-generated method stub
-		
-	}
+	@Override public void onCreatePost(boolean success) {	}
+	@Override public void onCreateReply(boolean success) { }
+	@Override public void onCreateVote(boolean success) { }
+	@Override public void onReadPost(Post post) { }
+	@Override public void onReadAnnounceFAQ(Post post) { }
+	@Override public void onSearchPostList(List<Post> posts) { }
 
-	@Override
-	public void onReadAnnounceFAQ(Post post) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSearchPostList(List<Post> posts) {
-		// TODO Auto-generated method stub
-		
-	}
 }

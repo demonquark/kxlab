@@ -109,7 +109,16 @@ public class ForumDAOdummy extends ForumDAOabstract {
 
 	@Override
 	protected void readPost(String path) {
-		// TODO Auto-generated method stub
+		new AsyncTask<Void, Integer, Void>  () {
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				listener.onReadPost(new RawResponse("a string", "dummypost"));
+			}
+		}.execute();
 		
 	}
 

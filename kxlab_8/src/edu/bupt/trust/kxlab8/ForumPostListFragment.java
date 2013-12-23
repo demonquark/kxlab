@@ -1,190 +1,259 @@
 package edu.bupt.trust.kxlab8;
 
-import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
-import edu.bupt.trust.kxlab.adapters.ActivityRecordsArrayAdapter;
+import edu.bupt.trust.kxlab.adapters.CommentsArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
-import edu.bupt.trust.kxlab.data.ProfileDAO;
-import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.data.ForumDAO;
+import edu.bupt.trust.kxlab.data.ForumDAO.ForumListener;
+import edu.bupt.trust.kxlab.data.DaoFactory.Source;
+import edu.bupt.trust.kxlab.model.Comment;
+import edu.bupt.trust.kxlab.model.Post;
+import edu.bupt.trust.kxlab.model.PostType;
+import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.model.User;
-import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class ForumPostListFragment extends BaseDetailFragment implements ProfileListener {
+/**
+ *  This fragment shows the details and comments of a post and lets you reply on the post
+ *  The fragment expects the following items in its arguments: <br />
+ *  - EXTRA_POST: A post object. Loads additional details from ForumDAO. <br />
+ *  The fragment supplements those arguments with the following items (added to saved state): <br />
+ *  - EXTRA_REPLIES: Comments to the service. Loaded from ServicesDAO. <br />
+ *  - EXTRA_USER: The current user. Loaded from the settings. <br />
+ */
+public class ForumPostListFragment extends BaseDetailFragment implements ForumListener {
 	
-	private User mUser;
-	private ActivityHistory mHistory;
+	private ListView mCommentsList;
+	private CommentsArrayAdapter mListAdapter;
 	private View mRootView;
+	private Post mPost;
+	private ArrayList<Reply> replies;
+	private User mUser;
 	
-	public ForumPostListFragment(){
-		// Empty constructor required for MyInformationFragment
+	public ForumPostListFragment (){
+		// Empty constructor required for ServiceDetailViewFragment
 	}
 	
+    @Override public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        
+		Loggen.v(this, getTag() + " - onActivityCreated for ForumPostListFragment instance.");
+        // create objects that require the Activity context
+		if(mUser == null){ mUser = ((BaseActivity) getActivity()).mSettings.getUser(); }
+        
+        setHasOptionsMenu(true);
+    }
+
+	@Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+	
+		// add the forum menu
+		if(mPost != null && 
+				(mPost.getPostType()  == PostType.FORUM || mPost.getPostType() == PostType.SUGGESTION)){
+			inflater.inflate(R.menu.forum, menu);
+		}
+	}
+	
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
+    	int itemId = item.getItemId();
+        switch (itemId) {
+        	case R.id.action_create:
+        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, mPost); }
+            break;
+            default:
+            	return super.onOptionsItemSelected(item);
+        }
+    	
+    	return true;
+    }
+    
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Loggen.v(this, getTag() + " - Creating a new MyInformationRecordsFragment instance.");
+		Loggen.v(this, getTag() + " - Creating a new ForumPostListFragment instance.");
 		
 		// Assign values to the class variables (This avoids facing null exceptions when creating / saving a Parcelable)
 		// convert the saved state to an empty bundle to avoid errors later on
 		Bundle savedstate = (savedInstanceState != null) ? savedInstanceState : new Bundle();
 		Bundle arguments = (getArguments() != null) ? getArguments() : new Bundle();
 		
-		// load the user (Note: user remains null if it is neither in the saved state nor the arguments)
-		mUser = savedstate.getParcelable(Gegevens.EXTRA_USER); 							
-		if(mUser == null){ mUser = arguments.getParcelable(Gegevens.EXTRA_USER); } 
+		// load the post being replied to. 
+		// (Note: mPost remains null if it is neither in the saved state nor the arguments)
+		mPost = savedstate.getParcelable(Gegevens.EXTRA_POST); 							
+		if(mPost == null){ mPost = arguments.getParcelable(Gegevens.EXTRA_POST); }
+		
 
-		// load the history (Note: history remains null if it is neither in the saved state nor the arguments)
-		mHistory = savedstate.getParcelable(Gegevens.EXTRA_RECORDS); 							
-		if(mHistory == null){ mHistory = arguments.getParcelable(Gegevens.EXTRA_RECORDS); } 
+		// load the replies (Note: replies remains null if it is neither in the saved state nor the arguments)
+		replies = savedstate.getParcelableArrayList(Gegevens.EXTRA_REPLIES); 							
+		if(replies == null){ replies = arguments.getParcelableArrayList(Gegevens.EXTRA_REPLIES); } 	
+
+		// load the user. (Note: We use the settings user as fall back )
+		if(savedstate.containsKey(Gegevens.EXTRA_USER)) { mUser = savedstate.getParcelable(Gegevens.EXTRA_USER); } 							
+		if(mUser == null && arguments.containsKey(Gegevens.EXTRA_USER)) { 
+			mUser = arguments.getParcelable(Gegevens.EXTRA_USER); } 							
+		if(mUser == null && getActivity() != null){ mUser = ((BaseActivity) getActivity()).mSettings.getUser(); } 
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Loggen.v(this, getTag() + " - Creating the MyInformationRecordsFragment view. ");
+		Loggen.v(this, getTag() + " - Creating the ForumPostListFragment view. ");
 
 		// Inflate the root view and save references to useful views as class variables
 		mRootView = inflater.inflate(R.layout.frag_generic_list, container, false);
-		inflater.inflate(R.layout.list_header_myinformation, 
-				((ViewGroup) mRootView.findViewById(R.id.fixed_header_holder)), true);
+		View header = inflater.inflate(R.layout.list_header_forum_post, container, false);
+
+		mCommentsList = (ListView) mRootView.findViewById(android.R.id.list);
+		((LinearLayout) mRootView.findViewById(R.id.fixed_header_holder)).addView(header);
 		
 		return mRootView;
 	}
-	
+
 	@Override public void onViewStateRestored(Bundle savedInstanceState) {
 		super.onViewStateRestored(savedInstanceState);
-		Loggen.v(this, getTag() + " - Restoring MyInformationRecordsFragment instance state.");
+		Loggen.v(this, getTag() + " - Restoring ForumPostListFragment instance state.");
 
-		// load the user if requested (generally only if we just created the fragment)
-		if(mHistory == null){
+		// Note: Without a service, we can't do anything. (Server requests require a service id) 
+		if(mPost != null){
 			
-			if(getActivity() != null && mUser != null){
-				// Load the user from the DAO
-				ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
-				profileDAO.readActivityHistory(mUser);
-				Loggen.v(this, "Restoring saved Instancestate: Getting reading activity history from server");
-			} else {
-				// inform the user that we cannot load the activity history
-				userMustClickOkay("Error", "Can't load activity history");
+			// Load the service and the comments 
+			if(replies != null) { showPost(); 
+			} else if(getActivity() != null) {
+				ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPost.getPostType());
+				forumDAO.readPost(Source.DUMMY,mPost);
 			}
+		} else {
+			// give an error message ... 
+			 userMustClickOkay(getString(R.string.details_error_title), getString(R.string.details_error_text2));
 		}
-		
-		// If we already have a user, just show the user information
-		showList(mHistory != null);
-
 	}
-
+	
 	@Override public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		Loggen.v(this, getTag() + " - Saving MyInformationRecordsFragment instance state.");
+		Loggen.v(this, getTag() + " - Saving ServiceDetailView instance state.");
 		// save the list of comments to the instance state
-		outState.putParcelable(Gegevens.EXTRA_USER, mUser);
-		outState.putParcelable(Gegevens.EXTRA_RECORDS, mHistory);
+		outState.putParcelable(Gegevens.EXTRA_POST, mPost);
+		outState.putParcelableArrayList(Gegevens.EXTRA_REPLIES, replies);
+		if(mUser != null){ outState.putParcelable(Gegevens.EXTRA_USER, mUser); }
 	}
-	
-	private void showList(boolean showinfo) {
+
+	private void showInformation(boolean showinfo) {
 		if(mRootView != null){
-			// show or hide the information
-			((ProgressBar) mRootView.findViewById(R.id.progress_bar))
-				.setVisibility((showinfo) ? View.GONE : View.VISIBLE);
-			((LinearLayout) mRootView.findViewById(R.id.content_holder))
-				.setVisibility((showinfo) ? View.VISIBLE : View.GONE);
+			// show or hide the progress bar
+			((ProgressBar) mRootView.findViewById(R.id.progress_bar)).setVisibility((showinfo) ? View.GONE : View.VISIBLE);
+			((RelativeLayout) mRootView.findViewById(R.id.list_holder)).setVisibility((showinfo) ? View.VISIBLE : View.GONE);
 			((TextView) mRootView.findViewById(android.R.id.empty))
-				.setVisibility( (mHistory != null && mHistory.getRecords().size() > 0 ) ? View.GONE : View.VISIBLE);
-			
-			// load the user information
-			if(mUser != null && showinfo){
-				// Set the image
-				File imgFile = new File(mUser.getPhotoLocation());
-				ImageView avatar = (ImageView) mRootView.findViewById(R.id.myinfo_owner_img);
-				if(imgFile.exists()){
-					avatar.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
-				    		imgFile.getAbsolutePath(),
-				    		avatar.getLayoutParams().width, 
-				    		avatar.getLayoutParams().height));
-				}
-				
-				// Set the user information
-				((TextView) mRootView.findViewById(R.id.myinfo_owner_name)).setText(mUser.getUserName());
-				((TextView) mRootView.findViewById(R.id.myinfo_owner_time))
-					.setText(getString(R.string.myinfo_joindate_title) + "\n" + mUser.getTimeEnter());
-				String grade = (mHistory != null) ? String.valueOf(mHistory.getFinalGrade()) : mUser.getActivityScore();
-				((TextView) mRootView.findViewById(R.id.myinfo_owner_score))
-					.setText(getString(R.string.myinfo_activityrecord_title) + ": " + grade );
-			}
-			
-			
-			// load the activity history
-			if(mHistory != null && getActivity() != null && showinfo){
-				
-				// get the list
-				ListView activityList = ((ListView) mRootView.findViewById(android.R.id.list));
-				
-				// load and set the adapter
-				Loggen.v(this, getTag() + " - Loading the adapter with " + mHistory.getRecords().size() + " items.");
-				activityList.setAdapter(new ActivityRecordsArrayAdapter(getActivity(), 
-						R.layout.list_item_activityrecord, android.R.id.text1, mHistory.getRecords()));
-				
-				// set the choice mode and reaction to the choices 
-				activityList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-			}
+				.setVisibility( (replies != null && replies.size() == 0) ? View.VISIBLE : View.GONE);
+		} else {
+			userMustClickOkay(getString(R.string.details_error_title), getString(R.string.details_error_text));
 		}
 	}
 	
-	private void logoutUser(){
-		mUser.setLogin(false);
-		if(getActivity() != null){
-			// return to the login activity
-			BaseActivity parentActivity = (BaseActivity) getActivity();
-			parentActivity.openActivity(new Intent(parentActivity, LoginActivity.class));
+	private void showPost(){
+		if(mPost != null && mRootView != null){
+
+			User owner = mPost.getPostSponsor();
+			
+			//Set the service image
+			Loggen.v(this, getTag() + " - Showing service with image: " + owner.getPhotoLocation());
+			setImageView(owner.getPhotoLocation(), (ImageView) mRootView.findViewById(R.id.user_img));
+			
+			// Set the text 
+			((TextView) mRootView.findViewById(R.id.user_name)).setText(owner.getUserName());
+			((TextView) mRootView.findViewById(R.id.user_activitylevel_text)).setText(owner.getActivityScore());
+			((TextView) mRootView.findViewById(R.id.user_date)).setText(owner.getTimeEnter());
+			((TextView) mRootView.findViewById(R.id.forum_post_title)).setText(mPost.getPostTitle());
+			
 		}
+
+		// show the comments list 
+		if(replies != null && mCommentsList != null){
+			Loggen.v(this, getTag() + " - Loading the adapter with " + replies.size() + " items.");
+			
+			if(mCommentsList.getAdapter() == null ){ 
+				// The comments have not been loaded to the list view. Do that now
+				
+				ArrayList <Comment> comments = new ArrayList <Comment> ();
+				Comment x = new Comment();
+				x.setCommentdetail(mPost.getPostDetail());
+				comments.add(x);
+				
+				if(getActivity() != null){
+					mListAdapter = new CommentsArrayAdapter(getActivity(), 
+							R.layout.list_item_comment, android.R.id.text1, comments);
+					mCommentsList.setAdapter(mListAdapter);
+				}
+			} else {
+				// The comments are already loaded to the list view.
+				((BaseAdapter)((HeaderViewListAdapter)mCommentsList.getAdapter())
+						.getWrappedAdapter()).notifyDataSetChanged();
+			}
+		}
+
+		// hide the progress bar
+		showInformation(replies != null);
 	}
 
-	@Override public void onClick(View v) {
-		int id = v.getId();
-		switch(id){
-			case R.id.myinfo_btn_logout:
-				logoutUser();
-				break;
-			case R.id.myinfo_btn_activityrecord:
-        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, mUser); }
-				break;
-			default:
-				super.onClick(v);
-			break;
-		}
-	}
-
-	@Override public void onReadActivityHistory(ActivityHistory history) {
-		// Inform the user of any failures
-		if(history == null){
-			userMustClickOkay(getString(R.string.myinfo_no_records_title), getString(R.string.myinfo_no_records_text));
-		}
+	@Override
+	public void onReadPost(Post post) {
+		// TODO Auto-generated method stub
+		replies = new ArrayList<Reply> ();
+		replies.add(new Reply());
+		showPost();
 		
-		// update the list
-		mHistory = history;
-		showList(true);
 	}
 
-	// Not used
-	@Override public void onReadUserInformation(User user) { }
-	@Override public void onChangeUser(User newUser, String errorMessage) { }
-	@Override public void onReadUserList(List<User> users) { }
-	@Override public void onChangePhoto(boolean success, String errorMessage) {	}
-	@Override public void onChangePassword(boolean success, String errorMessage) {	}
-	@Override public void onChangePhonenumber(boolean success, String errorMessage) {	}
-	@Override public void onChangeSource(boolean success, String errorMessage) {	}
-	@Override public void onLocalFallback() { }
+	
+	@Override
+	public void onCreatePost(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
 
+	@Override
+	public void onCreateReply(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onCreateVote(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onReadPostList(List<Post> posts) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onReadAnnounceFAQ(Post post) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSearchPostList(List<Post> posts) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 }

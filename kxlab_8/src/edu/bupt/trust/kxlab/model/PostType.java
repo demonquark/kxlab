@@ -3,7 +3,7 @@ package edu.bupt.trust.kxlab.model;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 
 public enum PostType {
-	FORUM, SUGGESTION, VOTE, ANNOUNCE, FAQ;
+	FORUM, SUGGESTION, ANNOUNCE, FAQ;
 	
 	public String getFragName(){
 		String fragName = null;
@@ -13,9 +13,6 @@ public enum PostType {
 				break;
 			case SUGGESTION:
 				fragName = Gegevens.FRAG_SUGGESTION;
-				break;
-			case VOTE:
-				fragName = Gegevens.FRAG_VOTE;
 				break;
 			case ANNOUNCE:
 				fragName = Gegevens.FRAG_ANNOUNCE;
@@ -29,12 +26,26 @@ public enum PostType {
 	}
 
 	/** This returns the corresponding server type for this enum.<br />
-	 *  TODO: Change to a switch statement. Right now it just returns the index.
-	 *  
-	 * @return corresponding server type for the TrustService object
+	 * @return corresponding server type for the Post type
 	 */
-	public int getServerType(){
-		return getIndex();
+	public String getServerType(){
+		String serverType = "";
+		switch(this) {
+		case FORUM:
+			serverType = "2";
+			break;
+		case SUGGESTION:
+			serverType = "1";
+			break;
+		case ANNOUNCE:
+			serverType = "3";
+			break;
+		case FAQ:
+			serverType = "4";
+			break;
+		}
+
+		return serverType;
 	}
 	
 	/** This returns the index of this item in the enum array.<br />
@@ -73,6 +84,15 @@ public enum PostType {
 	 * @return ServiceType that corresponds to the server type. FORUM if no corresponding enum
 	 */
 	public static PostType fromServerType(String serverType){
-		return fromIndex(Integer.parseInt(serverType));
+		PostType [] allTypes = PostType.values();
+		PostType type = FORUM;
+		for(int i = 0; i < allTypes.length; i++){
+			if(allTypes[i].getServerType().equals(serverType)){
+				type = allTypes[i];
+				break; 
+			}
+		}
+		
+		return type;
 	}
 }

@@ -20,6 +20,7 @@
     <color name="green">#00dd00</color>
     <color name="red">#cc0000</color>
     <color name="gray">#7A7A7A</color>
+    <color name="ltgray">#A7A7A7</color>
     <color name="holo_gray">#9A9A9A</color>
     <color name="transparent">#00000000</color>
     <color name="btn_play_unfocused">#001f1f1f</color>

@@ -44,6 +44,17 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		dummy.readPostList("forum");
 	}
 
+	/**
+	 * Get a list of post objects 
+	 * The list of posts is saved to cache and loaded if a future web request fails.
+	 * @param source can be DUMMY, WEB, LOCAL
+	 * @param type an instance of Post type
+	 */
+	public void readPost(Source source, Post post){ 
+		// determine the path to send to the server
+		dummy.readPost("something");
+	}
+
 	@Override public void onReadPostList(RawResponse response) {
 		Loggen.v(this, "Got a response onReadPostList: " + response.message);
 		
@@ -109,7 +120,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 	@Override
 	public void onReadPost(RawResponse response) {
 		// TODO Auto-generated method stub
-		
+		if (forumlistener.get() != null){ forumlistener.get().onReadPost(null); }
 	}
 
 	@Override

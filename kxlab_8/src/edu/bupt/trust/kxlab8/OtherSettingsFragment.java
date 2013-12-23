@@ -1,6 +1,5 @@
 package edu.bupt.trust.kxlab8;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,8 +16,8 @@ import edu.bupt.trust.kxlab.utils.FileManager;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -136,14 +135,6 @@ public class OtherSettingsFragment extends BaseDetailFragment implements Profile
 
 	}
 
-	private void readUsers() {
-		if(getActivity() != null){
-			// Load the user from the DAO
-			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
-			profileDAO.readUserList(Source.DUMMY);
-		} 
-	}
-
 	@Override public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		Loggen.v(this, getTag() + " - Saving MyInformationRecordsFragment instance state.");
@@ -151,6 +142,31 @@ public class OtherSettingsFragment extends BaseDetailFragment implements Profile
 		if(settingName != null) { outState.putString(Gegevens.EXTRA_MSG, settingName); }
 	}
 	
+	private void readUsers() {
+		if(getActivity() != null){
+			// Load the user from the DAO
+			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
+			profileDAO.readUserList(Source.DUMMY);
+		} 
+	}
+	
+	private void resetCache(){
+		showList(false);
+		new AsyncTask<Void, Integer, Void>  (){
+			@Override protected Void doInBackground(Void... params) {
+				Loggen.d(this, "delete and reload the cache");
+				FileManager.deleteAssetsFromSDCard();
+				FileManager.copyAssetsToSDCard(getActivity());
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				showList(true);
+			}
+	
+		}.execute();
+	}
+
 	private void showList(boolean showinfo) {
 		if(mRootView != null && mListView != null){
 			// show or hide the information
@@ -225,8 +241,7 @@ public class OtherSettingsFragment extends BaseDetailFragment implements Profile
 				mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, Gegevens.PREF_USERLIST);
 			} else if (position == 2) {
 				// delete the cache
-				FileManager.deleteFile(new File(Environment.getExternalStorageDirectory(), 
-						Gegevens.FILE_USERDIRSD + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE));
+				resetCache();
 			}
 		} else if(Gegevens.PREF_LANGUAGE.equals(settingName)){
 			if(getActivity() != null){

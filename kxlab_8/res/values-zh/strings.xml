@@ -218,13 +218,11 @@
 	<string name="forum_tab_discussion">Discussion</string>
 	<string name="forum_tab_suggestion">Suggestions</string>
 	<string name="forum_tab_announcement">Announcements</string>
-	<string name="forum_tab_vote">Vote</string>
 	<string name="forum_tab_faq">FAQ</string>
 	<string-array name="forum_tabs">
 		<item>@string/forum_tab_discussion</item>
 		<item>@string/forum_tab_suggestion</item>
 	    <item>@string/forum_tab_announcement</item>
-		<item>@string/forum_tab_vote</item>
 		<item>@string/forum_tab_faq</item>
 	</string-array>
 	<string name="forum_post_title">post title</string>

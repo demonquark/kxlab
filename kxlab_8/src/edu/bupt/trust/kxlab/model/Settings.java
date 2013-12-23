@@ -1,6 +1,5 @@
 package edu.bupt.trust.kxlab.model;
 
-import java.io.File;
 import java.util.Locale;
 
 import com.google.gson.GsonBuilder;
@@ -9,12 +8,10 @@ import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.utils.FileManager;
 import edu.bupt.trust.kxlab.utils.Gegevens;
-import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab8.R;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 
 public class Settings {
@@ -67,20 +64,7 @@ public class Settings {
 				this.saveSettingsToSharedPreferences(c);
 			}
 			
-			// Get the application directory
-			File appdir = new File(Environment.getExternalStorageDirectory(),Gegevens.FILE_USERDIRSD);
-			
-			// Check if the dummy data has already been copied (bit of a hack)
-			File dummycheck = new File (appdir, 
-					Gegevens.FILE_CACHE + Gegevens.FILE_SEPARATOR + Gegevens.FILE_DUMMYCHECK);
-
-			if(!dummycheck.exists()){
-				Loggen.v(this, "Copying assets to the SD card.");
-				// copy the asset files to the SD card
-				if(!appdir.exists()){ appdir.mkdirs(); }
-				FileManager.copyAssetsToSDCard(c.getAssets(), false,
-						Gegevens.APP_NAME, appdir.getAbsolutePath());
-			}
+			FileManager.copyAssetsToSDCard(c);
 		}    	
 	}
     

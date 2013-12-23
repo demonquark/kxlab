@@ -18,17 +18,28 @@ public enum ServiceType {
 				fragName = Gegevens.FRAG_COMMUNITY;
 				break;
 		}
-		
 		return fragName;
 	}
 
 	/** This returns the corresponding server type for this enum.<br />
 	 *  TODO: Change to a switch statement. Right now it just returns the index.
 	 *  
-	 * @return corresponding server type for the TrustService object
+	 * @return corresponding server type for the TrustService type
 	 */
 	public int getServerType(){
-		return getIndex();
+		int serverType = 0;
+		switch(this) {
+			case COMMUNITY:
+				serverType = 1;
+				break;
+			case RECOMMENDED:
+				serverType = 2;
+				break;
+			case APPLY:
+				serverType = 3;
+				break;
+		}
+		return serverType;
 	}
 	
 	/** This returns the index of this item in the enum array.<br />
@@ -62,11 +73,18 @@ public enum ServiceType {
 	}
 
 	/** This returns the corresponding enum object for this server type.<br />
-	 *  TODO: Change to a switch statement. Right now it just uses from index.
-	 *  
 	 * @return ServiceType that corresponds to the server type. COMMUNITY if no corresponding enum
 	 */
 	public static ServiceType fromServerType(int serverType){
-		return fromIndex(serverType);
+		ServiceType [] allTypes = ServiceType.values();
+		ServiceType type = COMMUNITY;
+		for(int i = 0; i < allTypes.length; i++){
+			if(serverType == allTypes[i].getServerType()){
+				type = allTypes[i];
+				break; 
+			}
+		}
+		
+		return type;
 	}
 }

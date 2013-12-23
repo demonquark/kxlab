@@ -43,6 +43,9 @@ public class Gegevens {
 	public static final String EXTRA_USERSNUMBER	= "numberofusers";
 	public static final String EXTRA_POSTTYPE		= "posttype";
 	public static final String EXTRA_POSTS			= "posts";
+	public static final String EXTRA_POST			= "post";
+	public static final String EXTRA_REPLY			= "reply";
+	public static final String EXTRA_REPLIES		= "replies";
 	
 	/** Folder and file names */
 	public static final String FILE_EXT_MP3 		= ".mp3";
@@ -78,7 +81,6 @@ public class Gegevens {
 	public static final String FRAG_SETTINGS 		= "settings";
 	public static final String FRAG_FORUM	 		= "forum";
 	public static final String FRAG_SUGGESTION 		= "suggestion";
-	public static final String FRAG_VOTE	 		= "vote";
 	public static final String FRAG_ANNOUNCE 		= "announce";
 	public static final String FRAG_FAQ		 		= "faq";
 	public static final String FRAG_POSTLIST 		= "postlist";

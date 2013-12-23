@@ -54,7 +54,7 @@ public class Post implements Parcelable {
 		pdPublishTime 	= in.readLong();
 		pdLastEditTime 	= in.readLong();
 		pdLastReplyTime = in.readLong();
-		postSponsor 	= in.readParcelable(null);
+		postSponsor 	= in.readParcelable(getClass().getClassLoader());
     }
 
     // this is used to regenerate your object.

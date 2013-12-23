@@ -11,9 +11,11 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 
 public class FileManager {
 	
@@ -114,22 +116,46 @@ public class FileManager {
 	    }
 	}
 	
-	public void writeBitmapToFile(File folder, String filename, Bitmap bmp) throws IOException{
+	public static void writeBitmapToFile(File folder, String filename, Bitmap bmp) throws IOException{
 		FileOutputStream out = new FileOutputStream(filename);
 		bmp.compress(Bitmap.CompressFormat.PNG, 90, out);
 		out.close();
 	}
 	
-	public Bitmap readBitmapFromFile(File file, int reqWidth, int reqHeight) {
+	public static Bitmap readBitmapFromFile(File file, int reqWidth, int reqHeight) {
 		return BitmapTools.decodeSampledBitmapFromResource(file.getAbsolutePath(), reqWidth, reqHeight);
 	}
 
-	public Bitmap readBitmapFromFile(File file) {
+	public static Bitmap readBitmapFromFile(File file) {
 	    // use default bitmap options
 		final BitmapFactory.Options options = new BitmapFactory.Options();
 	    options.inJustDecodeBounds = true;
 	    
 	    // return the read bitmap
 	    return BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+	}
+	
+	public static void deleteAssetsFromSDCard(){
+		FileManager.deleteFile(new File(Environment.getExternalStorageDirectory(), 
+				Gegevens.FILE_USERDIRSD + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE));
+	}
+
+	public static void copyAssetsToSDCard(Context c){
+		
+		// Get the application directory
+		File appdir = new File(Environment.getExternalStorageDirectory(),Gegevens.FILE_USERDIRSD);
+		
+		// Check if the dummy data has already been copied (bit of a hack)
+		File dummycheck = new File (appdir, 
+				Gegevens.FILE_CACHE + Gegevens.FILE_SEPARATOR + Gegevens.FILE_DUMMYCHECK);
+
+		if(!dummycheck.exists()){
+			Loggen.v(FileManager.class, "Copying assets to the SD card.");
+			// copy the asset files to the SD card
+			if(!appdir.exists()){ appdir.mkdirs(); }
+			FileManager.copyAssetsToSDCard(c.getAssets(), false,
+					Gegevens.APP_NAME, appdir.getAbsolutePath());
+		}
+
 	}
 }
