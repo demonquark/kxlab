@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        
+	<ProgressBar android:id="@+id/progress_bar" android:layout_gravity="center" 
+		android:layout_width="wrap_content" android:layout_height="wrap_content" 
+		 style="?android:attr/progressBarStyleLarge" />
+    <LinearLayout android:id="@+id/content_holder" android:orientation="vertical"
+        android:layout_height="match_parent" android:layout_width="match_parent" >
+        
+        <LinearLayout android:id="@+id/fixed_header_holder" android:orientation="vertical"
+            android:layout_height="wrap_content" android:layout_width="match_parent" />
+
+        <RelativeLayout android:id="@+id/list_holder" android:layout_width="match_parent"
+		    android:layout_height="match_parent" android:layout_gravity="center" >
+			<edu.bupt.trust.kxlab.widgets.XListView android:id="@id/android:list"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:drawSelectorOnTop="false"/>
+		
+			<TextView android:id="@id/android:empty"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:gravity="center"
+				android:text="@string/myinfo_records_empty"/>
+		 </RelativeLayout>
+    </LinearLayout>
+ </FrameLayout>

@@ -1,5 +1,6 @@
 package edu.bupt.trust.kxlab8;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,10 +13,12 @@ import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.model.ActivityHistory;
 import edu.bupt.trust.kxlab.model.User;
+import edu.bupt.trust.kxlab.utils.FileManager;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -214,10 +217,16 @@ public class OtherSettingsFragment extends BaseDetailFragment implements Profile
 
 		if(settingName == null){
 			// Go the selected preference
-			if(position == 1){
-				mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, Gegevens.PREF_USERLIST);
-			} else {
+			if(position == 0){
+				// change the language
 				mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, Gegevens.PREF_LANGUAGE);
+			} else if(position == 1){
+				// show the user list
+				mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, Gegevens.PREF_USERLIST);
+			} else if (position == 2) {
+				// delete the cache
+				FileManager.deleteFile(new File(Environment.getExternalStorageDirectory(), 
+						Gegevens.FILE_USERDIRSD + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE));
 			}
 		} else if(Gegevens.PREF_LANGUAGE.equals(settingName)){
 			if(getActivity() != null){

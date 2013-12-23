@@ -1,18 +1,16 @@
 package edu.bupt.trust.kxlab8;
 
 import edu.bupt.trust.kxlab.model.PostType;
-import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab8.BaseListFragment.OnActionSelectedListener;
-import edu.bupt.trust.kxlab8.ForumThreadListFragment.OnServiceSelectedListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 
-public class ForumThreadActivity extends BaseActivity implements OnActionSelectedListener, OnServiceSelectedListener {
+public class ForumThreadActivity extends BaseActivity implements OnActionSelectedListener {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,17 +46,27 @@ public class ForumThreadActivity extends BaseActivity implements OnActionSelecte
 	    for(int i = 0; i < allTypes.length; i++){
 	    	// try to find an existing instance of the desired fragment
 	    	Fragment existingFragment = fragmentMng.findFragmentByTag(allTypes[i].getFragName());
+	    	ActionBar.Tab newTab = null;
 	    	if(existingFragment == null){
-	    		// if it does not exist, create a new fragment
-				actionBar.addTab(actionBar.newTab().setText(tabTitles[i]).setTabListener(
+	    		// Create a new tab using a new fragment
+	    		newTab = actionBar.newTab().setText(tabTitles[i]).setTabListener(
 						new TabListener<ForumThreadListFragment>(this, allTypes[i].getFragName(), 
-								ForumThreadListFragment.class)));
+								ForumThreadListFragment.class));
+
+	    		// Add the post type as an argument
+	    		Bundle arguments = new Bundle();
+	    		arguments.putSerializable(Gegevens.EXTRA_POSTTYPE, allTypes[i]);
+	    		newTab.setTag(arguments);
+	    		
 	    	} else {
-	    		// if it does it exist, use that fragment as the tab content
-				actionBar.addTab(actionBar.newTab().setText(tabTitles[i]).setTabListener(
+	    		// Create a new tab using the existing fragment as the tab content
+				newTab = actionBar.newTab().setText(tabTitles[i]).setTabListener(
 						new TabListener<ForumThreadListFragment>(this, allTypes[i].getFragName(), 
-								existingFragment)));
+								existingFragment));
 	    	}
+
+	    	// add the tab to the action bar
+			actionBar.addTab(newTab);
 	    }
 	    
 	    // select the correct tab
@@ -66,19 +74,12 @@ public class ForumThreadActivity extends BaseActivity implements OnActionSelecte
 	    	actionBar.setSelectedNavigationItem(selectedTab);
 	    }
 	}
-
+	
 	@Override public void onActionSelected(String tag, String goal, Object o) {
-		
+		Loggen.v(this, "onActionSelected in ForumThreadActivity.");
 	}
 
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode,resultCode, data);
 	}
-
-	@Override
-	public void onItemSelected(String tag, int position, TrustService service) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

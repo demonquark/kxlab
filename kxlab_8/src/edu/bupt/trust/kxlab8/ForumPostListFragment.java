@@ -103,7 +103,6 @@ public class ForumPostListFragment extends BaseDetailFragment implements Profile
 			((TextView) mRootView.findViewById(android.R.id.empty))
 				.setVisibility( (mHistory != null && mHistory.getRecords().size() > 0 ) ? View.GONE : View.VISIBLE);
 			
-			
 			// load the user information
 			if(mUser != null && showinfo){
 				// Set the image

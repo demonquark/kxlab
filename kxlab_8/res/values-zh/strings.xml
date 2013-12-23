@@ -197,9 +197,11 @@
 	<string name="other_language_en">English</string>
 	<string name="other_language_zh">中文</string>
 	<string name="other_userlist">用户列表</string>
+	<string name="other_deletecache">Delete Cache</string>
 	<string-array name="settings_titles">
 		<item>@string/other_language</item>
 		<item>@string/other_userlist</item>
+		<item>@string/other_deletecache</item>
 	</string-array>
 	<string-array name="settings_languages">
 		<item>@string/other_language_en</item>
@@ -207,7 +209,11 @@
 	</string-array>
 	<string name="other_language_error_title">Could not change language</string>
 	<string name="other_language_error_text">The language has not been changed.</string>
-						
+	<string name="other_sort_name_asc">&#8743; Name</string>
+	<string name="other_sort_name_desc">&#8744; Name</string>
+	<string name="other_sort_activitylevel_asc">&#8743; Activity level</string>
+	<string name="other_sort_activitylevel_desc">&#8744; Activity level</string>
+			
 	<!-- forum activity -->
 	<string name="forum_tab_discussion">Discussion</string>
 	<string name="forum_tab_suggestion">Suggestions</string>
@@ -221,7 +227,9 @@
 		<item>@string/forum_tab_vote</item>
 		<item>@string/forum_tab_faq</item>
 	</string-array>
-		
+	<string name="forum_post_title">post title</string>
+	<string name="forum_post_detail">post detail</string>
+			
 	<!-- xlistView refreshable -->	
 	<string name="xlistview_header_hint_normal">pull refresh</string>
     <string name="xlistview_header_hint_ready">relase to refresh</string>

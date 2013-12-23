@@ -3,9 +3,9 @@ package edu.bupt.trust.kxlab.data;
 final class Urls {
 
 	protected static final String urlBASE = "http://10.108.21.97:8080/trustworthy-community/t"; 
-	protected static final String pathProfileLogin = "userManagementByPhone/login";					// path for "/userInformation"
-	protected static final String pathProfileUserInfo = "userManagementByPhone/userInformation";		// path for "/userInformation"
-	protected static final String pathProfileHistory = "userManagementByPhone/activityHistory";		// path for "/activityHistory"
+	protected static final String pathProfileLogin = "userManagementByPhone/login";				
+	protected static final String pathProfileUserInfo = "userManagementByPhone/userInformation";
+	protected static final String pathProfileHistory = "userManagementByPhone/activityHistory";	
 	protected static final String pathMyServiceCreate = "servicemanagementbyphone/createService";
 	protected static final String pathMyServiceDelete = "servicemanagementbyphone/deleteMyService";
 	protected static final String pathMyServiceEdit = "servicemanagementbyphone/editMyService";
@@ -30,13 +30,15 @@ final class Urls {
 	protected static final String paramCommentListSize = "servicecommentlistsize";
 	protected static final String paramCommentScore = "commentscore";
 	protected static final String paramServiceComment = "servicecomment";
-	protected static final String paramProfilePassword = "password";			// param for "/login"
-	protected static final String jsonLoginOrNot = "loginOrNot";				// JSON response for "/login"
-	protected static final String jsonLoginErrorMessage = "loginerrormessage";	// JSON response for "/login"
-	protected static final String jsonServiceDetail = "ServiceDetail";			// JSON response for service details
-	protected static final String jsonCommentDetail = "CommentDetail";			// JSON response for service details
-	protected static final String jsonServiceUserNumber = "ServiceUserNumber";	// JSON response for service details
-	protected static final String jsonReplyCommentDetail = "ReplyCommentDetail";	// JSON response for service details
+	protected static final String paramProfilePassword = "password";			
+	protected static final String jsonLoginOrNot = "loginOrNot";				
+	protected static final String jsonLoginErrorMessage = "loginerrormessage";	
+	protected static final String jsonServiceDetail = "ServiceDetail";			
+	protected static final String jsonCommentDetail = "CommentDetail";			
+	protected static final String jsonServiceUserNumber = "ServiceUserNumber";	
+	protected static final String jsonReplyCommentDetail = "ReplyCommentDetail";
+	protected static final String jsonPostList = "PostList";
+	
 	
 	protected static final String build(String... parts){
 		String finalURL = ( parts.length > 0 ) ? parts[0] : "";

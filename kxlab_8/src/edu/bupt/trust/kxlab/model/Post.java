@@ -151,6 +151,28 @@ public class Post implements Parcelable {
 		if(postSponsor != null) { this.postSponsor = postSponsor; }
 	}
 	
+	public String getShortTitle(int max){
+		return cutString(postTitle, max);
+	}
+
+	public String getShortDetail(int max){
+		return cutString(postDetail, max);
+	}
+	
+	private String cutString(String longString, int max){
+		String shortString = "";
+		int len = longString.length();
+		if(max >= len || max < 0){
+			shortString = longString; 
+		} else if(max < 5){
+			shortString = longString.substring(0, max);
+		} else {
+			shortString = longString.substring(0, max -3) + "...";
+		}
+		
+		return shortString;
+	}
+	
 	public void setFromOtherPost(Post otherPost){
 		pdId 			= otherPost.getPdId();
 		postType 		= otherPost.getPostType();

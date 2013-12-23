@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:kxlab="http://schemas.android.com/apk/res-auto" >
+
+    <item android:id="@+id/action_create"
+        android:title="@string/action_create"
+        kxlab:showAsAction="always"
+        android:icon="@drawable/ic_action_new" />
+</menu>

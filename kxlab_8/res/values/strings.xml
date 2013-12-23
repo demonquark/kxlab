@@ -197,9 +197,11 @@
 	<string name="other_language_en">English</string>
 	<string name="other_language_zh">中文</string>
 	<string name="other_userlist">User list</string>
+	<string name="other_deletecache">Delete Cache</string>
 	<string-array name="settings_titles">
 		<item>@string/other_language</item>
 		<item>@string/other_userlist</item>
+		<item>@string/other_deletecache</item>
 	</string-array>
 	<string-array name="settings_languages">
 		<item>@string/other_language_en</item>
@@ -225,7 +227,9 @@
 		<item>@string/forum_tab_vote</item>
 		<item>@string/forum_tab_faq</item>
 	</string-array>
-		
+	<string name="forum_post_title">post title</string>
+	<string name="forum_post_detail">post detail</string>
+			
 	<!-- xlistView refreshable -->	
 	<string name="xlistview_header_hint_normal">pull refresh</string>
     <string name="xlistview_header_hint_ready">relase to refresh</string>

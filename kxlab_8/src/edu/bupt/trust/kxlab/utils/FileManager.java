@@ -103,6 +103,17 @@ public class FileManager {
 		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
 	}
 	
+	public static void deleteFile(File file){
+		if (file.isDirectory()) {
+	        String[] children = file.list();
+	        for (int i = 0; i < children.length; i++) {
+	        	deleteFile(new File(file, children[i]));
+	        }
+	    } else {
+	    	file.delete();
+	    }
+	}
+	
 	public void writeBitmapToFile(File folder, String filename, Bitmap bmp) throws IOException{
 		FileOutputStream out = new FileOutputStream(filename);
 		bmp.compress(Bitmap.CompressFormat.PNG, 90, out);

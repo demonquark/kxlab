@@ -41,6 +41,8 @@ public class Gegevens {
 	public static final String EXTRA_CAMERAIMG		= "trustkxlab8cameraphoto";
 	public static final String EXTRA_RECORDS		= "records";
 	public static final String EXTRA_USERSNUMBER	= "numberofusers";
+	public static final String EXTRA_POSTTYPE		= "posttype";
+	public static final String EXTRA_POSTS			= "posts";
 	
 	/** Folder and file names */
 	public static final String FILE_EXT_MP3 		= ".mp3";
@@ -82,8 +84,6 @@ public class Gegevens {
 	public static final String FRAG_POSTLIST 		= "postlist";
 	public static final String FRAG_POSTEDIT 		= "postedit";
 	public static final String FRAG_ANNOUNCEVIEW 	= "announceview";
-	
-	public static final String [] FRAG_TABS 		= { FRAG_COMMUNITY, FRAG_RECOMMEND, FRAG_APPLY};
 	
 	/** Request and result codes */
 	public static final int CODE_GALLERY			= 59701;

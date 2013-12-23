@@ -45,7 +45,6 @@ import android.widget.TextView;
  *  Service type is really only useful when creating a new service. (Note: a service object knows its own type) <br />
  *  The fragment supplements those arguments with the following items (added to saved state): <br />
  *  - EXTRA_SERVICE2: A temporary holder for changes made to the EXTRA_SERVICE object. <br />
- *  
  */
 public class ServiceDetailEditFragment extends BaseDetailFragment implements ServicesDetailListener {
 	

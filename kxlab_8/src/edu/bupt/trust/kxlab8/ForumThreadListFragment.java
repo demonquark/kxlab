@@ -1,15 +1,26 @@
 package edu.bupt.trust.kxlab8;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.bupt.trust.kxlab.adapters.ActivityRecordsArrayAdapter;
+import edu.bupt.trust.kxlab.adapters.CommentsArrayAdapter;
+import edu.bupt.trust.kxlab.adapters.PostArrayAdapter;
 import edu.bupt.trust.kxlab.adapters.ServicesArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
+import edu.bupt.trust.kxlab.data.DaoFactory.Source;
+import edu.bupt.trust.kxlab.data.ForumDAO;
+import edu.bupt.trust.kxlab.data.ForumDAO.ForumListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
+import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.model.Post;
+import edu.bupt.trust.kxlab.model.PostType;
 import edu.bupt.trust.kxlab.model.Settings;
 import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.model.User;
+import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
@@ -34,23 +45,27 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
-public class ForumThreadListFragment extends ListFragment 
-						implements ServicesListListener,IXListViewListener, BasicDialogListener, OnQueryTextListener{
+/**
+ *  This fragment shows a list of posts.
+ *  The fragment expects the following items in its arguments: <br />
+ *  - EXTRA_POSTTYPE: The type identifies the post type (FORUM, SUGGESTION, VOTE, ANNOUNCE, FAQ). Defaults to FORUM.
+ */
+public class ForumThreadListFragment extends BaseListFragment 
+					implements IXListViewListener, OnItemClickListener, ForumListener {
 	
-	private enum State { DELETE, LOADING, IDLE };
-	
-	private boolean mLoadServices;
-	private OnServiceSelectedListener mListener;
-	private SearchView mSearchView;
-	private LinearLayout mProgressContainer;
-	private ActionMode mActionMode;
-	ArrayList<TrustService> services;
-	ServicesDAO.Type servicesType;
-	private State state;
-	private User user;
+	private PostType mPostType;
+	private ArrayList <Post> mPosts;
+	private View mRootView;
 	private XListView mListView;
 	
 	public ForumThreadListFragment() {
@@ -66,326 +81,165 @@ public class ForumThreadListFragment extends ListFragment
 		super.onCreateOptionsMenu(menu, inflater);
 
 		// add the services menu
-		inflater.inflate(R.menu.services, menu);
-	    
-		// set up the search view
-		MenuItem searchItem = menu.findItem(R.id.action_search);
-	    mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-	    setupSearchView();
+		inflater.inflate(R.menu.forum, menu);
 	}
 
     @Override public boolean onOptionsItemSelected(MenuItem item) {
 
     	// Only process requests if we we've enabled interaction 
     	int itemId = item.getItemId();
-    	if(state != State.LOADING){
-            switch (itemId) {
-            	case R.id.action_create:
-            		initListView();
-                break;
-            	case R.id.action_delete:
-            		if (mActionMode == null) { changeToDeleteListView(); }
-                break;
-                default:
-                	return super.onOptionsItemSelected(item);
-            }
-    	} else if (itemId == android.R.id.home) {
-    		// make an exception for the home button
-    		return super.onOptionsItemSelected(item);
-    	}
-    	
+        switch (itemId) {
+        	case R.id.action_create:
+            break;
+            default:
+            	return super.onOptionsItemSelected(item);
+        }
     	return true;
     }
 	
 	@Override public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Loggen.v(this, getTag() + " - Creating a new ServicesList instance.");
+		Loggen.v(this, getTag() + " - Creating a new ThreadList instance.");
 		
 		// Assign values to the class variables (This avoids facing null exceptions when creating / saving a Parcelable)
 		// convert the saved state to an empty bundle to avoid errors later on
 		Bundle savedstate = (savedInstanceState != null) ? savedInstanceState : new Bundle();
 		Bundle arguments = (getArguments() != null) ? getArguments() : new Bundle();
 		
-		// Use the tag to determine the service type
-		String tag = getTag();
-		if(Gegevens.FRAG_RECOMMEND.equals(tag)){ servicesType = ServicesDAO.Type.RECOMMENDED;
-		} else if(Gegevens.FRAG_APPLY.equals(tag)){ servicesType = ServicesDAO.Type.APPLY;
-		} else { servicesType = ServicesDAO.Type.COMMUNITY; }
-
-		Settings.getInstance(getActivity()).loadSettingsFromSharedPreferences(getActivity());
-		user=Settings.getInstance(getActivity()).getUser();
-		if (user==null) {
-			user=new User();
-		}
+		// load the posts (Note: posts remains null if it is neither in the saved state nor the arguments)
+		mPosts = savedstate.getParcelableArrayList(Gegevens.EXTRA_POSTS); 							
+		if(mPosts == null){ mPosts = arguments.getParcelableArrayList(Gegevens.EXTRA_POSTS); } 	
 		
-		// load the services (Note: services remains null if it is neither in the saved state nor the arguments)
-		services = savedstate.getParcelableArrayList(Gegevens.EXTRA_SERVICES); 							
-		if(services == null){ services = arguments.getParcelableArrayList(Gegevens.EXTRA_SERVICES); } 	
+		// load the post type
+		mPostType = (PostType) savedstate.getSerializable(Gegevens.EXTRA_POSTTYPE);
+		if(mPostType == null){ mPostType = (PostType) arguments.getSerializable(Gegevens.EXTRA_POSTTYPE); } 	
+		if(mPostType == null){ mPostType = PostType.FORUM; }
 		
-		// load the state
-		state = (State) savedstate.getSerializable(Gegevens.EXTRA_STATE);
-		if(state == null){ state = State.IDLE; }
-		
-		// We just created a fragment. So reset the list on restore
-		mLoadServices = true;
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Loggen.v(this, getTag() + " - Creating the ServicesList view. ");
+		Loggen.v(this, getTag() + " - Creating the ThreadList view. ");
 
 		// Inflate the root view and save references to useful views as class variables
-		View rootView = inflater.inflate(R.layout.frag_serviceslist, container, false);
-		mListView = (XListView) rootView.findViewById(android.R.id.list);
+		mRootView = inflater.inflate(R.layout.frag_generic_xlist, container, false);
+		mListView = (XListView) mRootView.findViewById(android.R.id.list);
 		mListView.setPullLoadEnable(true);
 		mListView.setXListViewListener(this);
-		mProgressContainer = (LinearLayout) rootView.findViewById(R.id.progress_container);
 
-		return rootView;
+		return mRootView;
 	}
 
 	@Override
 	public void onViewStateRestored(Bundle savedInstanceState) {
 		super.onViewStateRestored(savedInstanceState);
-		Loggen.v(this, getTag() + " - Restoring ServiceList instance state.");
+		Loggen.v(this, getTag() + " - Restoring ThreadList instance state.");
 
-		// load the services list if requested (generally only if we just created the fragment)
-		if(mLoadServices){
-			if(services == null){
-				// Load the services from the DAO
-				showList(false);
-				geneData();
-				Loggen.v(this, "Restoring saved Instancestate: Hide the list");
-			}else{
-				// If we already have a list of services, just show those services
-				initListView();
-			}
+		// load the posts list if requested (generally only if we just created the fragment)
+		if(mPosts == null){
+			// Load the services from the DAO
+			Loggen.v(this, "Restoring saved Instancestate: Hide the list");
+			loadPosts();
 		}
+
+		// show or hide the list
+		showList(mPosts != null);
 	}
 
 	@Override public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		Loggen.v(this, getTag() + " - Saving ServiceList instance state.");
 		// save the list of services to the instance state
-		outState.putParcelableArrayList(Gegevens.EXTRA_SERVICES, services);
-		outState.putSerializable(Gegevens.EXTRA_STATE, state);
+		if(mPosts != null) { outState.putParcelableArrayList(Gegevens.EXTRA_POSTS, mPosts); }
+		outState.putSerializable(Gegevens.EXTRA_POSTTYPE, mPostType);
 	}
 	
-	@Override public void onAttach(Activity activity) {
-		super.onAttach(activity);
-
-		// Activities containing this fragment must implement its callbacks.
-		if (!(activity instanceof OnServiceSelectedListener)) {
-			throw new IllegalStateException( "Activity must implement fragment's callbacks.");
-		}
-		mListener = (OnServiceSelectedListener) activity;
-	}
-	
-	@Override public void onDetach() {
-		super.onDetach();
-		mListener = null;
-	}
-	
-	@Override public void onListItemClick(ListView listView, View view, int position, long id) {
-		super.onListItemClick(listView, view, position, id);
-		
-		
-		// only keep the items activated if we're in the delete state
-		if(state != State.DELETE){ listView.setItemChecked(position, false); }
-
-		// only show service details if we're in the IDLE state
-		if(state == State.IDLE){
-			// TODO: edit this to get the service details from the server (?)
-			// Now it just passes the service we have now. Which might be out of date or incomplete.
-			if(position > 0 && position <= services.size()){
-				// TODO: Figure out why the method is returning the wrong position
-				position--; 
-				mListener.onItemSelected(getTag(), position, services.get(position));
-			}
-		}
-	}
-	
-    private void setupSearchView() {
-    	
-    	if(getActivity() != null){
-            SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-            if (searchManager != null) {
-                SearchableInfo info = searchManager.getSearchableInfo(getActivity().getComponentName());
-                mSearchView.setSearchableInfo(info);
-            }
-    	}
-        mSearchView.setOnQueryTextListener(this);
-    }
-
-
 	private void showList(boolean showlist) {
+		
+		// Show or hide the progress bar
 		mListView.setVisibility((showlist) ? View.VISIBLE : View.GONE);
-		mProgressContainer.setVisibility( (!showlist) ? View.VISIBLE : View.GONE);
-		if(!showlist) { state = State.LOADING; } else { state = State.IDLE; }
-	}
-
-	private void initListView() {
-		Loggen.v(this, getTag() + " - initlistview: Create and set a list adapter for the listview.");
-		if(getActivity() != null){
-			// load a new adapter
-			ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
-					R.layout.list_item_services, android.R.id.text1, services);
+		((ProgressBar) mRootView.findViewById(R.id.progress_bar))
+							.setVisibility((showlist) ? View.GONE : View.VISIBLE);
+		((TextView) mRootView.findViewById(android.R.id.empty)).setVisibility(View.GONE);
+		
+		// load the posts list
+		if(mPosts != null && mListView != null && showlist){
+			Loggen.v(this, getTag() + " - Loading the adapter with " + mPosts.size() + " items.");
 			
-			// set the adapter
-			setListAdapter(a);
-
-			// set the choice mode and reaction to the choices 
-			mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-			
-			showList(true);
-			mLoadServices = false;
-		}
-	}
-
-	private void changeToDeleteListView() {
-		Loggen.v(this, getTag() + " - Changing to delete mode.");
-		if(getActivity() != null){
-			// set the choice mode and reaction to the choices 
-			state = State.DELETE;
-			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-			mActionMode = getActivity().startActionMode(new DeleteServicesMode ());
-		}
-	}
-	
-	@Override public void onReadServices(List<TrustService> services) {
-		Loggen.i(this, getTag() + " - Returned from onReadservices. ");
-
-		if(mListView != null){ 
-			if(mListView.isPullLoading()){
-				mListView.stopLoadMore();
+			if(mListView.getAdapter() == null ){ 
+				// The comments have not been loaded to the list view. Do that now
+				if(getActivity() != null){
+					PostArrayAdapter listAdapter = new PostArrayAdapter(getActivity(), 
+							R.layout.list_item_post, android.R.id.text1, mPosts);
+					mListView.setAdapter(listAdapter);
+					mListView.setOnItemClickListener(this);
+				}
+			} else {
+				// The comments are already loaded to the list view.
+				((BaseAdapter)mListView.getAdapter()).notifyDataSetChanged();
 			}
-			if(mListView.isPullRefreshing()){
-				mListView.stopRefresh(); 
-				mListView.updateHeaderTime();
+			
+			if(mPosts.size() == 0){
+				((TextView) mRootView.findViewById(android.R.id.empty)).setVisibility(View.VISIBLE);	
 			}
 		}
-
-		// update the services
-		this.services = (ArrayList<TrustService>) ((services != null) ? services : new ArrayList <TrustService> ());
-		
-		// update the UI
-		initListView();
 	}
 
-
-	@Override public void onBasicPositiveButtonClicked(String tag, Object o) {
-		if(Gegevens.FRAG_DELETE.equals(tag)){
-			// TODO: process deletion (for now it does the same as non delete)
-			initListView();
-		} else {
-			initListView();
-		}
-	}
-
-	@Override public void onBasicNegativeButtonClicked(String tag, Object o) { initListView(); }
-
-	// Do NOT search if the user just changed the text
-	@Override public boolean onQueryTextChange(String arg0) { return false; }
-	// Contact the DAO only if the user has submitted a full request
-	@Override public boolean onQueryTextSubmit(String arg0) { 
-		Loggen.v(this, getTag() + " - text submitted. ");
-	    mSearchView.clearFocus();
-		showList(false);
-		// TODO: process search (for now it just reloads the list)
-	    geneData();
-		return true; }
-	
-	/**
-	 * DeleteServicesMode allows you to pick items from the list and delete them.<br />
-	 * Note: Rather than adding menu items to the context menu, I've decided to just process the request 
-	 * @author Krishna
-	 */
-	private class DeleteServicesMode implements ActionMode.Callback{
-
-		/** Provide the user with a hint, so he knows what to do. */
-		@Override public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-			((BaseActivity) getActivity()).postToast(getString(R.string.services_delete_hint));
-			return true; 
-		}
-
-		/** Delete the selected items. */
-		@Override public void onDestroyActionMode(ActionMode mode) {
-			boolean willdelete = (mListView != null && services != null && mListView.getCheckedItemCount() > 0);
-			
-			// Make sure that the user has selected valid items
-	        if(willdelete){
-	        	
-	        	// Get and list the selected items
-	        	SparseBooleanArray checkedItems = getListView().getCheckedItemPositions();
-	        	String confirmationText = getString(R.string.services_delete_confirm_text);
-	        	String deleteQuery = "";
-	        	int listSize = services.size();
-	        	for(int i = 0; i < listSize; i++){
-	        		if(checkedItems.get(i)){
-	        			confirmationText += "\n" + services.get(i).getServicetitle();
-	        			// TODO: put logic to build deletion query (now it just adds the serviceIds)
-	        			deleteQuery += services.get(i).getServiceid();
-	        		}
-	        	}
-	        	
-	        	// Ask the user to confirm his choice
-	        	DialogFragmentBasic deletedialog = DialogFragmentBasic.newInstance(true, ForumThreadListFragment.this)
-	        		.setTitle(getString(R.string.services_delete_confirm_title)).setMessage(confirmationText)
-	        		.setObject(deleteQuery)
-	        		.setPositiveButtonText(getString(R.string.ok))
-	        		.setNegativeButtonText(getString(R.string.cancel));
-	        		
-	        	// note: the user cannot cancel this confirmation 
-	        	deletedialog.setCancelable(false);
-	        	deletedialog.show(getActivity().getSupportFragmentManager(), Gegevens.FRAG_DELETE);
-	        	
-	        } else {
-	        	// Inform the user that nothing was deleted
-	        	DialogFragmentBasic confirmdialog = DialogFragmentBasic.newInstance(false, ForumThreadListFragment.this)
-	        		.setTitle(getString(R.string.services_delete_empty_title))
-        			.setMessage(getString(R.string.services_delete_empty_text))
-        			.setPositiveButtonText(getString(R.string.ok));
-
-	        	// note: the user cannot cancel this notification 
-	        	confirmdialog.setCancelable(false);
-	        	confirmdialog.show(getActivity().getSupportFragmentManager(), Gegevens.FRAG_CONFIRM);
-	        }
-
-			mActionMode = null;
-		}
-		
-		@Override public boolean onActionItemClicked(ActionMode mode, MenuItem item) { return true; }
-		@Override public boolean onPrepareActionMode(ActionMode mode, Menu menu) { return false; }
-
-	}
-	
-	public interface OnServiceSelectedListener{
-		public void onItemSelected(String tag, int position, TrustService service);
-	}
-
-	private void geneData() {
+	private void loadPosts() {
 		if(getActivity() != null){
-			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-			servicesDAO.readServices(servicesType, DaoFactory.Page.LATEST, DaoFactory.Source.DUMMY, new String [] {});
+			ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPostType);
+			forumDAO.readPostList(Source.DUMMY, mPostType);
 		}
 	}
 
-	@Override public void onRefresh() {
-		geneData();
+	@Override public void onRefresh() { }
+
+	@Override public void onLoadMore() { }
+
+	@Override public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+		
 	}
 
-	@Override public void onLoadMore() {
-		geneData();
-	}
-	
 	@Override
-	public void onDeleteService(boolean success) {
+	public void onCreatePost(boolean success) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void onSearchService(List<TrustService> services) {
+	public void onCreateReply(boolean success) {
 		// TODO Auto-generated method stub
 		
-	}	
+	}
+
+	@Override
+	public void onCreateVote(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onReadPostList(List<Post> posts) {
+		Loggen.v(this, "Got a response onReadPostList. posts exist? " + (posts != null));
+		mPosts = (ArrayList<Post>) posts;
+		showList(true);
+		
+	}
+
+	@Override
+	public void onReadPost(Post post) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onReadAnnounceFAQ(Post post) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSearchPostList(List<Post> posts) {
+		// TODO Auto-generated method stub
+		
+	}
 }

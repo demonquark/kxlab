@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list_item_activityrecords"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/list_item_horizontal_padding"
+    android:paddingRight="@dimen/list_item_horizontal_padding"
+    android:paddingTop="@dimen/list_record_vertical_padding"
+    android:paddingBottom="@dimen/list_record_vertical_padding" >
+    
+	<TextView android:id="@android:id/text1" android:textAppearance="?android:attr/textAppearanceMedium" 
+		android:layout_width="match_parent" android:layout_height="wrap_content" 
+		android:text="@string/forum_post_title" android:textColor="@color/black"
+     	android:gravity="left" android:singleLine="true" android:ellipsize="end" />
+
+	<TextView android:id="@android:id/text2" android:textAppearance="?android:attr/textAppearanceSmall" 
+		android:layout_width="match_parent" android:layout_height="wrap_content" 
+		android:text="@string/forum_post_detail" android:textColor="@color/gray"
+     	android:gravity="left" android:singleLine="true" android:ellipsize="end" />
+</LinearLayout>

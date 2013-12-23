@@ -9,23 +9,23 @@ import edu.bupt.trust.kxlab.data.ProfileDAO.LoginListener;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesDetailListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
+import edu.bupt.trust.kxlab.model.PostType;
 
 public class DaoFactory {
 	
-	public enum DAO { SERVICES, PEOPLE, COMMENT};
 	public enum Source { DEFAULT, WEB, LOCAL, DUMMY };
-	public enum Page {
-		PREVIOUS, LATEST
-	};
+	public enum Page { PREVIOUS, LATEST };
 	
 	private static DaoFactory mInstance = null;
  
 	private ServicesDAO servicesDAO;
 	private HashMap <MyServicesDAO.Type, MyServicesDAO> myServicesDAOMap;
+	private HashMap <PostType, ForumDAO> forumDAOMap;
 	private ProfileDAO	profileDAO;
  
 	private DaoFactory(){ 
 		myServicesDAOMap = new HashMap <MyServicesDAO.Type, MyServicesDAO>();
+		forumDAOMap = new HashMap <PostType, ForumDAO>();		
 	}
  
 	public static DaoFactory getInstance(){
@@ -97,4 +97,15 @@ public class DaoFactory {
 		return profileDAO;
 	}
 	
+	public ForumDAO setForumDAO(Context c, ForumDAO.ForumListener listener, PostType type){
+		ForumDAO forumDAO;
+		if(forumDAOMap.get(type) == null) {
+			forumDAO = new ForumDAO(c, listener);
+			forumDAOMap.put(type,forumDAO);
+		} else {
+			forumDAO = forumDAOMap.get(type);
+			forumDAO.setForumListener(listener);
+		}
+		return forumDAO;
+	}	
 }
