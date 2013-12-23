@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+	<ScrollView android:id="@+id/details_container" 
+	    android:layout_width="match_parent" android:layout_height="match_parent"
+	    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+	    android:layout_marginRight="@dimen/activity_horizontal_margin" >
+	    <TableLayout android:id="@+id/details_table"
+		    android:layout_marginTop="@dimen/activity_vertical_margin"
+	        android:layout_width="match_parent" android:layout_height="wrap_content" 
+	        android:stretchColumns="1">
+	        <!-- the avatar image and email -->
+	        <RelativeLayout android:id="@+id/details_head"
+				android:layout_marginLeft="@dimen/row_header_horizontal_padding" 
+	            android:layout_width="match_parent" android:layout_height="wrap_content">
+				
+				<ImageView android:id="@+id/details_img"
+					android:layout_width="@dimen/fragment_img_height"
+					android:layout_height="@dimen/fragment_img_height"
+					android:layout_marginRight="@dimen/row_header_horizontal_padding"
+					android:contentDescription="@string/details_owner_img"
+					android:src="@drawable/ic_footer_myservice"
+					android:layout_alignParentLeft="true" />
+				<ImageView android:id="@+id/details_btn_img"
+					android:layout_width="@dimen/fragment_img_height"
+					android:layout_height="@dimen/fragment_img_height"
+					android:layout_marginRight="@dimen/row_header_horizontal_padding"
+					android:contentDescription="@string/details_owner_img"
+					android:src="@drawable/spinner_border"
+					android:layout_alignParentLeft="true" />
+								
+				<LinearLayout android:id="@+id/details_name_container" android:orientation="vertical"
+				    android:layout_toRightOf="@id/details_img" android:layout_centerVertical="true"
+				    android:layout_width="match_parent" android:layout_height="wrap_content">
+					
+					<TextView android:id="@+id/details_title" 
+						android:layout_width="wrap_content" android:layout_height="wrap_content"
+		            	android:textAppearance="?android:attr/textAppearanceLarge"
+		            	android:text="@string/details_edit_title" />
+		
+					<TextView android:id="@+id/details_user_email"
+						android:layout_width="wrap_content" android:layout_height="wrap_content"
+		            	android:textAppearance="?android:attr/textAppearanceMedium"
+		            	android:text="@string/myinfo_email_text" />
+				</LinearLayout>
+	        </RelativeLayout>
+	        
+	        <!-- the name edit text -->
+	        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
+	            android:layout_marginTop="@dimen/row_vertical_padding">
+				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/details_title_title" />
+	 			<EditText android:id="@+id/details_edit_title"
+	 			    android:inputType="textPersonName"
+	 			    android:hint="@string/details_title_hint"
+	 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
+				    android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/niets" />
+	    	</TableRow>
+	    	
+	        <!-- the phone number -->
+			<TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
+	            android:layout_marginTop="@dimen/row_vertical_padding">
+				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/details_type_title" />
+				<Spinner android:id="@+id/details_spin_type" android:spinnerMode="dropdown"
+				    android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:hint="@string/details_type_hint" /> 
+	    	</TableRow>
+	        
+			<!-- the student source -->
+	        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
+	            android:layout_marginTop="@dimen/row_vertical_padding">
+				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
+				    android:text="@string/details_description_title" />
+	 			<EditText android:id="@+id/details_edit_description"
+					android:singleLine="false" android:lines="5" android:inputType="textMultiLine"
+					android:gravity="top|left" android:scrollHorizontally="false" 
+					android:hint="@string/details_description_hint" android:text="@string/niets"
+	 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
+				    android:textAppearance="?android:attr/textAppearanceMedium" />
+	    	</TableRow>
+	        
+	        <!-- the activity record -->
+			<RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+			    android:layout_marginTop="@dimen/row_vertical_padding">
+			    <Button android:id="@+id/details_btn_save" android:layout_centerInParent="true"
+	           		android:layout_width="wrap_content" android:layout_height="wrap_content"
+	           		android:text="@string/details_btn_save" />
+			</RelativeLayout>
+	        		
+		</TableLayout>
+	</ScrollView>
+
+	<ProgressBar android:id="@+id/details_progress_bar" style="?android:attr/progressBarStyleLarge"
+	android:visibility="gone" android:layout_gravity="center"
+	android:layout_width="wrap_content" android:layout_height="wrap_content" />
+	
+</FrameLayout>

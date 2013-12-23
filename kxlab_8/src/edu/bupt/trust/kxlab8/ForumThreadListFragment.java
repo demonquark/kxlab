@@ -5,7 +5,6 @@ import java.util.List;
 
 import edu.bupt.trust.kxlab.adapters.ServicesArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
-import edu.bupt.trust.kxlab.data.MyServicesDAO;
 import edu.bupt.trust.kxlab.data.ServicesDAO;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
 import edu.bupt.trust.kxlab.model.Settings;
@@ -38,7 +37,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
-public class ServicesListFragment extends ListFragment 
+public class ForumThreadListFragment extends ListFragment 
 						implements ServicesListListener,IXListViewListener, BasicDialogListener, OnQueryTextListener{
 	
 	private enum State { DELETE, LOADING, IDLE };
@@ -54,7 +53,7 @@ public class ServicesListFragment extends ListFragment
 	private User user;
 	private XListView mListView;
 	
-	public ServicesListFragment() {
+	public ForumThreadListFragment() {
         // Empty constructor required for ServicesListFragment
 	}
 	
@@ -329,7 +328,7 @@ public class ServicesListFragment extends ListFragment
 	        	}
 	        	
 	        	// Ask the user to confirm his choice
-	        	DialogFragmentBasic deletedialog = DialogFragmentBasic.newInstance(true, ServicesListFragment.this)
+	        	DialogFragmentBasic deletedialog = DialogFragmentBasic.newInstance(true, ForumThreadListFragment.this)
 	        		.setTitle(getString(R.string.services_delete_confirm_title)).setMessage(confirmationText)
 	        		.setObject(deleteQuery)
 	        		.setPositiveButtonText(getString(R.string.ok))
@@ -341,7 +340,7 @@ public class ServicesListFragment extends ListFragment
 	        	
 	        } else {
 	        	// Inform the user that nothing was deleted
-	        	DialogFragmentBasic confirmdialog = DialogFragmentBasic.newInstance(false, ServicesListFragment.this)
+	        	DialogFragmentBasic confirmdialog = DialogFragmentBasic.newInstance(false, ForumThreadListFragment.this)
 	        		.setTitle(getString(R.string.services_delete_empty_title))
         			.setMessage(getString(R.string.services_delete_empty_text))
         			.setPositiveButtonText(getString(R.string.ok));

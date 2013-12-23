@@ -14,6 +14,8 @@ final class Urls {
 	protected static final String pathMyServiceDetail = "servicemanagementbyphone/serviceDetail";
 	protected static final String pathServiceScore = "servicemanagementbyphone/importServiceScore";
 	protected static final String pathServiceComment = "servicemanagementbyphone/importServiceComment";
+	protected static final String pathServiceList = "servicemanagementbyphone/myServiceList";
+	protected static final String pathServiceDetail = "servicemanagementbyphone/serviceDetail";
 	protected static final String paramServiceType = "servicetype";				
 	protected static final String paramServiceListSize = "serviceListSize"; 	
 	protected static final String paramServiceListPage = "serviceListPage"; 	
@@ -29,10 +31,12 @@ final class Urls {
 	protected static final String paramCommentScore = "commentscore";
 	protected static final String paramServiceComment = "servicecomment";
 	protected static final String paramProfilePassword = "password";			// param for "/login"
-	protected static final String jsonLoginOrNot = "loginOrNot";				// json response for "/login"
-	protected static final String jsonLoginErrorMessage = "loginerrormessage";	// json response for "/login"
-	protected static final String pathServiceList = "servicemanagementbyphone/myServiceList";
-	protected static final String pathServiceDetail = "servicemanagementbyphone/serviceDetail";
+	protected static final String jsonLoginOrNot = "loginOrNot";				// JSON response for "/login"
+	protected static final String jsonLoginErrorMessage = "loginerrormessage";	// JSON response for "/login"
+	protected static final String jsonServiceDetail = "ServiceDetail";			// JSON response for service details
+	protected static final String jsonCommentDetail = "CommentDetail";			// JSON response for service details
+	protected static final String jsonServiceUserNumber = "ServiceUserNumber";	// JSON response for service details
+	protected static final String jsonReplyCommentDetail = "ReplyCommentDetail";	// JSON response for service details
 	
 	protected static final String build(String... parts){
 		String finalURL = ( parts.length > 0 ) ? parts[0] : "";

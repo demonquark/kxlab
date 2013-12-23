@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+   <RelativeLayout android:id="@+id/list_header" xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:layout_marginLeft="@dimen/list_item_horizontal_padding"
+	android:layout_marginRight="@dimen/list_item_horizontal_padding"
+	android:layout_marginBottom="@dimen/list_item_vertical_margin"
+	android:background="@drawable/setbar_bg" >
+
+		<ImageView android:id="@+id/myinfo_owner_img"
+			android:layout_width="@dimen/list_person_img_width"
+			android:layout_height="@dimen/list_person_img_height"
+			android:layout_marginLeft="@dimen/list_item_horizontal_margin"
+			android:layout_marginRight="@dimen/list_item_horizontal_margin"
+			android:contentDescription="@string/details_owner_img"
+			android:layout_alignParentLeft="true"
+			android:src="@drawable/ic_launcher" />
+
+		<TextView android:id="@+id/myinfo_owner_name" 
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textSize="@dimen/list_person_text" android:text="@string/details_owner_name"
+			android:paddingTop="@dimen/list_item_vertical_padding"
+            android:layout_alignParentTop="true" android:layout_toRightOf="@id/myinfo_owner_img" />
+
+		<TextView android:id="@+id/myinfo_owner_score"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_person_text" android:text="@string/details_owner_score" 
+			android:paddingBottom="@dimen/list_item_vertical_padding"
+			android:layout_toRightOf="@id/myinfo_owner_img" android:layout_alignBottom="@id/myinfo_owner_img" />
+		
+		<TextView android:id="@+id/myinfo_owner_time"
+			android:paddingBottom="@dimen/list_item_vertical_padding"
+		    android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_person_text" android:text="@string/details_owner_time"
+			android:layout_marginLeft="@dimen/list_person_horizontal_padding" 
+			android:layout_marginRight="@dimen/list_person_horizontal_padding" 
+			android:layout_alignParentRight="true" android:gravity="right"
+			android:layout_toRightOf="@id/myinfo_owner_score" android:layout_alignBottom="@id/myinfo_owner_img"/>
+</RelativeLayout>

@@ -15,6 +15,7 @@ public class Gegevens {
 	public static final String PREF_USER	        = "defaultuser";
 	public static final String PREF_USERFACE		= "userface";
 	public static final String PREF_DUMMY 			= "dummy";
+	public static final String PREF_USERLIST		= "userlist";
 
 	/** Intent and Bundle Extras */
 	public static final String EXTRA_MSGID			= "msgId";
@@ -25,6 +26,7 @@ public class Gegevens {
 	public static final String EXTRA_FOOTERID		= "footerid";
 	public static final String EXTRA_SERVICES		= "trustservices";
 	public static final String EXTRA_SERVICE		= "trustservice";
+	public static final String EXTRA_SERVICE2		= "trustservice2";
 	public static final String EXTRA_SELECTEDTAB	= "selectedtab";
 	public static final String EXTRA_SELECTEDITEM	= "selecteditem";
 	public static final String EXTRA_TAG			= "tag";
@@ -33,10 +35,12 @@ public class Gegevens {
 	public static final String EXTRA_RESULT			= "result";
 	public static final String EXTRA_COMMENTS		= "comments";
 	public static final String EXTRA_SERVICETYPE	= "servicetype";
+	public static final String EXTRA_FLAVOR			= "serviceflavor";
 	public static final String EXTRA_USER			= "user";
 	public static final String EXTRA_USER2			= "user2";
 	public static final String EXTRA_CAMERAIMG		= "trustkxlab8cameraphoto";
 	public static final String EXTRA_RECORDS		= "records";
+	public static final String EXTRA_USERSNUMBER	= "numberofusers";
 	
 	/** Folder and file names */
 	public static final String FILE_EXT_MP3 		= ".mp3";
@@ -69,6 +73,17 @@ public class Gegevens {
 	public static final String FRAG_INFOVIEW 		= "infoview";
 	public static final String FRAG_INFOEDIT 		= "infoedit";
 	public static final String FRAG_INFOLIST 		= "infolist";
+	public static final String FRAG_SETTINGS 		= "settings";
+	public static final String FRAG_FORUM	 		= "forum";
+	public static final String FRAG_SUGGESTION 		= "suggestion";
+	public static final String FRAG_VOTE	 		= "vote";
+	public static final String FRAG_ANNOUNCE 		= "announce";
+	public static final String FRAG_FAQ		 		= "faq";
+	public static final String FRAG_POSTLIST 		= "postlist";
+	public static final String FRAG_POSTEDIT 		= "postedit";
+	public static final String FRAG_ANNOUNCEVIEW 	= "announceview";
+	
+	public static final String [] FRAG_TABS 		= { FRAG_COMMUNITY, FRAG_RECOMMEND, FRAG_APPLY};
 	
 	/** Request and result codes */
 	public static final int CODE_GALLERY			= 59701;

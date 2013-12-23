@@ -47,7 +47,7 @@ import android.widget.TextView;
  *  - EXTRA_SERVICE2: A temporary holder for changes made to the EXTRA_SERVICE object. <br />
  *  
  */
-public class ServiceDetailEditFragment extends BaseDetailFragment implements ServicesDetailListener {
+public class ForumPostEditFragment extends BaseDetailFragment implements ServicesDetailListener {
 	
 	private TrustService oldService;
 	private TrustService newService;
@@ -55,7 +55,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 	private View mRootView;
 	private Uri mCapturedImageURI;
 	
-	public ServiceDetailEditFragment(){
+	public ForumPostEditFragment(){
 		// Empty constructor required for MyInformationFragment
 	}
 	

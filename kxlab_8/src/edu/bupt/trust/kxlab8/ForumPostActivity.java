@@ -1,26 +1,24 @@
 package edu.bupt.trust.kxlab8;
 
-import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
+import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 
-/**
- *  The activity expects the following items in its arguments: <br />
- *  - EXTRA_MSG: A bundle added to the intent. The bundle contains all the actual data. Acts as a savedInstanceState. <br />
- *  The bundle should contain the following:
- *  - EXTRA_SERVICE: A service object <br />
- *  - EXTRA_FLAVOR: The service flavor (MYSERVICE, SERVICE)
- *  Service flavor is really only useful for viewing a service. (Note: only MYSERVICE can be edited)<br />
- *  - EXTRA_SERVICETYPE: The type identifies the service type (COMMUNITY, RECOMMEND, APPLY)
- *  Service type is really only useful when creating a new service. (Note: a service object knows its own type)<br />
- */
-public class ServiceDetailActivity extends BaseDetailActivity {
+
+public class ForumPostActivity extends BaseDetailActivity {
 	
-	private ServiceDetailViewFragment viewFragment;
+	private ServiceDetailViewFragment listFragment;
 	private ServiceFlavor mFlavor;
 	private ServiceType mType;
 	
@@ -59,10 +57,10 @@ public class ServiceDetailActivity extends BaseDetailActivity {
 				Bundle arguments = new Bundle();
 				arguments.putParcelable(Gegevens.EXTRA_SERVICE, service);
 				arguments.putSerializable(Gegevens.EXTRA_FLAVOR, mFlavor);
-				viewFragment = new ServiceDetailViewFragment();
-				viewFragment.setArguments(arguments);
+				listFragment = new ServiceDetailViewFragment();
+				listFragment.setArguments(arguments);
 				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-				ft.add(R.id.details, viewFragment, Gegevens.FRAG_INFOVIEW);
+				ft.add(R.id.details, listFragment, Gegevens.FRAG_INFOVIEW);
 				ft.addToBackStack(Gegevens.FRAG_INFOVIEW);
 				ft.commit();
 			}

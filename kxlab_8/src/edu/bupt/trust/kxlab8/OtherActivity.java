@@ -1,79 +1,68 @@
 package edu.bupt.trust.kxlab8;
 
-import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
-import edu.bupt.trust.kxlab8.MyServicesListFragment.OnServiceSelectedListener;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
-import android.view.View;
 
-public class OtherActivity extends BaseActivity implements OnServiceSelectedListener{
+public class OtherActivity extends BaseDetailActivity {
 
-	final String [] mFragmentTags = new String [] {Gegevens.FRAG_COMMUNITY, Gegevens.FRAG_RECOMMEND, Gegevens.FRAG_APPLY};
+	OtherSettingsFragment viewFragment;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_temp);
+		setContentView(R.layout.activity_generic);
 		
+		// enable back stack navigation
+		getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		getSupportFragmentManager().addOnBackStackChangedListener(this);
 		
 		// disable the button for this footer menu item
 		findViewById(R.id.footer_other).setEnabled(false);
-
-		// Restore the instance
-		setupActionBar((savedInstanceState != null) ? savedInstanceState.getInt(Gegevens.EXTRA_SELECTEDTAB, 0) : 0 );
-	}
-
-	public void onBtnClick(View view) {
-		int id = view.getId();
-		switch(id){
-			
-			default:
-				super.onBtnClick(view);
+		
+		// Create the settings fragment and add it to the activity using a fragment transaction.
+		if (savedInstanceState == null) {
+			// launch the view fragment
+			viewFragment = new OtherSettingsFragment();
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+			ft.add(R.id.details, viewFragment, Gegevens.FRAG_SETTINGS);
+			ft.commit();
 		}
+		
+		onBackStackChanged();
 	}
 	
-	private void setupActionBar(int selectedTab){
-	    // setup action bar for tabs
-	    ActionBar actionBar = getSupportActionBar();
-	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-	    actionBar.setDisplayShowTitleEnabled(false);
-	    
-	    // add the tabs 
-	    FragmentManager fragmentMng = getSupportFragmentManager();
-	    String [] tabTitles = getResources().getStringArray(R.array.services_tab_titles);
-	    for(int i = 0; i < mFragmentTags.length; i++){
-	    	// try to find an existing instance of the desired fragment
-	    	Fragment existingFragment = fragmentMng.findFragmentByTag(mFragmentTags[i]);
-	    	if(existingFragment == null){
-	    		// if it does not exist, create a new fragment
-				actionBar.addTab(actionBar.newTab().setText(tabTitles[i]).setTabListener(
-						new TabListener<MyServicesListFragment>(this, mFragmentTags[i], MyServicesListFragment.class)));
-	    	} else {
-	    		// if it does it exist, use that fragment as the tab content
-				actionBar.addTab(actionBar.newTab().setText(tabTitles[i]).setTabListener(
-						new TabListener<MyServicesListFragment>(this, mFragmentTags[i], existingFragment)));
-	    	}
-	    }
-	    
-	    // select the correct tab
-	    if(0 <= selectedTab && selectedTab < mFragmentTags.length){
-	    	actionBar.setSelectedNavigationItem(selectedTab);
-	    }
+	@Override protected void onSaveInstanceState(Bundle outState) {
+		Loggen.v(this, "Saving instance state of the services activity.");
+		// save the selected tab to the instance state
+		super.onSaveInstanceState(outState);
 	}
 
-	@Override public void onItemSelected(String tag, int position, TrustService service) {
-		Loggen.v(this, "User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid() );
-		//startDetailsActivity(tag, ServiceDetailActivity.Type.VIEW, service);
-	}
 
-	@Override
-	public void onCreateService(String tag) {
-		//startDetailsActivity(tag, ServiceDetailActivity.Type.NEW, new TrustService());
-		
+	/** Callback from the fragment
+	 * This implementation processes settings that require an additional fragment: <br />
+	 * From: irrelevant
+	 * - Goal = FRAG_INFOLIST: The user selected an item and needs a new .
+	 * @param from - The tag of the sending fragment. Note: is NOT the same as the name in the back stack
+	 * @param to - The tag of the target fragment. Note: is NOT the same as the name in the back stack
+	 * @param o - Should be a string indicating the name of the setting. (Not sure about this... Might change...)
+	 */
+	@Override public void onActionSelected(String from, String to, Object o) {
+		if(Gegevens.FRAG_INFOLIST.equals(to) && o instanceof String){
+			// create a bundle and add the provided user to it
+			Bundle arguments = new Bundle();
+			arguments.putString(Gegevens.EXTRA_MSG, (String) o ); 
+			
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+			// launch the edit fragment
+			OtherSettingsFragment listFragment = new OtherSettingsFragment();
+			listFragment.setArguments(arguments);
+			ft.replace(R.id.details, listFragment, Gegevens.FRAG_INFOLIST);
+			ft.addToBackStack(Gegevens.FRAG_INFOLIST);
+			ft.commit();
+		}
 	}
-
 	
 }

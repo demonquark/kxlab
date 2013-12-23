@@ -19,6 +19,7 @@ import com.loopj.android.http.RequestParams;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ServicesDAOabstract.OnServicesRawDataReceivedListener;
 import edu.bupt.trust.kxlab.model.Comment;
+import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
@@ -115,6 +116,17 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 
 	}
 
+	/**
+	 * 
+	 * @param type
+	 * @param parameters
+	 *            parameter[0] represents user mail,parameter[1] represents
+	 *            service title,parameter[2] represents service detail
+	 */
+	public void createService(Source source, ServiceType type, String[] parameters) {
+		dummy.createService(null);
+
+	}
 	public void deleteService(int serviceId) {
 		String path = Urls.pathMyServiceDelete;
 		RequestParams params = new RequestParams();
@@ -146,6 +158,17 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		Loggen.i(this, "Got path: " + path);
 
 		web.editService(path);
+	}
+
+	/**
+	 * 
+	 * @param serviceId
+	 * @param parameters
+	 *            parameter[0] represents service title, parameter[1] represents
+	 *            service detail, parameter[2] represents service photo,
+	 */
+	public void editService(Source source, int serviceId, String[] parameters) {
+		dummy.editService(null);
 	}
 
 	/**
@@ -336,7 +359,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			local.readService(ServicesDAOlocal.pathToFileName(path));
 			break;
 		case DUMMY:
-			local.readService(ServicesDAOlocal.pathToFileName(path));
+			dummy.readService(ServicesDAOlocal.pathToFileName(path));
 			break;
 
 		}
@@ -372,10 +395,18 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 
 	}
 
-	@Override
-	public void onCreateService(RawResponse response) {
+	public void createServiceComment(Source source, int serviceId, String userMail, String comment) {
+		dummy.createServiceComment("");
+	}
+
+	public void updateServiceScore(Source source, int serviceId, String userMail, int score) {
+		dummy.updateServiceScore("");
+	}
+
+
+	@Override public void onCreateService(RawResponse response) {
 		Loggen.i(this, "Got a response: " + response.message);
-		boolean success = (Boolean) null;
+		boolean success = false;
 		if (response.errorStatus == RawResponse.Error.NONE
 				&& isJson(response.message)) {
 
@@ -400,8 +431,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (listlistener.get() != null) {
-			listlistener.get().onCreateService(success);
+		if (detaillistener.get() != null) {
+			detaillistener.get().onCreateService(success);
 		}
 
 	}
@@ -443,7 +474,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	@Override
 	public void onEditService(RawResponse response) {
 		Loggen.i(this, "Got a response: " + response.message);
-		boolean success = (Boolean) null;
+		boolean success = true;
 		if (response.errorStatus == RawResponse.Error.NONE
 				&& isJson(response.message)) {
 
@@ -468,8 +499,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (listlistener.get() != null) {
-			listlistener.get().onEditService(success);
+		if (detaillistener.get() != null) {
+			detaillistener.get().onEditService(success);
 		}
 	}
 
@@ -532,57 +563,74 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		}
 	}
 
-	@Override
-	public void onReadService(RawResponse response) {
+	@Override public void onReadService(RawResponse response) {
+		
+		// default return values
 		TrustService service = null;
 		ArrayList<Comment> comments = null;
+		int numberOfUsers = -1;
+		
 		if (response.errorStatus == RawResponse.Error.NONE) {
+			try{
+				// first save the data to the cache
+				if (response.path != null && response.message != null) {
+					local.writeToFile(response.path, response.message);
+				}
+				
+				// Generic Gson instance used for conversion
+				Gson gson = new Gson();
 
-			// first save the data to the cache
-			if (response.path != null && response.message != null) {
-				local.writeToFile(response.path, response.message);
-			}
-
-			// Next create detail of Services using the JSON message
-			JsonParser jp = new JsonParser();
-			JsonElement je = jp.parse(response.message);
-			JsonObject jobj = je.getAsJsonObject();
-
-			JsonElement s = jobj.get("ServiceDetail");// get service detail
-			Gson gson = new Gson();
-			service = gson.fromJson(s, TrustService.class);
-
-			JsonElement c = jobj.get("CommentDetail");// get comment list
-			java.lang.reflect.Type listType = new TypeToken<ArrayList<Comment>>() {
-			}.getType();
-			comments = gson.fromJson(c, listType);
-
-			JsonElement sn = jobj.get("ServiceUserNumber");// ?
-
-			JsonElement rd = jobj.get("ReplyCommentDetail");	
-			JsonArray ja = rd.getAsJsonArray();
-			for(JsonElement ele:ja) {
-				Comment rc = gson.fromJson(ele, Comment.class);
-				for(Comment co:comments) {
-					if(co.getCommentid() == rc.getRootcommentid()) {
-						co.getDetailComments().add(rc);
+				// Step 1 - convert the message into a JSON object
+				JsonElement je = new JsonParser().parse(response.message);
+				JsonObject jobj = je.getAsJsonObject();
+				
+				// Step 2 - convert the service details to a TrustService instance
+				JsonElement s = jobj.get(Urls.jsonServiceDetail); // get service detail
+				if(s != null ) { service = gson.fromJson(s, TrustService.class); }
+				
+				// Step 3 - get the number of service users 
+				JsonElement sn = jobj.get(Urls.jsonServiceUserNumber); // ?
+				if(sn != null) { numberOfUsers = sn.getAsInt(); }
+				
+				// Step 4 - convert the comment details to a list of Comment instances
+				JsonElement c = jobj.get(Urls.jsonCommentDetail); // get comment list
+				java.lang.reflect.Type listType = new TypeToken<ArrayList<Comment>>() {}.getType();
+				if(c != null) { comments = gson.fromJson(c, listType); } else { comments = new ArrayList<Comment> ();}
+				
+				// Step 5 - get the replies to each comment
+				JsonElement rd = jobj.get(Urls.jsonReplyCommentDetail);
+				if(rd != null){
+					// Step 5a - read the replies into an array
+					JsonArray ja = rd.getAsJsonArray();
+					for(JsonElement ele : ja) {
+						// Step 5b - read each element in the array as an instance of Comment
+						Comment rc = gson.fromJson(ele, Comment.class);
+						for(Comment co : comments) {
+							// Step 5c - Add each comment to its corresponding comment
+							if(co.getCommentid() == rc.getRootcommentid()) {
+								co.getDetailComments().add(rc);
+							}
+						}
 					}
 				}
+			}catch(Exception e){
+				// If an error occurs while parsing the message, just stop and reply with what we've got.
+				Loggen.e(this, "Error (" + e.toString() + ") while parsing " + response.message);
 			}
-			
 		} else {
-			Log.e("Kris", "We encountered an error: " + response.message);
+			Loggen.e(this, "Error (" + response.errorStatus + ") while parsing " + response.message); 
 		}
 
 		if (detaillistener.get() != null) {
-			detaillistener.get().onReadService(service, comments);
+			detaillistener.get().onReadService(service, numberOfUsers, comments);
 		}
 	}
 
 	@Override
 	public void writeServiceScore(RawResponse response) {
 		Loggen.i(this, "Got a response: " + response.message);
-		boolean success = (Boolean) null;
+		// TODO change back to false
+		boolean success = true;
 		if (response.errorStatus == RawResponse.Error.NONE
 				&& isJson(response.message)) {
 
@@ -614,8 +662,9 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 
 	@Override
 	public void writeServiceComment(RawResponse response) {
-		Loggen.i(this, "Got a response: " + response.message);
-		boolean success = (Boolean) null;
+		Loggen.v(this, "Got a response: " + response.message);
+		// TODO change back to false
+		boolean success = true;
 		if (response.errorStatus == RawResponse.Error.NONE
 				&& isJson(response.message)) {
 
@@ -646,11 +695,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	}
 
 	public interface ServicesListListener {
-		public void onCreateService(boolean success);
-
 		public void onDeleteService(boolean success);
-
-		public void onEditService(boolean success);
 
 		public void onReadServices(List<TrustService> services);
 
@@ -659,11 +704,20 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	}
 
 	public interface ServicesDetailListener {
-		public void onReadService(TrustService service, List<Comment> comments);
+		/** Callback from the readService() method. 
+		 * @param service The service read from the data source. Null if no service was found or data request failed.
+		 * @param numberOfUsers The number of users that have used this service. -1 if data request failed.
+		 * @param comments A list of comments. Null if data request failed. 
+		 */
+		public void onReadService(TrustService service, int numberOfUsers, List<Comment> comments);
 
 		public void writeServiceScore(boolean success);
 
 		public void writeServiceComment(boolean success);
+
+		public void onEditService(boolean success);
+
+		public void onCreateService(boolean success);
 	}
 	
 	/**

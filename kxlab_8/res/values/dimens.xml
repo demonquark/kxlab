@@ -13,6 +13,7 @@
     <dimen name="list_person_img_width">48dp</dimen>
     <dimen name="list_person_text_large">14sp</dimen>
     <dimen name="list_person_text">12sp</dimen>
+    <dimen name="list_text_spacing">4dp</dimen>
     <dimen name="list_record_horizontal_padding">10dp</dimen>
     <dimen name="list_record_vertical_padding">10dp</dimen>
     <dimen name="list_person_horizontal_padding">10dp</dimen>

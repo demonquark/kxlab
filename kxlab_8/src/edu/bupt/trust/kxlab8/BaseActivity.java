@@ -68,7 +68,7 @@ public class BaseActivity extends ActionBarActivity  implements BasicDialogListe
 			openActivity(new Intent(this, MyServicesListActivity.class));
 		break;
 		case R.id.footer_forum:
-			openActivity(new Intent(this, ForumActivity.class));
+			openActivity(new Intent(this, ForumThreadActivity.class));
 		break;
 		case R.id.footer_myinformation:
 			openActivity(new Intent(this, MyInformationActivity.class));

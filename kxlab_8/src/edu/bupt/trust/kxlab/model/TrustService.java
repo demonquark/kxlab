@@ -42,8 +42,10 @@ public class TrustService implements Parcelable  {
 		useremail = "";
 		servicestatus = -1;
     }
-
-
+	
+    public TrustService(TrustService otherService) {
+    	setFromTrustService(otherService);
+    }
 	
     // this is used to regenerate your object.
     public static final Parcelable.Creator<TrustService> CREATOR = new Parcelable.Creator<TrustService>() {
@@ -153,5 +155,42 @@ public class TrustService implements Parcelable  {
 	public static Parcelable.Creator<TrustService> getCreator() {
 		return CREATOR;
 	}
+	
+	public void setFromTrustService(TrustService otherService){
+		serviceid = otherService.getServiceid();
+		servicetype = otherService.getServicetype();
+		servicetitle = otherService.getServicetitle();
+		servicedetail = otherService.getServicedetail();
+		servicecreatetime = otherService.getServicecreatetime();
+		servicelastedittime = otherService.getServicelastedittime();
+		credibilityScore = otherService.getCredibilityScore();
+		servicephoto = otherService.getServicephoto();
+		useremail = otherService.getUseremail();
+		servicestatus = otherService.getServicestatus();
+	}
+	
 
+	
+	@Override 
+	public boolean equals(Object aThat) {
+		if ( this == aThat ) return true;
+
+	    //use instanceof instead of getClass here for two reasons
+	    if ( !(aThat instanceof TrustService) ) return false;
+
+	    //cast to native object is now safe
+	    TrustService that = (TrustService)aThat;
+
+	    //now a proper field-by-field evaluation can be made
+	    return
+	    	(this.serviceid == that.serviceid) &&
+	    	(this.servicetype == that.servicetype) &&
+	    	(this.servicecreatetime == that.servicecreatetime) &&
+	    	(this.servicelastedittime == that.servicelastedittime) &&
+	    	((this.servicetitle != null) ? this.servicetitle.equals(that.servicetitle) : that.servicetitle == null) &&
+	    	((this.servicedetail != null) ? this.servicedetail.equals(that.servicedetail) : that.servicedetail == null) &&
+	    	((this.credibilityScore != null) ? this.credibilityScore.equals(that.credibilityScore) : that.credibilityScore == null) &&
+	    	((this.servicephoto != null) ? this.servicephoto.equals(that.servicephoto) : that.servicephoto == null) &&
+	    	((this.useremail != null) ? this.useremail.equals(that.useremail) : that.useremail == null);
+	}
 }

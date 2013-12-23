@@ -13,7 +13,7 @@ import edu.bupt.trust.kxlab8.ServicesListFragment.OnServiceSelectedListener;
 
 public class ServicesListActivity extends BaseActivity implements OnServiceSelectedListener{
 	
-	final String [] mFragmentTags = new String [] {Gegevens.FRAG_COMMUNITY, Gegevens.FRAG_RECOMMEND, Gegevens.FRAG_APPLY};
+	final String [] mFragmentTags = new String [] { Gegevens.FRAG_COMMUNITY, Gegevens.FRAG_RECOMMEND, Gegevens.FRAG_APPLY};
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

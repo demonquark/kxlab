@@ -45,7 +45,7 @@ public class User implements Parcelable {
 		email = userinfo.getUserEmail();
 		userName = userinfo.getUserName();
 		password = "";
-		photoLocation = "";
+		photoLocation = userinfo.getPhotoImage();
 		gender = "";
 		timeEnter = userinfo.getTimeEnter();
 		activityScore = userinfo.getActivityScore();

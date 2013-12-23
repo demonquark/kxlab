@@ -44,15 +44,26 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 			@Override protected void onPostExecute(Void v) {
 				String response = "{\"vote\":[],\"loginOrNot\":" + counter(2) 
 						+ ", \"loginerrormessage\":\"This is a test result, try again\"}";
-				String urlFilename = urlToFileName(Urls.build(ProfileDAOweb.urlBase, path));
-				listener.onLogin(new RawResponse(response, urlFilename));
+				listener.onLogin(new RawResponse(response, "dummylogin"));
 			}
 	
 		}.execute();
 	}
 
 	@Override protected void readUsers(String path) {
-		// TODO Auto-generated method stub
+		Loggen.i(this, "Dummy read user lists for: " + path);
+		
+		new AsyncTask<Void, Integer, Void>  (){
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				listener.onReadUserList(new RawResponse("", "dummyuserslist"));
+			}
+	
+		}.execute();
 		
 	}
 
@@ -66,15 +77,14 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 			}
 
 			@Override protected void onPostExecute(Void v) {
-				String response = "{\"photoImage\":\"www\",\"userName\":\"wang\"," +
+				String response = "{\"photoImage\":\"" + randomPic().getAbsolutePath() + "\",\"userName\":\"wang\"," +
 						"\"userEmail\":\"1@qq.com\",\"phoneNumber\":\"15810531590\"," +
 						"\"timeEnter\":\"2013-10-14\",\"activityScore\":\"10\",\"Source\":\"0\"}";
-				String urlFilename = urlToFileName(Urls.build(ProfileDAOweb.urlBase, path));
 				
 				if(counter(10) == 0){
-					listener.onReadUserInformation(new RawResponse(RawResponse.Error.SERVER_REPLY));
+					listener.onReadUserInformation(new RawResponse(RawResponse.Error.SERVER_REPLY, "", "dummyuserinfo"));
 				} else {
-					listener.onReadUserInformation(new RawResponse(response, urlFilename));
+					listener.onReadUserInformation(new RawResponse(response, "dummyuserinfo"));
 				}	
 			}
 	
@@ -85,8 +95,8 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 	public File randomPic(){
 		String filename = "user";
 
-		int i = counter(4);
-		filename += (i < 3) ? i + ".jpg" : "0.png";
+		int i = counter(5);
+		filename += (i < 3) ? i + ".jpg" : (i < 4) ?  (i - 3) + ".png" : "0.gif";
 		
 		return new File(cacheDir, filename);
 	}
@@ -102,11 +112,11 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 		case 0:
 			response = "{\"photoImage\":\"ţ\",\"userName\":\"George Soros\"," +
 				"\"userEmail\":\"somewhere@someone.qp\",\"phoneNumber\":\"987234232\"," +
-				"\"timeEnter\":\"2013-10-14\",\"activityScore\":\"10\",\"Source\":\"0\"}" ;
+				"\"timeEnter\":\"2013-10-14\",\"activityScore\":\"1\",\"Source\":\"0\"}" ;
 		case 1:
 			response = "{\"photoImage\":\"ţ\",\"userName\":\"sagas\"," +
 					"\"userEmail\":\"3\",\"phoneNumber\":\"12\"," +
-					"\"timeEnter\":\"2013-10-14\",\"activityScore\":\"1\",\"Source\":\"1\"}" ;
+					"\"timeEnter\":\"2013-10-14\",\"activityScore\":\"15\",\"Source\":\"1\"}" ;
 		}
 		return response;
 

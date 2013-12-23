@@ -7,7 +7,7 @@
 		android:layout_width="wrap_content" android:layout_height="wrap_content" />
 
 	<LinearLayout android:id="@+id/list_holder" android:layout_width="match_parent" android:layout_height="match_parent"
-	    android:orientation="vertical" android:layout_gravity="center" >
+	    android:orientation="vertical" android:layout_gravity="center" android:visibility="gone" >
 		
 		<ListView android:id="@id/android:list"
 			android:layout_width="match_parent"
@@ -15,8 +15,9 @@
 			android:drawSelectorOnTop="false"/>
 	
 		<TextView android:id="@id/android:empty"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:text="@string/details_comments_empty_list"/>
+			android:layout_width="match_parent" android:layout_height="match_parent"
+			android:layout_marginLeft="@dimen/list_item_horizontal_margin"
+			android:layout_marginRight="@dimen/list_item_horizontal_margin"
+			android:text="@string/details_comments_empty_list" />
 	 </LinearLayout>
 </FrameLayout>

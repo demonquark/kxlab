@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:kxlab="http://schemas.android.com/apk/res-auto" >
+	<item android:id="@+id/action_sort"
+        android:title="@string/action_sort"
+        kxlab:showAsAction="always"
+        android:icon="@drawable/ic_action_sort_by_size">
+		<menu>
+			<item android:id="@+id/action_sort_name_asc"
+            	android:title="@string/other_sort_name_asc" />
+			<item android:id="@+id/action_sort_activitylevel_asc"
+            	android:title="@string/other_sort_activitylevel_asc" />
+			<item android:id="@+id/action_sort_name_desc"
+        	    android:title="@string/other_sort_name_desc" />
+        	<item android:id="@+id/action_sort_activitylevel_desc"
+        	    android:title="@string/other_sort_activitylevel_desc" />
+		</menu>
+	</item>
+</menu>

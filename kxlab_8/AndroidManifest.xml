@@ -34,7 +34,7 @@
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" android:label="@string/myserv_activity_name" 
             android:windowSoftInputMode="adjustPan">
         </activity>
-        <activity android:name="edu.bupt.trust.kxlab8.ForumActivity"
+        <activity android:name="edu.bupt.trust.kxlab8.ForumThreadActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" android:label="@string/forum_activity_name" >
         </activity>
         <activity android:name="edu.bupt.trust.kxlab8.MyInformationActivity"
@@ -45,7 +45,8 @@
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" android:label="@string/other_activity_name" >
         </activity>
         <activity android:name="edu.bupt.trust.kxlab8.ServiceDetailActivity"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" android:label="@string/details_activity_name" >
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" android:label="@string/details_activity_name" 
+            android:windowSoftInputMode="adjustPan">
         </activity>
 	</application>
 

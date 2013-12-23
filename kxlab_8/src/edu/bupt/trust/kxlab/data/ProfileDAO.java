@@ -1,6 +1,7 @@
 package edu.bupt.trust.kxlab.data;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -124,6 +125,16 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 
 	}
 
+	/**
+	 * Getting the details of a profile gets you the information of a person.
+	 * The user information is saved to cache and loaded if the web request fails.
+	 * @param email
+	 * @param source
+	 */
+	public void readUserList(Source source){
+			dummy.readUsers(null);
+	}
+
 	/** Update from the old user to the new user. 
 	 *  Because each change to the user is an individual server request, 
 	 *  we will only send requests for the changes provided.
@@ -202,6 +213,12 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	
 	@Override public void onReadUserList(RawResponse response) {
 		
+		ArrayList<User> users = new ArrayList<User> ();
+		for(int i =0; i < 4; i++){
+			users.add(dummy.randomUser());
+		}
+		
+		if (profileListener.get() != null){ profileListener.get().onReadUserList(users); }
 	}
 	
 	@Override public void onReadUserInformation(RawResponse response) {
@@ -215,8 +232,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 				UserInformation userinfo = new Gson().fromJson(response.message, UserInformation.class);
 				user = new User(userinfo);
 				
-				// TODO: save the image to file (Right now we discard the results and pick a random image)
-				user.setPhotoLocation(dummy.randomPic().getAbsolutePath());
+				// TODO: save the image to file (Right now we use the server results)
 				
 			} catch (com.google.gson.JsonSyntaxException e){
 				Loggen.e(this, "We were given an invalid JSON string.");

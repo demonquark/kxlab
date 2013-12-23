@@ -23,13 +23,13 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class MyInformationRecordsFragment extends BaseDetailFragment implements ProfileListener {
+public class ForumPostListFragment extends BaseDetailFragment implements ProfileListener {
 	
 	private User mUser;
 	private ActivityHistory mHistory;
 	private View mRootView;
 	
-	public MyInformationRecordsFragment(){
+	public ForumPostListFragment(){
 		// Empty constructor required for MyInformationFragment
 	}
 	

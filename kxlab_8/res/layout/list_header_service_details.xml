@@ -52,6 +52,7 @@
 	
 		<ImageView android:id="@+id/details_service_img"
             android:layout_width="@dimen/list_header_img_width" android:layout_height="@dimen/list_header_img_height"
+			android:layout_marginLeft="@dimen/list_item_horizontal_margin"
             android:src="@drawable/avatar_01" android:contentDescription="@string/niets" />
          
 		<TextView android:id="@+id/details_service_title" 

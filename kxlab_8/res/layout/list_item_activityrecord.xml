@@ -3,7 +3,6 @@
     android:id="@+id/list_item_activityrecords"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?android:attr/activatedBackgroundIndicator"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingLeft="@dimen/list_item_horizontal_padding"
