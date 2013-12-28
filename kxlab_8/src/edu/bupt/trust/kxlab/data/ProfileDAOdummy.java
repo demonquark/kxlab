@@ -7,8 +7,8 @@ import com.google.gson.Gson;
 
 import android.os.AsyncTask;
 import android.os.Environment;
+import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
 import edu.bupt.trust.kxlab.model.User;
-import edu.bupt.trust.kxlab.model.UserInformation;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
@@ -77,9 +77,12 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 			}
 
 			@Override protected void onPostExecute(Void v) {
-				String response = "{\"photoImage\":\"" + randomPic().getAbsolutePath() + "\",\"userName\":\"wang\"," +
-						"\"userEmail\":\"1@qq.com\",\"phoneNumber\":\"15810531590\"," +
-						"\"timeEnter\":\"2013-10-14\",\"activityScore\":\"10\",\"Source\":\"0\"}";
+				
+				String response = "{\"id\":9,\"name\":\"wang\",\"password\":\"wss\",\"type\":0," 
+						+ "\"sex\":\"ÄÐ\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
+						+ "\"email\":\"1@qq.com\",\"phonenumber\":\"15810531590\","
+						+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
+						+ "\"activityScore\":10,\"roleId\":1}";
 				
 				if(counter(10) == 0){
 					listener.onReadUserInformation(new RawResponse(RawResponse.Error.SERVER_REPLY, "", "dummyuserinfo"));
@@ -103,20 +106,26 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 	
 	public String randomUserInformation(){
 
-		String response = "{\"photoImage\":\"www\",\"userName\":\"wang\"," +
-				"\"userEmail\":\"1@qq.com\",\"phoneNumber\":\"15810531590\"," +
-				"\"timeEnter\":\"2013-10-14\",\"activityScore\":\"10\",\"Source\":\"0\"}" ;
+		String response = "{\"id\":9,\"name\":\"wang\",\"password\":\"wss\",\"type\":0," 
+				+ "\"sex\":\"ÄÐ\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
+				+ "\"email\":\"1@qq.com\",\"phonenumber\":\"15810531590\","
+				+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
+				+ "\"activityScore\":10,\"roleId\":1}";
 		
 		int index = counter(3);
 		switch(index){
 		case 0:
-			response = "{\"photoImage\":\"Å£\",\"userName\":\"George Soros\"," +
-				"\"userEmail\":\"somewhere@someone.qp\",\"phoneNumber\":\"987234232\"," +
-				"\"timeEnter\":\"2013-10-14\",\"activityScore\":\"1\",\"Source\":\"0\"}" ;
+			response = "{\"id\":9,\"name\":\"George Soros\",\"password\":\"wss\",\"type\":0," 
+					+ "\"sex\":\"ÄÐ\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
+					+ "\"email\":\"watchalooking@qq.com\",\"phonenumber\":\"15810531590\","
+					+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
+					+ "\"activityScore\":10,\"roleId\":1}";
 		case 1:
-			response = "{\"photoImage\":\"Å£\",\"userName\":\"sagas\"," +
-					"\"userEmail\":\"3\",\"phoneNumber\":\"12\"," +
-					"\"timeEnter\":\"2013-10-14\",\"activityScore\":\"15\",\"Source\":\"1\"}" ;
+			response = "{\"id\":9,\"name\":\"Felix the Cat\",\"password\":\"wss\",\"type\":0," 
+					+ "\"sex\":\"Å®\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
+					+ "\"email\":\"coolcat@places.com\",\"phonenumber\":\"15810531590\","
+					+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
+					+ "\"activityScore\":10,\"roleId\":1}";
 		}
 		return response;
 
@@ -124,7 +133,7 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 	
 	public User randomUser(){
 		// create a new person using random user info and picture
-		UserInformation userinfo = new Gson().fromJson(randomUserInformation(), UserInformation.class);
+		JsonUser userinfo = new Gson().fromJson(randomUserInformation(), JsonUser.class);
 		User user = new User(userinfo);
 		user.setPhotoLocation(randomPic().getAbsolutePath());
 		user.setPassword("xxxxx");

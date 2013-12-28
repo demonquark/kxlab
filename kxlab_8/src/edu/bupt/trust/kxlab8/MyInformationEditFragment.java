@@ -183,7 +183,7 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 				((TextView) mRootView.findViewById(R.id.myinfo_email)).setText(newUser.getEmail());
 				((EditText) mRootView.findViewById(R.id.myinfo_edit_name)).setText(newUser.getUserName());
 				((EditText) mRootView.findViewById(R.id.myinfo_edit_phone)).setText(newUser.getPhoneNumber());
-				((EditText) mRootView.findViewById(R.id.myinfo_edit_source)).setText(newUser.getSource());
+				((EditText) mRootView.findViewById(R.id.myinfo_edit_source)).setText(String.valueOf(newUser.getSource()));
 				((EditText) mRootView.findViewById(R.id.myinfo_edit_password)).setText(newUser.getPassword());
 				((EditText) mRootView.findViewById(R.id.myinfo_edit_confirm_password)).setText(newUser.getPassword());
 				
@@ -395,7 +395,7 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 			if(!newUser.getPhoneNumber().equals(updatedUser.getPhoneNumber())){
 				errorTxt +=  "- " + getString(R.string.myinfo_phone_title) + "\n";
 			}
-			if(!newUser.getSource().equals(updatedUser.getSource())){
+			if(newUser.getSource() != updatedUser.getSource()){
 				errorTxt +=  "- " + getString(R.string.myinfo_source_title) + "\n";
 			}
 			if(!newUser.getPassword().equals(updatedUser.getPassword())){
@@ -447,7 +447,7 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
                 newUser.setPhoneNumber(editable.toString());
                 break;
             case R.id.myinfo_edit_source:
-                newUser.setSource(editable.toString());
+                newUser.setSource(Integer.parseInt(editable.toString()));
                 break;
             case R.id.myinfo_edit_password:
     			newUser.setPassword(editable.toString());

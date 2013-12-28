@@ -19,13 +19,20 @@ public class RawResponse {
 		SERVER_REPLY,
 		FILE_NOT_FOUND;
 	};
+	
+	public enum Page { 
+		PREVIOUS, 
+		CURRENT, 
+		LATEST 
+	};
 
 	// constructors
 	public RawResponse(){ this(Error.NONE); }
 	public RawResponse(Error e){ this(e, null, null); }
 	public RawResponse(String msg){ this(Error.NONE, msg, null); }
 	public RawResponse(String msg, String path){ this(Error.NONE, msg, path); }
-	public RawResponse(Error e, String msg, String path){ errorStatus = e; message = msg; this.path = path; }
+	public RawResponse(Error e, String msg, String path){ 
+		errorStatus = e; message = msg; this.path = path; page = Page.CURRENT; }
 	
 	public RawResponse(Throwable t, String msg, String path){
 		if(t == null){ 											errorStatus = Error.NONE;
@@ -44,5 +51,5 @@ public class RawResponse {
 	public Error errorStatus;
 	public String message;
 	public String path;
-	
+	public Page page;
 }

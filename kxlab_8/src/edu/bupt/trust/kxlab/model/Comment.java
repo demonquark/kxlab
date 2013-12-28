@@ -141,6 +141,5 @@ public class Comment implements Parcelable  {
 	public String getCommenttimeString(){
 		return new SimpleDateFormat("yyyy-mm-dd HH:mm:ss", Locale.US).format(commenttime);
 	}
-
 	
 }

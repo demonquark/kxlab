@@ -14,10 +14,10 @@ import com.loopj.android.http.RequestParams;
 import android.content.Context;
 import android.os.AsyncTask;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
+import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
 import edu.bupt.trust.kxlab.model.ActivityHistory;
 import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
-import edu.bupt.trust.kxlab.model.UserInformation;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedListener{
@@ -229,7 +229,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		if(response.errorStatus == RawResponse.Error.NONE){
 			try { 
 				// Try to convert the JSON to userInformation and save it to user object 
-				UserInformation userinfo = new Gson().fromJson(response.message, UserInformation.class);
+				JsonUser userinfo = new Gson().fromJson(response.message, JsonUser.class);
 				user = new User(userinfo);
 				
 				// TODO: save the image to file (Right now we use the server results)

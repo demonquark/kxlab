@@ -1,8 +1,10 @@
 package edu.bupt.trust.kxlab.model;
 
+import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+// TODO: FIX USER TO MATCH JSON
 public class User implements Parcelable {
 	private String email;
 	private String userName;
@@ -11,9 +13,12 @@ public class User implements Parcelable {
 	private String gender;
 	private String timeEnter;
 	private String activityScore;
-	private String Source;
+	private int Source;
+	private String lastLoginTime;
 	private String phoneNumber;
+	private String webPhoto;
 	private boolean isLogin;
+	public int id;
 	
 	public User() {
 		email = "";
@@ -23,7 +28,7 @@ public class User implements Parcelable {
 		gender = "";
 		timeEnter = "";
 		activityScore = "";
-		Source = "";
+		Source = 1;
 		phoneNumber = "";
 		isLogin=false;
 	}
@@ -36,21 +41,21 @@ public class User implements Parcelable {
 		gender = "";
 		timeEnter = "";
 		activityScore = "";
-		Source = "";
+		Source = 1;
 		phoneNumber = "";
 		isLogin=false;
 	}
 	
-	public User(UserInformation userinfo){
-		email = userinfo.getUserEmail();
-		userName = userinfo.getUserName();
-		password = "";
-		photoLocation = userinfo.getPhotoImage();
-		gender = "";
-		timeEnter = userinfo.getTimeEnter();
-		activityScore = userinfo.getActivityScore();
-		Source = userinfo.getSource();
-		phoneNumber = userinfo.getPhoneNumber();
+	public User(JsonUser userinfo){
+		email = userinfo.getEmail();
+		userName = userinfo.getName();
+		password = userinfo.getPassword();
+		photoLocation = userinfo.getPhoto();
+		gender = userinfo.getSex();
+		timeEnter = userinfo.getJointime();
+		activityScore = String.valueOf(userinfo.getActivityScore());
+		Source = userinfo.getType();
+		phoneNumber = userinfo.getPhonenumber();
 		isLogin=false;
 	}
 
@@ -67,7 +72,7 @@ public class User implements Parcelable {
 		gender = in.readString();
 		timeEnter = in.readString();
 		activityScore = in.readString();
-		Source = in.readString();
+		Source = in.readInt();
 		phoneNumber = in.readString();
 		isLogin = (in.readInt() != 0);
     }
@@ -90,7 +95,7 @@ public class User implements Parcelable {
     	dest.writeString(gender);
     	dest.writeString(timeEnter);
     	dest.writeString(activityScore);
-    	dest.writeString(Source);
+    	dest.writeInt(Source);
     	dest.writeString(phoneNumber);
     	dest.writeInt(isLogin ? 1 : 0);
     }
@@ -156,11 +161,11 @@ public class User implements Parcelable {
 		this.activityScore = activityScore;
 	}
 
-	public String getSource() {
+	public int getSource() {
 		return Source;
 	}
 
-	public void setSource(String source) {
+	public void setSource(int source) {
 		Source = source;
 	}
 	
@@ -193,6 +198,27 @@ public class User implements Parcelable {
 		isLogin= otherUser.isLogin;
 	}
 	
+	
+	public JsonUser getJsonUser(){
+
+		JsonUser userinfo = new JsonUser();
+		userinfo.setEmail(email);
+		userinfo.setName(userName);
+		userinfo.setPassword(password);
+		userinfo.setSex(gender);
+		userinfo.setPhoto(webPhoto);
+		userinfo.setPhonenumber(phoneNumber);
+		userinfo.setJointime(timeEnter);
+		userinfo.setLastLoginTime(lastLoginTime);
+		// TODO : USE INT as activity score
+		userinfo.setActivityScore(3);
+		userinfo.setRoleId(1);
+		userinfo.setType(Source);
+		userinfo.setId(id);
+		
+		return userinfo;
+	}
+
 	@Override 
 	public boolean equals(Object aThat) {
 		if ( this == aThat ) return true;
@@ -212,7 +238,7 @@ public class User implements Parcelable {
 	    	((this.gender != null) ? this.gender.equals(that.gender) : that.gender == null) &&
 	    	((this.timeEnter != null) ? this.timeEnter.equals(that.timeEnter) : that.timeEnter == null) &&
 	    	((this.activityScore != null) ? this.activityScore.equals(that.activityScore) : that.activityScore == null) &&
-	    	((this.Source != null) ? this.Source.equals(that.Source) : that.Source == null) &&
+	    	(this.Source == that.Source) &&
 	    	((this.phoneNumber != null) ? this.phoneNumber.equals(that.phoneNumber) : that.phoneNumber == null) &&
 	    	(this.isLogin == that.isLogin);
 	}

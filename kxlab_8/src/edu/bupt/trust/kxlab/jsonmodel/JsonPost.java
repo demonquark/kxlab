@@ -24,8 +24,6 @@ public class JsonPost {
 		email 			= "";
 	}
 	
-	
-	
 	/* Getter and Setters */
 	public void setPdId(int pdId){
 		this.pdId = pdId;
@@ -65,7 +63,6 @@ public class JsonPost {
 	public String getEmail(){ 			return this.email; }
 	public long getPdPublishTime() {	return pdPublishTime; }
 	
-	
 	public void setFromJsonPost(JsonPost otherPost){
 		pdId 			= otherPost.pdId;
 		postType 		= otherPost.postType;
@@ -77,4 +74,23 @@ public class JsonPost {
 		pdLastReplyTime = otherPost.pdLastReplyTime;
 		email 			= otherPost.email;
 	}
+
+	public void updateFromJsonPost(JsonPost other){
+		pdId 			= other.pdId;
+		pdReplyCount 	= other.pdReplyCount;
+		pdPublishTime 	= other.pdPublishTime;
+		pdLastEditTime 	= other.pdLastEditTime;
+		pdLastReplyTime = other.pdLastReplyTime;
+
+		postType = replace(postType, other.postType);
+		postTitle = replace(postTitle, other.postTitle);
+		postDetail = replace(postDetail, other.postDetail);
+		email = replace(email, other.email);
+	}	
+	
+	private String replace(String old, String replacement){
+		if(replacement != null && !replacement.equals("") && !replacement.equals("null")) { old = replacement; }
+		return old;
+	}
+
 }

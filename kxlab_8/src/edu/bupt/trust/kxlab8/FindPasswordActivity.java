@@ -13,7 +13,6 @@ public class FindPasswordActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
       //不能比requestWindowFeature更早调用 否则报requestFeature() must be called before adding content
         setContentView(R.layout.findpassword);
         

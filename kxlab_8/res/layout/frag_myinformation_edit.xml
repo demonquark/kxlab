@@ -78,7 +78,7 @@
 				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
 				    android:text="@string/myinfo_source_title" />
 	 			<EditText android:id="@+id/myinfo_edit_source"
-	 			    android:inputType="text"
+	 			    android:inputType="number"
 	 			    android:hint="@string/myinfo_source_hint"
 	 			    android:layout_marginLeft="@dimen/row_horizontal_padding" 
 				    android:textAppearance="?android:attr/textAppearanceMedium" 

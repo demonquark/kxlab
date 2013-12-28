@@ -17,6 +17,7 @@ import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.XListView;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic.BasicDialogListener;
 import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -366,7 +367,7 @@ public class ServicesListFragment extends ListFragment
 	private void geneData() {
 		if(getActivity() != null){
 			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-			servicesDAO.readServices(servicesType, DaoFactory.Page.LATEST, DaoFactory.Source.DUMMY, new String [] {});
+			servicesDAO.readServices(servicesType, Page.LATEST, DaoFactory.Source.DUMMY, new String [] {});
 		}
 	}
 

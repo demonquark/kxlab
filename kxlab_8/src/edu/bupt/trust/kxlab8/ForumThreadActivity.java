@@ -52,12 +52,6 @@ public class ForumThreadActivity extends BaseActivity implements OnActionSelecte
 	    		newTab = actionBar.newTab().setText(tabTitles[i]).setTabListener(
 						new TabListener<ForumThreadListFragment>(this, allTypes[i].getFragName(), 
 								ForumThreadListFragment.class));
-
-	    		// Add the post type as an argument
-	    		Bundle arguments = new Bundle();
-	    		arguments.putSerializable(Gegevens.EXTRA_POSTTYPE, allTypes[i]);
-	    		newTab.setTag(arguments);
-	    		
 	    	} else {
 	    		// Create a new tab using the existing fragment as the tab content
 				newTab = actionBar.newTab().setText(tabTitles[i]).setTabListener(

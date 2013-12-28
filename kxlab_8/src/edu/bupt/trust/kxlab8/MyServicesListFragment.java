@@ -16,6 +16,7 @@ import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.XListView;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic.BasicDialogListener;
 import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -291,13 +292,13 @@ public class MyServicesListFragment extends ListFragment
 			MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
 			switch (flag) {
 			case 0:
-				myServicesDAO.readServices(servicesType,DaoFactory.Page.LATEST, DaoFactory.Source.WEB, new String [] {user.getEmail()});
+				myServicesDAO.readServices(servicesType,Page.LATEST, DaoFactory.Source.WEB, new String [] {user.getEmail()});
 				break;
 			case 1:
-				myServicesDAO.readServices(servicesType,DaoFactory.Page.PREVIOUS, DaoFactory.Source.WEB, new String [] {user.getEmail()});
+				myServicesDAO.readServices(servicesType,Page.PREVIOUS, DaoFactory.Source.WEB, new String [] {user.getEmail()});
 				break;
 			default:
-				myServicesDAO.readServices(servicesType,DaoFactory.Page.LATEST, DaoFactory.Source.WEB, new String [] {user.getEmail()});
+				myServicesDAO.readServices(servicesType,Page.LATEST, DaoFactory.Source.WEB, new String [] {user.getEmail()});
 				break;
 			}
 		}

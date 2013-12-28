@@ -8,19 +8,20 @@
 		android:layout_width="match_parent" android:layout_height="wrap_content"
 		android:padding="@dimen/list_item_horizontal_padding"
 		android:background="@drawable/forum_reply_create_owner_bg">
-		<TextView android:id="@+id/forum_reply_owner_email" 
+		<TextView android:id="@android:id/text1" 
 			android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-			android:textAppearance="?android:attr/textAppearanceMedium" 
-			android:gravity="left" android:text="@string/forum_reply_text" />
-		<TextView android:id="@+id/forum_reply_owner_joindate" 
+			android:textAppearance="?android:attr/textAppearanceSmall" 
+			android:gravity="left" android:text="@string/forum_reply_owner" />
+		<TextView android:id="@android:id/text2" 
 			android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-			android:textAppearance="?android:attr/textAppearanceMedium" 
-			android:gravity="right" android:text="@string/forum_reply_text" />
+			android:textAppearance="?android:attr/textAppearanceSmall" 
+			android:gravity="right" android:text="@string/forum_reply_postdate" />
 	</LinearLayout>
     
-	<TextView android:id="@+id/forum_reply_text" 
+	<TextView android:id="@android:id/content" 
+		android:background="@color/white"
 		android:padding="@dimen/list_item_horizontal_padding"
 		android:layout_width="match_parent" android:layout_height="wrap_content"
-		android:textAppearance="?android:attr/textAppearanceMedium" 
+		android:textAppearance="?android:attr/textAppearanceSmall" 
 		android:gravity="left|top" android:text="@string/forum_reply_text" />
 </LinearLayout>

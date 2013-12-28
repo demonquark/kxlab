@@ -3,18 +3,20 @@ package edu.bupt.trust.kxlab8;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.bupt.trust.kxlab.adapters.CommentsArrayAdapter;
+import edu.bupt.trust.kxlab.adapters.ReplyArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ForumDAO;
 import edu.bupt.trust.kxlab.data.ForumDAO.ForumListener;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
-import edu.bupt.trust.kxlab.model.Comment;
 import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
 import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
+import edu.bupt.trust.kxlab.widgets.XListView;
+import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,7 +28,6 @@ import android.widget.BaseAdapter;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -39,10 +40,10 @@ import android.widget.TextView;
  *  - EXTRA_REPLIES: Comments to the service. Loaded from ServicesDAO. <br />
  *  - EXTRA_USER: The current user. Loaded from the settings. <br />
  */
-public class ForumPostListFragment extends BaseDetailFragment implements ForumListener {
+public class ForumPostListFragment extends BaseDetailFragment implements ForumListener, IXListViewListener {
 	
-	private ListView mCommentsList;
-	private CommentsArrayAdapter mListAdapter;
+	private XListView mReplyList;
+	private ReplyArrayAdapter mListAdapter;
 	private View mRootView;
 	private Post mPost;
 	private ArrayList<Reply> replies;
@@ -115,12 +116,16 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		Loggen.v(this, getTag() + " - Creating the ForumPostListFragment view. ");
 
 		// Inflate the root view and save references to useful views as class variables
-		mRootView = inflater.inflate(R.layout.frag_generic_list, container, false);
-		View header = inflater.inflate(R.layout.list_header_forum_post, container, false);
+		mRootView = inflater.inflate(R.layout.frag_generic_xlist, container, false);
+		View header = inflater.inflate(R.layout.list_header_forum_post_title, container, false);
 
-		mCommentsList = (ListView) mRootView.findViewById(android.R.id.list);
+		mReplyList = (XListView) mRootView.findViewById(android.R.id.list);
 		((LinearLayout) mRootView.findViewById(R.id.fixed_header_holder)).addView(header);
-		
+		mReplyList.addHeaderView(
+				LayoutInflater.from(getActivity()).inflate(R.layout.list_header_forum_post_text, null));
+		mReplyList.setPullLoadEnable(true);
+		mReplyList.setXListViewListener(this);
+
 		return mRootView;
 	}
 
@@ -131,11 +136,10 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		// Note: Without a service, we can't do anything. (Server requests require a service id) 
 		if(mPost != null){
 			
-			// Load the service and the comments 
+			// Load the post and the replies 
 			if(replies != null) { showPost(); 
 			} else if(getActivity() != null) {
-				ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPost.getPostType());
-				forumDAO.readPost(Source.DUMMY,mPost);
+				getData(Source.DUMMY, Page.CURRENT);
 			}
 		} else {
 			// give an error message ... 
@@ -153,6 +157,17 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 	}
 
 	private void showInformation(boolean showinfo) {
+		
+		if(mReplyList != null){ 
+			if(mReplyList.isPullLoading()){
+				mReplyList.stopLoadMore();
+			}
+			if(mReplyList.isPullRefreshing()){
+				mReplyList.stopRefresh(); 
+				mReplyList.updateHeaderTime();
+			}
+		}
+
 		if(mRootView != null){
 			// show or hide the progress bar
 			((ProgressBar) mRootView.findViewById(R.id.progress_bar)).setVisibility((showinfo) ? View.GONE : View.VISIBLE);
@@ -178,29 +193,25 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 			((TextView) mRootView.findViewById(R.id.user_activitylevel_text)).setText(owner.getActivityScore());
 			((TextView) mRootView.findViewById(R.id.user_date)).setText(owner.getTimeEnter());
 			((TextView) mRootView.findViewById(R.id.forum_post_title)).setText(mPost.getPostTitle());
+			((TextView) mRootView.findViewById(R.id.forum_post_text)).setText(mPost.getPostDetail());
 			
 		}
 
 		// show the comments list 
-		if(replies != null && mCommentsList != null){
+		if(replies != null && mReplyList != null){
 			Loggen.v(this, getTag() + " - Loading the adapter with " + replies.size() + " items.");
 			
-			if(mCommentsList.getAdapter() == null ){ 
-				// The comments have not been loaded to the list view. Do that now
-				
-				ArrayList <Comment> comments = new ArrayList <Comment> ();
-				Comment x = new Comment();
-				x.setCommentdetail(mPost.getPostDetail());
-				comments.add(x);
-				
+			if(mReplyList.getAdapter() == null ){ 
+
 				if(getActivity() != null){
-					mListAdapter = new CommentsArrayAdapter(getActivity(), 
-							R.layout.list_item_comment, android.R.id.text1, comments);
-					mCommentsList.setAdapter(mListAdapter);
+					// The replies have not been loaded to the list view. Do that now
+					mListAdapter = new ReplyArrayAdapter(getActivity(), 
+							R.layout.list_item_reply, android.R.id.text1, replies);
+					mReplyList.setAdapter(mListAdapter);
 				}
 			} else {
-				// The comments are already loaded to the list view.
-				((BaseAdapter)((HeaderViewListAdapter)mCommentsList.getAdapter())
+				// The replies are already loaded to the list view.
+				((BaseAdapter)((HeaderViewListAdapter)mReplyList.getAdapter())
 						.getWrappedAdapter()).notifyDataSetChanged();
 			}
 		}
@@ -208,12 +219,35 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		// hide the progress bar
 		showInformation(replies != null);
 	}
-
+	
+	private void getData(Source source, Page page){
+		ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPost.getPostType());
+		forumDAO.readPost(source, mPost, replies, page);
+	}
+	
+	@Override public void onRefresh() {
+		Loggen.v(this, " called onRefresh.");
+		getData(Source.DUMMY, Page.LATEST);
+	}
+	
 	@Override
-	public void onReadPost(Post post) {
-		// TODO Auto-generated method stub
-		replies = new ArrayList<Reply> ();
-		replies.add(new Reply());
+	public void onLoadMore() {
+		Loggen.v(this, " called onLoadMore.");
+		getData(Source.DUMMY, Page.PREVIOUS);
+	}
+
+	@Override public void onReadPost(Post post, List <Reply> replies) {
+		
+		// make sure the replies are not empty
+		if(this.replies == null){ this.replies = new ArrayList <Reply> (); }
+		if(post != null){ this.mPost.setFromOtherPost(post); }
+		
+		// add the replies
+		if(replies != null){
+			this.replies.clear();
+			this.replies.addAll(replies);
+		}
+		
 		showPost();
 		
 	}
@@ -255,5 +289,4 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		// TODO Auto-generated method stub
 		
 	}
-	
 }

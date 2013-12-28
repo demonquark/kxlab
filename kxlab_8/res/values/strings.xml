@@ -22,6 +22,9 @@
 	<string name="login">登 录</string>
 	<string name="findPasswordLabel">找回密码</string>
 	<string name="guestLabel">我是游客</string>
+	<string name="login_guest">login as guest</string>
+	<string name="login_recover_password">recover password</string>
+		
 	<!-- 用户名密码不能空 -->
 	<string name="strLoginReplyAmpty">not allow null</string>
 	<!--用户名密码错误  -->
@@ -237,7 +240,9 @@
 	<string name="forum_reply_text">Reply text</string>
 	<string name="forum_create_confirm_title">Changes not saved</string>
 	<string name="forum_create_confirm_text">Would you like to post your text to the server?</string>
-
+	<string name="forum_reply_owner">name</string>
+	<string name="forum_reply_postdate">post date</string>
+	
 	<!-- user include -->
 	<string name="user_img">User</string>
 	<string name="user_name">Name</string>

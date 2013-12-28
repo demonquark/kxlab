@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Random;
 
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
@@ -55,7 +56,7 @@ public class ForumDAOdummy extends ForumDAOabstract {
 		}
 		
 		int i = counter(1);
-		filename += i + ".dat";
+		filename += i + Gegevens.FILE_EXT_DAT;
 		
 		return new File(cacheDir, filename);
 	}
@@ -107,8 +108,7 @@ public class ForumDAOdummy extends ForumDAOabstract {
 		
 	}
 
-	@Override
-	protected void readPost(String path) {
+	@Override protected void readPost(final String path, final Page page) {
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
 				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
@@ -116,7 +116,20 @@ public class ForumDAOdummy extends ForumDAOabstract {
 			}
 
 			@Override protected void onPostExecute(Void v) {
-				listener.onReadPost(new RawResponse("a string", "dummypost"));
+				
+				RawResponse response = new RawResponse();
+				response.page = page;
+				response.path = path;
+				if(page == Page.CURRENT){
+					response.message = readFromFile(new File(cacheDir, "post5.dat"));	
+				} else if (page == Page.LATEST){
+					response.message = readFromFile(new File(cacheDir, "post6.dat"));
+				} else {
+					response.message = readFromFile(new File(cacheDir, "post7.dat"));
+				}
+				
+				
+				listener.onReadPost(response);
 			}
 		}.execute();
 		

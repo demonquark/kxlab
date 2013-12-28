@@ -14,7 +14,6 @@ import edu.bupt.trust.kxlab.model.PostType;
 public class DaoFactory {
 	
 	public enum Source { DEFAULT, WEB, LOCAL, DUMMY };
-	public enum Page { PREVIOUS, LATEST };
 	
 	private static DaoFactory mInstance = null;
  

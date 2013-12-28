@@ -22,6 +22,9 @@ public class ForumPostActivity extends BaseDetailActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_generic);
 
+		// disable the button for this footer menu item
+		findViewById(R.id.footer_forum).setEnabled(false);
+		
 		Bundle b = (savedInstanceState != null) ? savedInstanceState : getIntent().getBundleExtra(Gegevens.EXTRA_MSG);
 		b.setClassLoader(getClass().getClassLoader());
 

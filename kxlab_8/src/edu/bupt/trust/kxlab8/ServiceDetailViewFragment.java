@@ -20,6 +20,8 @@ import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentEditText;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentScore;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -143,7 +145,8 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		// Inflate the root view and save references to useful views as class variables
 		mRootView = inflater.inflate(R.layout.frag_service_detail_view, container, false);
 		mCommentsList = (ListView) mRootView.findViewById(android.R.id.list);
-		mCommentsList.addHeaderView(LayoutInflater.from(getActivity()).inflate(R.layout.list_header_service_details, null));
+		mCommentsList.addHeaderView(
+				LayoutInflater.from(getActivity()).inflate(R.layout.list_header_service_details, null));
 		((ImageButton) mRootView.findViewById(R.id.details_service_btn_comment)).setOnClickListener(this);
 		((Button) mRootView.findViewById(R.id.details_service_btn_score)).setOnClickListener(this);		
 		
@@ -167,7 +170,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 			if(comments != null) { showService(); 
 			} else if(getActivity() != null) {
 				ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-				servicesDAO.readService(DaoFactory.Source.DUMMY, mService.getServiceid(), DaoFactory.Page.LATEST);
+				servicesDAO.readService(DaoFactory.Source.DUMMY, mService.getServiceid(), Page.LATEST);
 			}
 		} else {
 			// give an error message ... 

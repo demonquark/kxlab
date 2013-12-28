@@ -40,6 +40,11 @@ final class Urls {
 	protected static final String jsonPostList = "PostList";
 	
 	
+	protected static final String filePost = "post";
+	protected static final String fileAnnounce = "post";
+	protected static final String fileWebpostforumdetail = "webpostforumdetail";
+	
+	
 	protected static final String build(String... parts){
 		String finalURL = ( parts.length > 0 ) ? parts[0] : "";
 		for(int i = 1; i < parts.length; i++){

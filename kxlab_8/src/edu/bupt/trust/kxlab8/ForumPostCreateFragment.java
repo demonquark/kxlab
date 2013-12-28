@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -134,6 +135,17 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 			((ProgressBar) mRootView.findViewById(R.id.forum_progress_bar))
 				.setVisibility((showinfo) ? View.GONE : View.VISIBLE);
 		}
+		
+		if(mPost != null && mRootView != null){
+
+			User owner = mPost.getPostSponsor();
+			String postContent = mPost.getPostTitle() + "\n" + mPost.getPostDetail();
+			// Set the text 
+			((TextView) mRootView.findViewById(android.R.id.text1)).setText(owner.getUserName());
+			((TextView) mRootView.findViewById(android.R.id.text2)).setText(owner.getTimeEnter());
+			((TextView) mRootView.findViewById(android.R.id.content)).setText(postContent);
+		}
+
 	}
 	
 	/** Shows a dialog that asks the user if he wants to save the text he has entered up to now
@@ -160,6 +172,7 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 	 */
 	private void savePost(){
 		Loggen.v(this, "User wants to save a post");
+		mListener.performBackPress();
 	}
 	
 	@Override public void onClick(View v) {
@@ -222,7 +235,7 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 	}
 
 	@Override
-	public void onReadPost(Post post) {
+	public void onReadPost(Post post, List<Reply> replies) {
 		// TODO Auto-generated method stub
 		
 	}

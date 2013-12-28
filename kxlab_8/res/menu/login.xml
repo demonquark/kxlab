@@ -3,6 +3,12 @@
 	<item android:id="@+id/action_overflow"
         android:title="@string/action_create"
         kxlab:showAsAction="always"
-        android:icon="@drawable/ic_action_overflow" />
-    
+        android:icon="@drawable/ic_action_overflow" >
+		<menu>
+			<item android:id="@+id/action_login_guest"
+            	android:title="@string/login_guest" />
+			<item android:id="@+id/action_login_recover_password"
+            	android:title="@string/login_recover_password" />
+		</menu>
+	</item>
 </menu>

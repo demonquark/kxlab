@@ -46,7 +46,8 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 		super.onCreateOptionsMenu(menu, inflater);
 	
 		// add the services menu
-		inflater.inflate(R.menu.myinformation, menu);
+		if(mUser != null && mUser.isLogin())
+			inflater.inflate(R.menu.myinformation, menu);
 	}
 	
     @Override public boolean onOptionsItemSelected(MenuItem item) {
@@ -85,7 +86,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 		// set the on click listener for the log out button
 		((Button) mRootView.findViewById(R.id.myinfo_btn_logout)).setOnClickListener(this);
 		((ImageButton) mRootView.findViewById(R.id.myinfo_btn_activityrecord)).setOnClickListener(this);
-
+		
 		return mRootView;
 	}
 	
@@ -151,7 +152,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 				((TextView) mRootView.findViewById(R.id.myinfo_joindate)).setText(mUser.getTimeEnter());
 				((TextView) mRootView.findViewById(R.id.myinfo_activitylevel)).setText(mUser.getActivityScore());
 				((TextView) mRootView.findViewById(R.id.myinfo_phone)).setText(mUser.getPhoneNumber());
-				((TextView) mRootView.findViewById(R.id.myinfo_source)).setText(mUser.getSource());
+				((TextView) mRootView.findViewById(R.id.myinfo_source)).setText(String.valueOf(mUser.getSource()));
 			}
 		}
 	}
@@ -173,7 +174,12 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 				break;
 			case R.id.myinfo_btn_activityrecord:
 				Loggen.v(this,"Clicked activity record.");
-        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, mUser); }
+				// hide the activity record from guests
+				if(mUser != null && mUser.isLogin()){
+	        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, mUser); }
+				} else {
+					userMustClickOkay("Guest", "Guest activities are not recorded.");
+				}
 				break;
 			default:
 				super.onClick(v);

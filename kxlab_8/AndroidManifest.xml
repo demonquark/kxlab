@@ -52,6 +52,10 @@
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" android:label="@string/details_activity_name" 
             android:windowSoftInputMode="adjustPan">
         </activity>
+        <activity android:name="edu.bupt.trust.kxlab8.FindPasswordActivity"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" android:label="@string/details_activity_name" 
+            android:windowSoftInputMode="adjustPan">
+        </activity>
 	</application>
 
 </manifest>

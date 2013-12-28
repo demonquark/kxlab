@@ -184,6 +184,24 @@ public class Post implements Parcelable {
 		pdLastReplyTime = otherPost.getPdLastReplyTime();
 		postSponsor 	= otherPost.getPostSponsor();
 	}
+	
+	public JsonPost getJsonPost(){
+
+		JsonPost post = new JsonPost();
+
+		post.setPdId(pdId);
+		post.setPostType(getPostType().getServerType());
+		post.setPostTitle(this.getPostTitle());
+		post.setPostDetail(this.getPostDetail());
+		post.setPdLastEditTime(this.getPdLastEditTime());
+		post.setPdLastReplyTime(this.getPdLastReplyTime());
+		post.setPdReplyCount(this.getPdReplyCount());
+		post.setPdPublishTime(this.getPdPublishTime());
+		post.setEmail(this.postSponsor.getEmail());
+		
+		return post;
+	}
+
 
 	@Override 
 	public boolean equals(Object aThat) {

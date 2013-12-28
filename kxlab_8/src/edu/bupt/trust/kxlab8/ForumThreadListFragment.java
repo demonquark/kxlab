@@ -8,8 +8,10 @@ import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ForumDAO;
 import edu.bupt.trust.kxlab.data.ForumDAO.ForumListener;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
+import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab.widgets.XListView;
@@ -26,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -55,6 +58,7 @@ public class ForumThreadListFragment extends BaseListFragment
 		super.onCreateOptionsMenu(menu, inflater);
 
 		// add the forum menu
+		Loggen.d(this, "post type is " + mPostType);
 		if(mPostType == PostType.FORUM || mPostType == PostType.SUGGESTION){
 			inflater.inflate(R.menu.forum, menu);
 		}
@@ -85,12 +89,25 @@ public class ForumThreadListFragment extends BaseListFragment
 		
 		// load the posts (Note: posts remains null if it is neither in the saved state nor the arguments)
 		mPosts = savedstate.getParcelableArrayList(Gegevens.EXTRA_POSTS); 							
+		Loggen.v(this, "Posts retrieved and is " + (mPosts == null));
 		if(mPosts == null){ mPosts = arguments.getParcelableArrayList(Gegevens.EXTRA_POSTS); } 	
+		Loggen.v(this, "Posts retrieved and is " + (mPosts == null));
 		
 		// load the post type
 		mPostType = (PostType) savedstate.getSerializable(Gegevens.EXTRA_POSTTYPE);
+		Loggen.v(this, "Post type retrieved and is " + mPostType);
 		if(mPostType == null){ mPostType = (PostType) arguments.getSerializable(Gegevens.EXTRA_POSTTYPE); } 	
-		if(mPostType == null){ mPostType = PostType.FORUM; }
+		Loggen.v(this, "Post type retrieved and is " + mPostType);
+		if(mPostType == null){
+		    PostType [] allTypes = PostType.values();
+		    for(int i = 0; i < allTypes.length; i++){
+		    	if(allTypes[i].getFragName().equals(this.getTag())){
+		    		mPostType = allTypes[i]; break;
+		    	}
+		    }
+		}
+		
+		Loggen.v(this, "Post type retrieved and is " + mPostType);
 		
 	}
 
@@ -120,7 +137,7 @@ public class ForumThreadListFragment extends BaseListFragment
 		if(mPosts == null){
 			// Load the services from the DAO
 			Loggen.v(this, "Restoring saved Instancestate: Hide the list");
-			loadPosts();
+			getData(Source.DUMMY, Page.CURRENT);
 		}
 
 		// show or hide the list
@@ -136,6 +153,15 @@ public class ForumThreadListFragment extends BaseListFragment
 	}
 	
 	private void showList(boolean showlist) {
+		if(mListView != null){ 
+			if(mListView.isPullLoading()){
+				mListView.stopLoadMore();
+			}
+			if(mListView.isPullRefreshing()){
+				mListView.stopRefresh(); 
+				mListView.updateHeaderTime();
+			}
+		}
 		
 		// Show or hide the progress bar
 		mListView.setVisibility((showlist) ? View.VISIBLE : View.GONE);
@@ -157,7 +183,8 @@ public class ForumThreadListFragment extends BaseListFragment
 				}
 			} else {
 				// The comments are already loaded to the list view.
-				((BaseAdapter)mListView.getAdapter()).notifyDataSetChanged();
+				((BaseAdapter)((HeaderViewListAdapter)mListView.getAdapter())
+						.getWrappedAdapter()).notifyDataSetChanged();
 			}
 			
 			if(mPosts.size() == 0){
@@ -166,10 +193,10 @@ public class ForumThreadListFragment extends BaseListFragment
 		}
 	}
 
-	private void loadPosts() {
+	private void getData(Source source, Page page) {
 		if(getActivity() != null){
 			ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPostType);
-			forumDAO.readPostList(Source.DUMMY, mPostType);
+			forumDAO.readPostList(source, mPostType, page);
 		}
 	}
 	
@@ -185,9 +212,16 @@ public class ForumThreadListFragment extends BaseListFragment
 		}
 	}
 
-	@Override public void onRefresh() { }
-
-	@Override public void onLoadMore() { }
+	@Override public void onRefresh() {
+		Loggen.v(this, " called onRefresh.");
+		getData(Source.DUMMY, Page.LATEST);
+	}
+	
+	@Override
+	public void onLoadMore() {
+		Loggen.v(this, " called onLoadMore.");
+		getData(Source.DUMMY, Page.PREVIOUS);
+	}
 
 	@Override public void onItemClick(AdapterView<?> listView, View view, int position, long id) {
 		if(position > 0 && position <= mPosts.size()){
@@ -208,7 +242,7 @@ public class ForumThreadListFragment extends BaseListFragment
 	@Override public void onCreatePost(boolean success) {	}
 	@Override public void onCreateReply(boolean success) { }
 	@Override public void onCreateVote(boolean success) { }
-	@Override public void onReadPost(Post post) { }
+	@Override public void onReadPost(Post post, List <Reply> replies) { }
 	@Override public void onReadAnnounceFAQ(Post post) { }
 	@Override public void onSearchPostList(List<Post> posts) { }
 

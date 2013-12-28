@@ -18,6 +18,7 @@ import com.google.gson.reflect.TypeToken;
 import com.loopj.android.http.RequestParams;
 
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.data.ServicesDAOabstract.OnServicesRawDataReceivedListener;
 import edu.bupt.trust.kxlab.model.Comment;
 import edu.bupt.trust.kxlab.model.TrustService;
@@ -77,7 +78,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	}
 
 	public void readServices(Type type, String... parameters) {
-		readServices(type, DaoFactory.Page.LATEST, Source.DEFAULT, parameters);
+		readServices(type, Page.LATEST, Source.DEFAULT, parameters);
 	}
 
 	/**
@@ -159,7 +160,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	 * @param parameters
 	 *            parameters[0] matches user email
 	 */
-	public void readServices(Type type, DaoFactory.Page p, Source source,
+	public void readServices(Type type, Page p, Source source,
 			String[] parameters) {
 
 		int typeparam = 0;
@@ -256,7 +257,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	 * @param parameters
 	 *            parameters[0] matches search key word, [1] matches user email
 	 */
-	public void searchService(Type type, DaoFactory.Page p, String[] parameters) {
+	public void searchService(Type type, Page p, String[] parameters) {
 		switch (p) {
 		case PREVIOUS:
 			searchListPageNo++;
@@ -300,7 +301,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	 * @param p
 	 *            tell to show latest comments or show previous comments.
 	 */
-	public void readService(Source source, int serviceId, DaoFactory.Page p) {
+	public void readService(Source source, int serviceId, Page p) {
 		switch (p) {
 		case PREVIOUS:
 			commentPageNo++;

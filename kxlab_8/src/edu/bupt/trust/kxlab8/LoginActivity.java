@@ -1,6 +1,8 @@
 package edu.bupt.trust.kxlab8;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Comparator;
 
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
@@ -11,7 +13,9 @@ import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.CheckBox;
@@ -42,12 +46,10 @@ public class LoginActivity extends BaseActivity implements LoginListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_login);
 		
-		//((Button) findViewById(R.id.login_btn_login)).setText("Go to My services");
-		//getActionBar().hide();
-
+		// enable back stack navigation
+		getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		 
 	     pDao = DaoFactory.getInstance().setProfileDAO(this,this);
 	     //获得一个只能本程序读写的SharedPreferences对象
@@ -75,6 +77,23 @@ public class LoginActivity extends BaseActivity implements LoginListener{
 		getMenuInflater().inflate(R.menu.login, menu);
 		return true;
 	}
+	
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
+    	int itemId = item.getItemId();
+        switch (itemId) {
+    	case R.id.action_login_guest:
+    		login(false);
+    		break;
+    	case R.id.action_login_recover_password:
+    		findPassword();
+    		break;
+        default:
+        	return super.onOptionsItemSelected(item);
+        }
+    	
+    	return true;
+    }
+
 
 	public void onBtnClick(View view) {
 		int id = view.getId();
@@ -182,10 +201,13 @@ public class LoginActivity extends BaseActivity implements LoginListener{
 				Toast.makeText(this,getString(R.string.strLoginReplyErr),Toast.LENGTH_LONG).show();
 			}*/
 		}else{//此时为游客登录
+			user = new User();
+			user.setLogin(false);
+			save();
 			Toast.makeText(this,"you are a guest",Toast.LENGTH_LONG).show();
 			Intent startmain = new Intent(LoginActivity.this,MyServicesListActivity.class);
 			startActivity(startmain);
-			
+			finish();
 		}
 		
 		
