@@ -18,7 +18,6 @@ import edu.bupt.trust.kxlab.model.PostType;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
-import android.os.AsyncTask;
 import android.os.Environment;
 
 public class ForumDAOlocal extends ForumDAOabstract {
@@ -52,19 +51,38 @@ public class ForumDAOlocal extends ForumDAOabstract {
 
 
 	
-	@Override protected void readPostList(final String path) {
-		new AsyncTask<Void, Integer, Void>  () {
-			@Override protected Void doInBackground(Void... params) {
-				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
-				return null;
-			}
-
-			@Override protected void onPostExecute(Void v) {
-				String response = readFromFile(randomPostList(path));
-				listener.onReadPostList(new RawResponse(response, "dummypostlist"));
-			}
-		}.execute();
+	@Override protected void readPostList(String type, int currentSize, Page page) {
+		// determine the cache file name
+		final String cachefilename = ForumDAOlocal.getPostListFilename(type);
+		
+		// read from the file
+		String response = readFromFile(cachefilename);
+		
+		// create a response
+		RawResponse rawResponse = new RawResponse(response, cachefilename);
+		if(response == null){ rawResponse.errorStatus = RawResponse.Error.FILE_NOT_FOUND; }
+		rawResponse.page = page;
+		
+		// send back the response
+		listener.onReadPostList(rawResponse);
 	}
+	
+	@Override protected void readPost(String postType, int currentSize, Page page, int postId) { 
+		// determine the cache file name
+		final String cachefilename = ForumDAOlocal.getPostDetailFilename(postId, postType);
+		
+		// read from the file
+		String response = readFromFile(cachefilename);
+		
+		// create a response
+		RawResponse rawResponse = new RawResponse(response, cachefilename);
+		if(response == null){ rawResponse.errorStatus = RawResponse.Error.FILE_NOT_FOUND; }
+		rawResponse.page = page;
+		
+		// send back the response
+		listener.onReadPost(rawResponse);
+	}
+
 
 	public File randomPostList(String type){
 		
@@ -90,7 +108,7 @@ public class ForumDAOlocal extends ForumDAOabstract {
 
 	
 	public String readFromFile(File file) {
-        Loggen.v(this, "Reading file: " + file.getName()+ ((file.exists() ? " (" : "(does not ") + " exist)"));
+        Loggen.v(this, "Reading file: " + file.getName()+ ((file.exists() ? " (" : "(does not ") + "exist)"));
 		
 		// make sure we have a file
 		if(!file.exists()){ return null; }
@@ -114,6 +132,9 @@ public class ForumDAOlocal extends ForumDAOabstract {
 			} 
 		}
 		
+		String readvalue = Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
+        Loggen.v(this, "Reading file: " + readvalue);
+		
 		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
 	}
 
@@ -126,7 +147,7 @@ public class ForumDAOlocal extends ForumDAOabstract {
 	}
 	
 	public boolean writeToFile(File file, String string) {
-        Loggen.v(this, "Writing to file: " + file.getName() );
+        Loggen.v(this, "Writing to file: " + file.getName() + " | " + string );
 		
         boolean succesful = false;
         
@@ -154,21 +175,35 @@ public class ForumDAOlocal extends ForumDAOabstract {
 		return succesful;
 	}
 	
-	@Override protected void createPost(String path) {
+	@Override protected void createPost(String email, String type, String title, String content) {
+		listener.onCreatePost(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 	}
 
-	@Override protected void createReply(String path) {
+	@Override protected void createReply(String email, String type, int postId, String content) {
+		listener.onCreateReply(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 	}
 
-	@Override protected void createVote(String path) {
+	@Override protected void createVote(String email, int voteId, int voteScore) {
 	}
 
-	@Override protected void readPost(String path, Page page) { 
-	}
-
-	@Override protected void readAnnounceFAQ(String path) {
+	@Override protected void readAnnounceFAQ(String type, int postId) {
 	}
 
 	@Override protected void searchPostList(String path) {
 	}
+	
+	public static String getPostListFilename(String postType){
+		return Urls.filePostList + postType + Gegevens.FILE_EXT_DAT;
+	}
+
+	public static String getPostDetailFilename(int postId, String postType){
+		return Urls.filePostDetail + postType + "_" + postId + Gegevens.FILE_EXT_DAT;
+	}
+
+	@Override
+	protected void readAnnounceList(String type, int currentSize, Page page) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

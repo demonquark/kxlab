@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -78,11 +79,11 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 		b.putInt(Gegevens.EXTRA_FOOTERID,  R.id.footer_myservice);
 		b.putString(Gegevens.EXTRA_TAG, tag);
 		if(service != null) { b.putParcelable(Gegevens.EXTRA_SERVICE, service); }
+		b.putSerializable(Gegevens.EXTRA_FLAVOR, ServiceFlavor.MYSERVICE);
 		
 		// Send the bundle off to the detail activity
 		Intent detailIntent = new Intent(this, ServiceDetailActivity.class);
 		detailIntent.putExtra(Gegevens.EXTRA_MSG, b);
-		System.out.println("here is not null"+service.getServicedetail());
 		startActivityForResult(detailIntent, BaseActivity.RESULT_FIRST_USER);
 	}
 
@@ -110,7 +111,7 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 
 	@Override
 	public void onCreateService(String tag) {
-		startDetailsActivity(tag, new TrustService());
+		startDetailsActivity(tag, null);
 	}
 
 }

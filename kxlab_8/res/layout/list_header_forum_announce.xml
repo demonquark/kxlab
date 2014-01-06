@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/list_header"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="vertical" >
+	<LinearLayout android:id="@+id/user_container" android:orientation="horizontal"
+		android:layout_width="match_parent" android:layout_height="wrap_content"
+		android:padding="@dimen/list_item_horizontal_padding"
+		android:background="@drawable/forum_reply_create_owner_bg">
+		<TextView android:id="@+id/user_email" 
+			android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_person_text"
+			android:gravity="left" android:text="@string/forum_reply_owner" />
+		<TextView android:id="@+id/user_date" 
+			android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_person_text" 
+			android:gravity="right" android:text="@string/forum_reply_postdate" />
+	</LinearLayout>
+    
+	<TextView android:id="@+id/forum_post_title" 
+		android:layout_width="match_parent" android:layout_height="wrap_content"
+		android:padding="@dimen/row_vertical_padding"
+		android:textAppearance="?android:attr/textAppearanceMedium" 
+		android:gravity="center" android:text="@string/forum_post_title" />
+    <include layout="@layout/list_header_forum_post_text" />
+</LinearLayout>

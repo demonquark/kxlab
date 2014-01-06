@@ -69,7 +69,7 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		// add the forum menu
 		if(mPost != null && 
 				(mPost.getPostType()  == PostType.FORUM || mPost.getPostType() == PostType.SUGGESTION)){
-			inflater.inflate(R.menu.forum, menu);
+			inflater.inflate(R.menu.forum_detail, menu);
 		}
 	}
 	
@@ -77,7 +77,7 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
     	int itemId = item.getItemId();
         switch (itemId) {
         	case R.id.action_create:
-        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, mPost); }
+				if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, mPost); }
             break;
             default:
             	return super.onOptionsItemSelected(item);
@@ -99,7 +99,7 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		// (Note: mPost remains null if it is neither in the saved state nor the arguments)
 		mPost = savedstate.getParcelable(Gegevens.EXTRA_POST); 							
 		if(mPost == null){ mPost = arguments.getParcelable(Gegevens.EXTRA_POST); }
-		
+		Loggen.v(this, "start - mPost has type: " + mPost.getPostType());
 
 		// load the replies (Note: replies remains null if it is neither in the saved state nor the arguments)
 		replies = savedstate.getParcelableArrayList(Gegevens.EXTRA_REPLIES); 							
@@ -117,12 +117,20 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 
 		// Inflate the root view and save references to useful views as class variables
 		mRootView = inflater.inflate(R.layout.frag_generic_xlist, container, false);
-		View header = inflater.inflate(R.layout.list_header_forum_post_title, container, false);
 
+		// Set the list view
 		mReplyList = (XListView) mRootView.findViewById(android.R.id.list);
-		((LinearLayout) mRootView.findViewById(R.id.fixed_header_holder)).addView(header);
-		mReplyList.addHeaderView(
-				LayoutInflater.from(getActivity()).inflate(R.layout.list_header_forum_post_text, null));
+
+		// add the header
+		if(mPost.getPostType() == PostType.ANNOUNCE || mPost.getPostType() == PostType.FAQ){
+			((LinearLayout) mRootView.findViewById(R.id.fixed_header_holder)).addView(
+					LayoutInflater.from(getActivity()).inflate(R.layout.list_header_forum_announce, null));
+		} else {
+			View header = inflater.inflate(R.layout.list_header_forum_post_title, container, false);
+			((LinearLayout) mRootView.findViewById(R.id.fixed_header_holder)).addView(header);
+			mReplyList.addHeaderView(
+					LayoutInflater.from(getActivity()).inflate(R.layout.list_header_forum_post_text, null));
+		}
 		mReplyList.setPullLoadEnable(true);
 		mReplyList.setXListViewListener(this);
 
@@ -136,11 +144,20 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		// Note: Without a service, we can't do anything. (Server requests require a service id) 
 		if(mPost != null){
 			
-			// Load the post and the replies 
-			if(replies != null) { showPost(); 
-			} else if(getActivity() != null) {
-				getData(Source.DUMMY, Page.CURRENT);
+			// Hack to handle newly created replies.
+			boolean forceupdate = false;
+			if(getActivity() != null && getActivity() instanceof ForumPostActivity){
+				ForumPostActivity act =  (ForumPostActivity) getActivity();
+				forceupdate = act.getForceUpdate();
+				act.forceUpdate(false);
 			}
+			
+			// Load the post and the replies
+			if(forceupdate || replies == null){
+				getData(Source.WEB, Page.CURRENT);
+			} else if(replies != null) { 
+				showPost(); 
+			} 
 		} else {
 			// give an error message ... 
 			 userMustClickOkay(getString(R.string.details_error_title), getString(R.string.details_error_text2));
@@ -158,6 +175,11 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 
 	private void showInformation(boolean showinfo) {
 		
+		if(mPost.getPostType() == PostType.ANNOUNCE || mPost.getPostType() == PostType.FAQ){
+			Loggen.i(this, "-------- hiding view");
+			((XListView) mRootView.findViewById(android.R.id.list)).setVisibility(View.GONE);
+		}
+		
 		if(mReplyList != null){ 
 			if(mReplyList.isPullLoading()){
 				mReplyList.stopLoadMore();
@@ -172,8 +194,6 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 			// show or hide the progress bar
 			((ProgressBar) mRootView.findViewById(R.id.progress_bar)).setVisibility((showinfo) ? View.GONE : View.VISIBLE);
 			((RelativeLayout) mRootView.findViewById(R.id.list_holder)).setVisibility((showinfo) ? View.VISIBLE : View.GONE);
-			((TextView) mRootView.findViewById(android.R.id.empty))
-				.setVisibility( (replies != null && replies.size() == 0) ? View.VISIBLE : View.GONE);
 		} else {
 			userMustClickOkay(getString(R.string.details_error_title), getString(R.string.details_error_text));
 		}
@@ -182,19 +202,25 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 	private void showPost(){
 		if(mPost != null && mRootView != null){
 
+			// set the basic information
 			User owner = mPost.getPostSponsor();
-			
-			//Set the service image
-			Loggen.v(this, getTag() + " - Showing service with image: " + owner.getPhotoLocation());
-			setImageView(owner.getPhotoLocation(), (ImageView) mRootView.findViewById(R.id.user_img));
-			
-			// Set the text 
-			((TextView) mRootView.findViewById(R.id.user_name)).setText(owner.getUserName());
-			((TextView) mRootView.findViewById(R.id.user_activitylevel_text)).setText(owner.getActivityScore());
-			((TextView) mRootView.findViewById(R.id.user_date)).setText(owner.getTimeEnter());
+			((TextView) mRootView.findViewById(R.id.user_email)).setText(owner.getEmail());
 			((TextView) mRootView.findViewById(R.id.forum_post_title)).setText(mPost.getPostTitle());
 			((TextView) mRootView.findViewById(R.id.forum_post_text)).setText(mPost.getPostDetail());
-			
+			((TextView) mRootView.findViewById(R.id.user_date)).setText(mPost.getPublishTimeString());
+
+			// set the post specific information
+			if(mPost.getPostType() != PostType.ANNOUNCE && mPost.getPostType() != PostType.FAQ){
+				
+				//Set the service image
+				Loggen.v(this, getTag() + " - Showing post sponsor with image: " + owner.getPhotoLocation());
+				setImageView(owner.getPhotoLocation(), (ImageView) mRootView.findViewById(R.id.user_img));
+				
+				// Set the text 
+				((TextView) mRootView.findViewById(R.id.user_name)).setText(owner.getUserName());
+				((TextView) mRootView.findViewById(R.id.user_date)).setText(owner.getTimeEnterString());
+				((TextView) mRootView.findViewById(R.id.user_activitylevel_text)).setText(owner.getActivityScore());
+			}
 		}
 
 		// show the comments list 
@@ -207,6 +233,7 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 					// The replies have not been loaded to the list view. Do that now
 					mListAdapter = new ReplyArrayAdapter(getActivity(), 
 							R.layout.list_item_reply, android.R.id.text1, replies);
+					mListAdapter.setOnBtnClickListener(this);
 					mReplyList.setAdapter(mListAdapter);
 				}
 			} else {
@@ -225,31 +252,58 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		forumDAO.readPost(source, mPost, replies, page);
 	}
 	
+	@Override public void onClick(View v) {
+		int id = v.getId();
+		switch(id){
+			case android.R.id.button1:
+				int replyId = Integer.parseInt(String.valueOf(v.getTag()));
+				Reply reply = null;
+				for(Reply r : replies){ if(replyId == r.getReplyId()){ reply = r; break; }}
+				
+				if(mListener != null && reply != null) { 
+					mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, reply); 
+				}
+			break;
+			default:
+				super.onClick(v);
+			break;
+		}
+	}
+
 	@Override public void onRefresh() {
-		Loggen.v(this, " called onRefresh.");
-		getData(Source.DUMMY, Page.LATEST);
+		Loggen.v(this, " caled onRefresh.");
+		getData(Source.WEB, Page.LATEST);
 	}
 	
 	@Override
 	public void onLoadMore() {
 		Loggen.v(this, " called onLoadMore.");
-		getData(Source.DUMMY, Page.PREVIOUS);
+		getData(Source.WEB, Page.PREVIOUS);
 	}
 
 	@Override public void onReadPost(Post post, List <Reply> replies) {
 		
 		// make sure the replies are not empty
-		if(this.replies == null){ this.replies = new ArrayList <Reply> (); }
-		if(post != null){ this.mPost.setFromOtherPost(post); }
+		 if(replies == null && this.replies == null){
+			userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
+			this.replies = new ArrayList <Reply> ();
+			getData(Source.LOCAL, Page.CURRENT);
+		}
 		
+		// update the post
+		if(post != null){
+			post.setPostType(mPost.getPostType());
+			this.mPost.setFromOtherPost(post); 
+		}
+
 		// add the replies
 		if(replies != null){
+			if(this.replies == null){ this.replies = new ArrayList<Reply> (); }
 			this.replies.clear();
 			this.replies.addAll(replies);
 		}
 		
 		showPost();
-		
 	}
 
 	
@@ -278,9 +332,14 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 	}
 
 
-	@Override
-	public void onReadAnnounceFAQ(Post post) {
-		// TODO Auto-generated method stub
+	@Override public void onReadAnnounceFAQ(Post post) {
+		// update the post
+		if(post != null){
+			post.setPostType(mPost.getPostType());
+			this.mPost.setFromOtherPost(post); 
+		}
+		showPost();
+		showInformation(true);
 		
 	}
 

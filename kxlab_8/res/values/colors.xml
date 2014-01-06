@@ -22,6 +22,7 @@
     <color name="gray">#7A7A7A</color>
     <color name="ltgray">#A7A7A7</color>
     <color name="holo_gray">#9A9A9A</color>
+	<color name="background_holo_light">#fff3f3f3</color>    
     <color name="transparent">#00000000</color>
     <color name="btn_play_unfocused">#001f1f1f</color>
     <color name="btn_play_pressed">#001f1f1f</color>

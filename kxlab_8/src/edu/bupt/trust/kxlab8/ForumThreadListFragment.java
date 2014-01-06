@@ -14,6 +14,7 @@ import edu.bupt.trust.kxlab.model.PostType;
 import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
+import edu.bupt.trust.kxlab.widgets.DialogFragmentScore;
 import edu.bupt.trust.kxlab.widgets.XListView;
 import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
 
@@ -89,15 +90,11 @@ public class ForumThreadListFragment extends BaseListFragment
 		
 		// load the posts (Note: posts remains null if it is neither in the saved state nor the arguments)
 		mPosts = savedstate.getParcelableArrayList(Gegevens.EXTRA_POSTS); 							
-		Loggen.v(this, "Posts retrieved and is " + (mPosts == null));
 		if(mPosts == null){ mPosts = arguments.getParcelableArrayList(Gegevens.EXTRA_POSTS); } 	
-		Loggen.v(this, "Posts retrieved and is " + (mPosts == null));
 		
 		// load the post type
 		mPostType = (PostType) savedstate.getSerializable(Gegevens.EXTRA_POSTTYPE);
-		Loggen.v(this, "Post type retrieved and is " + mPostType);
 		if(mPostType == null){ mPostType = (PostType) arguments.getSerializable(Gegevens.EXTRA_POSTTYPE); } 	
-		Loggen.v(this, "Post type retrieved and is " + mPostType);
 		if(mPostType == null){
 		    PostType [] allTypes = PostType.values();
 		    for(int i = 0; i < allTypes.length; i++){
@@ -131,13 +128,12 @@ public class ForumThreadListFragment extends BaseListFragment
 	@Override
 	public void onViewStateRestored(Bundle savedInstanceState) {
 		super.onViewStateRestored(savedInstanceState);
-		Loggen.v(this, getTag() + " - Restoring ThreadList instance state.");
+		Loggen.v(this, getTag() + " - Restoring saved Instancestate. mPosts exists? " + (mPosts != null));
 
 		// load the posts list if requested (generally only if we just created the fragment)
 		if(mPosts == null){
 			// Load the services from the DAO
-			Loggen.v(this, "Restoring saved Instancestate: Hide the list");
-			getData(Source.DUMMY, Page.CURRENT);
+			getData(Source.WEB, Page.CURRENT);
 		}
 
 		// show or hide the list
@@ -152,6 +148,13 @@ public class ForumThreadListFragment extends BaseListFragment
 		outState.putSerializable(Gegevens.EXTRA_POSTTYPE, mPostType);
 	}
 	
+	@Override public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	if(resultCode == BaseActivity.RESULT_OK){
+    		Loggen.i(this, "Activity result is okay.");
+    		getData(Source.WEB, Page.CURRENT);
+    	}
+	}
+
 	private void showList(boolean showlist) {
 		if(mListView != null){ 
 			if(mListView.isPullLoading()){
@@ -196,7 +199,7 @@ public class ForumThreadListFragment extends BaseListFragment
 	private void getData(Source source, Page page) {
 		if(getActivity() != null){
 			ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPostType);
-			forumDAO.readPostList(source, mPostType, page);
+			forumDAO.readPostList(source, mPostType, mPosts, page);
 		}
 	}
 	
@@ -204,23 +207,29 @@ public class ForumThreadListFragment extends BaseListFragment
 		if(getActivity() != null){
 			// Bundle the post and send it off to the detail activity
 			Bundle b = new Bundle();
-			if(post != null) { b.putParcelable(Gegevens.EXTRA_POST, post);
-			} else { b.putSerializable(Gegevens.EXTRA_POSTTYPE, mPostType); }
+			
+			
+			if(post != null) {
+				post.setPostType(mPostType);
+				b.putParcelable(Gegevens.EXTRA_POST, post);
+			} else { 
+				b.putSerializable(Gegevens.EXTRA_POSTTYPE, mPostType); 
+			}
 			Intent intent = new Intent(getActivity(), ForumPostActivity.class);
 			intent.putExtra(Gegevens.EXTRA_MSG, b);
-			startActivity(intent);
+			this.startActivityForResult(intent, Gegevens.CODE_GALLERY);
 		}
 	}
 
 	@Override public void onRefresh() {
 		Loggen.v(this, " called onRefresh.");
-		getData(Source.DUMMY, Page.LATEST);
+		getData(Source.WEB, Page.LATEST);
 	}
 	
 	@Override
 	public void onLoadMore() {
 		Loggen.v(this, " called onLoadMore.");
-		getData(Source.DUMMY, Page.PREVIOUS);
+		getData(Source.WEB, Page.PREVIOUS);
 	}
 
 	@Override public void onItemClick(AdapterView<?> listView, View view, int position, long id) {
@@ -228,17 +237,52 @@ public class ForumThreadListFragment extends BaseListFragment
 			position--; 
 			// TODO: Figure out why the method is returning the wrong position
 			Loggen.v(this, getTag() + " - onItemClick for: " + mPosts.get(position).getPostTitle());
-			startPostActivity(mPosts.get(position));
+			
+			Post p = mPosts.get(position);
+			if(p.isPoll()){
+				DialogFragmentScore.newInstance(true)
+					.setTitle(getString(R.string.forum_dialog_vote_title))
+					.setMessage(getString(R.string.forum_dialog_vote_text) + " " + p.getPostSponsor().getEmail())
+					.setPositiveButtonText(getString(R.string.submit))
+					.setNegativeButtonText(getString(R.string.cancel))
+					.setCancelableAndReturnSelf(false)
+					.show(getFragmentManager(), Gegevens.FRAG_SCORE);
+	
+			} else {
+				startPostActivity(mPosts.get(position));	
+			}
 		}
 	}
 
 	@Override public void onReadPostList(List<Post> posts) {
 		Loggen.v(this, "Got a response onReadPostList. posts exist? " + (posts != null));
-		mPosts = (ArrayList<Post>) posts;
-		showList(true);
+		if(posts != null && mPosts != null){
+			mPosts.clear();
+			mPosts.addAll(posts);
+		} else if(posts == null && mPosts == null){
+			userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
+			mPosts = new ArrayList<Post> ();
+			getData(Source.LOCAL, Page.CURRENT);
+		} else {
+			 mPosts = (ArrayList<Post>) posts;			
+		}
 		
+		// Check the list for votes 
+		for(Post p : mPosts){
+			if(p.isPoll()){
+				p.setPostTitle(getString(R.string.forum_vote_for) + " " + p.getPostSponsor().getEmail());
+			}
+		}
+		
+		showList(true);		
 	}
 
+	@Override public void onBasicPositiveButtonClicked(String tag, Object o) { 
+		ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPostType);
+		String email = ((BaseActivity) getActivity()).mSettings.getUser().getEmail();
+		forumDAO.createVote(email, 3, Integer.parseInt(String.valueOf(o)));
+	}
+	
 	@Override public void onCreatePost(boolean success) {	}
 	@Override public void onCreateReply(boolean success) { }
 	@Override public void onCreateVote(boolean success) { }

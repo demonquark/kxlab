@@ -1,5 +1,8 @@
 package edu.bupt.trust.kxlab.model;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -47,16 +50,19 @@ public class User implements Parcelable {
 	}
 	
 	public User(JsonUser userinfo){
-		email = userinfo.getEmail();
-		userName = userinfo.getName();
-		password = userinfo.getPassword();
-		photoLocation = userinfo.getPhoto();
-		gender = userinfo.getSex();
-		timeEnter = userinfo.getJointime();
-		activityScore = String.valueOf(userinfo.getActivityScore());
-		Source = userinfo.getType();
-		phoneNumber = userinfo.getPhonenumber();
-		isLogin=false;
+		this();
+		if(userinfo != null){
+			email = userinfo.getEmail();
+			userName = userinfo.getName();
+			password = userinfo.getPassword();
+			photoLocation = userinfo.getPhoto();
+			gender = userinfo.getSex();
+			timeEnter = userinfo.getJointime();
+			activityScore = String.valueOf(userinfo.getActivityScore());
+			Source = userinfo.getType();
+			phoneNumber = userinfo.getPhonenumber();
+			isLogin=false;
+		}
 	}
 
 	public User(User newUser){
@@ -219,6 +225,17 @@ public class User implements Parcelable {
 		return userinfo;
 	}
 
+	public String getTimeEnterString(){
+
+		long date = 0;
+		try{
+			date = Long.parseLong(timeEnter);
+		} catch(Exception e){ }
+		
+		return new SimpleDateFormat("yyyy-mm-dd HH:mm:ss", Locale.US).format(date);
+	}
+	
+	
 	@Override 
 	public boolean equals(Object aThat) {
 		if ( this == aThat ) return true;

@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -77,6 +78,7 @@ public class ServicesListActivity extends BaseActivity implements OnServiceSelec
 		b.putInt(Gegevens.EXTRA_FOOTERID,  R.id.footer_services);
 		b.putString(Gegevens.EXTRA_TAG, tag);
 		b.putParcelable(Gegevens.EXTRA_SERVICE, service);
+		b.putSerializable(Gegevens.EXTRA_FLAVOR, ServiceFlavor.SERVICE);
 		
 		// Send the bundle off to the detail activity
 		Intent detailIntent = new Intent(this, ServiceDetailActivity.class);

@@ -29,7 +29,11 @@ public class ForumDAOdummy extends ForumDAOabstract {
 		this.rand = new Random();
 	}
 	
-	@Override protected void readPostList(final String path) {
+	@Override protected void readPostList(String type, int currentSize, final Page page) {
+		
+		// determine the cache file name
+		final String cachefilename = ForumDAOlocal.getPostListFilename(type);
+		
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
 				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
@@ -37,12 +41,44 @@ public class ForumDAOdummy extends ForumDAOabstract {
 			}
 
 			@Override protected void onPostExecute(Void v) {
-				String response = readFromFile(randomPostList(path));
-				listener.onReadPostList(new RawResponse(response, "dummypostlist"));
+				String response = readFromFile(randomPostList(null));
+				RawResponse rawResponse = new RawResponse(response, cachefilename);
+				rawResponse.page = page;
+				listener.onReadPostList(rawResponse);
 			}
 		}.execute();
 	}
 
+	@Override protected void readPost(String postType, int currentSize, final Page page, int postId) {
+		
+		// determine the cache file name
+		final String cachefilename = ForumDAOlocal.getPostDetailFilename(postId, postType);
+				
+		new AsyncTask<Void, Integer, Void>  () {
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				
+				RawResponse response = new RawResponse();
+				response.page = page;
+				response.path = cachefilename;
+				if(page == Page.CURRENT){
+					response.message = readFromFile(new File(cacheDir, "post5.dat"));	
+				} else if (page == Page.LATEST){
+					response.message = readFromFile(new File(cacheDir, "post6.dat"));
+				} else {
+					response.message = readFromFile(new File(cacheDir, "post7.dat"));
+				}
+				
+				listener.onReadPost(response);
+			}
+		}.execute();
+		
+	}
+	
 	public File randomPostList(String type){
 		
 		String [] types = {"forum"};
@@ -90,59 +126,35 @@ public class ForumDAOdummy extends ForumDAOabstract {
 		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
 	}
 
+	@Override protected void createPost(String email, String type, String title, String content) {
+		listener.onCreatePost(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
+	}
+
+	@Override protected void createReply(String email, String type, int postId, String content) {
+		listener.onCreateReply(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
+	}
+
 	@Override
-	protected void createPost(String path) {
+	protected void createVote(String email, int voteId, int voteScore) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
-	protected void createReply(String path) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
-	protected void createVote(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override protected void readPost(final String path, final Page page) {
-		new AsyncTask<Void, Integer, Void>  () {
-			@Override protected Void doInBackground(Void... params) {
-				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
-				return null;
-			}
-
-			@Override protected void onPostExecute(Void v) {
-				
-				RawResponse response = new RawResponse();
-				response.page = page;
-				response.path = path;
-				if(page == Page.CURRENT){
-					response.message = readFromFile(new File(cacheDir, "post5.dat"));	
-				} else if (page == Page.LATEST){
-					response.message = readFromFile(new File(cacheDir, "post6.dat"));
-				} else {
-					response.message = readFromFile(new File(cacheDir, "post7.dat"));
-				}
-				
-				
-				listener.onReadPost(response);
-			}
-		}.execute();
-		
-	}
-
-	@Override
-	protected void readAnnounceFAQ(String path) {
+	protected void readAnnounceFAQ(String type, int postId) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	protected void searchPostList(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void readAnnounceList(String type, int currentSize, Page page) {
 		// TODO Auto-generated method stub
 		
 	}

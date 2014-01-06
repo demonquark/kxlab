@@ -180,6 +180,4 @@ class ServicesDAOweb extends ServicesDAOabstract{
 		@Override public void onFinish() { Log.v("DAOweb" , "onFinish: not implemented."); }		
 
 	}
-
-
 }

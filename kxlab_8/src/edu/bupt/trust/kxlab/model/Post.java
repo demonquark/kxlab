@@ -1,6 +1,11 @@
 package edu.bupt.trust.kxlab.model;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
+import edu.bupt.trust.kxlab.jsonmodel.JsonAnnounceFAQ;
 import edu.bupt.trust.kxlab.jsonmodel.JsonPost;
+import edu.bupt.trust.kxlab.jsonmodel.JsonVote;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -15,6 +20,7 @@ public class Post implements Parcelable {
 	private long pdLastEditTime;
 	private long pdLastReplyTime;
 	private User postSponsor;
+	private boolean poll;
 	
 	public Post() {
 		pdId 			= -1;
@@ -26,6 +32,7 @@ public class Post implements Parcelable {
 		pdLastEditTime 	= 0;
 		pdLastReplyTime = 0;
 		postSponsor 	= new User();
+		poll 			= false;
 	}
 	
 	public Post(JsonPost post){
@@ -37,7 +44,8 @@ public class Post implements Parcelable {
 		pdLastEditTime 	= post.getPdLastEditTime();
 		pdLastReplyTime = post.getPdLastReplyTime();
 		postSponsor 	= new User(post.getEmail());
-		postType 		= PostType.fromServerType(post.getPostType()); 
+		postType 		= PostType.fromServerType(post.getPostType());
+		poll			= false;
 	}
 
 	public Post(Post otherPost){
@@ -55,9 +63,36 @@ public class Post implements Parcelable {
 		pdLastEditTime 	= in.readLong();
 		pdLastReplyTime = in.readLong();
 		postSponsor 	= in.readParcelable(getClass().getClassLoader());
+		poll			= (in.readByte() != 0);
     }
 
-    // this is used to regenerate your object.
+    public Post(JsonAnnounceFAQ jp) {
+		pdId 			= Integer.valueOf(jp.getAgId());
+		postType 		= PostType.fromServerType(jp.getAgType());
+		postTitle 		= jp.getAgTitle();
+		postDetail 		= jp.getAgContent();
+		pdReplyCount 	= 0;
+		pdPublishTime 	= jp.getAgPublishTime();
+		pdLastEditTime 	= jp.getAgLastEditTime();
+		pdLastReplyTime = 0;
+		postSponsor 	= new User(jp.getAgPublishAuthor());
+		poll			= false;
+	}
+
+	public Post(JsonVote jv) {
+		pdId 			= Integer.valueOf(jv.getVoteId());
+		postType 		= PostType.ANNOUNCE;
+		postTitle 		= jv.getVoteUserEmail();
+		postDetail 		= jv.getVoteLastRate();
+		pdReplyCount 	= 0;
+		pdPublishTime 	= 0;
+		pdLastEditTime 	= 0;
+		pdLastReplyTime = 0;
+		postSponsor 	= new User(jv.getVoteUserEmail());
+		poll			= true;
+	}
+
+	// this is used to regenerate your object.
     public static final Parcelable.Creator<Post> CREATOR = new Parcelable.Creator<Post>() {
         public Post createFromParcel(Parcel in) { return new Post(in); }
         public Post[] newArray(int size) { return new Post[size]; }
@@ -77,8 +112,17 @@ public class Post implements Parcelable {
     	dest.writeLong(pdLastEditTime);
     	dest.writeLong(pdLastReplyTime);
     	dest.writeParcelable(postSponsor, 0);
+    	dest.writeByte((byte) (poll ? 1 : 0));
     }
 	
+	public boolean isPoll() {
+		return poll;
+	}
+
+	public void setPoll(boolean poll) {
+		this.poll = poll;
+	}
+
 	public int getPdId() {
 		return pdId;
 	}
@@ -183,6 +227,7 @@ public class Post implements Parcelable {
 		pdLastEditTime 	= otherPost.getPdLastEditTime();
 		pdLastReplyTime = otherPost.getPdLastReplyTime();
 		postSponsor 	= otherPost.getPostSponsor();
+		poll			= otherPost.isPoll();
 	}
 	
 	public JsonPost getJsonPost(){
@@ -201,8 +246,13 @@ public class Post implements Parcelable {
 		
 		return post;
 	}
+	
+	public String getPublishTimeString(){
+		return new SimpleDateFormat("yyyy-mm-dd HH:mm:ss", Locale.US).format(pdPublishTime);
+	}
+	
 
-
+	
 	@Override 
 	public boolean equals(Object aThat) {
 		if ( this == aThat ) return true;

@@ -2,7 +2,7 @@ package edu.bupt.trust.kxlab.data;
 
 final class Urls {
 
-	protected static final String urlBASE = "http://10.108.21.97:8080/trustworthy-community/t"; 
+	protected static final String urlBASE = "http://10.108.24.166:8080/trustworthy-community/t"; 
 	protected static final String pathProfileLogin = "userManagementByPhone/login";				
 	protected static final String pathProfileUserInfo = "userManagementByPhone/userInformation";
 	protected static final String pathProfileHistory = "userManagementByPhone/activityHistory";	
@@ -16,6 +16,14 @@ final class Urls {
 	protected static final String pathServiceComment = "servicemanagementbyphone/importServiceComment";
 	protected static final String pathServiceList = "servicemanagementbyphone/myServiceList";
 	protected static final String pathServiceDetail = "servicemanagementbyphone/serviceDetail";
+	protected static final String pathForumPostList = "forum/postList";
+	protected static final String pathForumPostDetail = "forum/postForumDetail";
+	protected static final String pathForumCreatePost = "forum/createPost";
+	protected static final String pathForumReplyPost = "forum/replyPost";
+	protected static final String pathForumReplyReply = "forum/replyReply";
+	protected static final String pathForumPostAnnounceDetail = "forum/postAnnounceDetail";
+	protected static final String pathForumAnnounceorguideList = "forum/announceorguideList";
+	protected static final String pathForumVoteUser = "forum/voteUser";
 	protected static final String paramServiceType = "servicetype";				
 	protected static final String paramServiceListSize = "serviceListSize"; 	
 	protected static final String paramServiceListPage = "serviceListPage"; 	
@@ -30,7 +38,22 @@ final class Urls {
 	protected static final String paramCommentListSize = "servicecommentlistsize";
 	protected static final String paramCommentScore = "commentscore";
 	protected static final String paramServiceComment = "servicecomment";
-	protected static final String paramProfilePassword = "password";			
+	protected static final String paramProfilePassword = "password";	
+	protected static final String paramForumPostListSize = "postListSize";	
+	protected static final String paramForumPostListPage = "postListPage";	
+	protected static final String paramForumPostType = "postType";	
+	protected static final String paramForumPostId = "postId";	
+	protected static final String paramForumPostReplyListPage = "postReplyListPage";	
+	protected static final String paramForumPostReplyListSize = "postReplyListSize";	
+	protected static final String paramForumEmail = "email";	
+	protected static final String paramForumPostDetail = "postDetail";	
+	protected static final String paramForumPostTitle = "postTitle";	
+	protected static final String paramForumReReplyId = "ReReplyId";	
+	protected static final String paramForumUserEmail = "useremail";	
+	protected static final String paramForumReplyDetail = "ReplyDetail";
+	protected static final String paramForumAgType = "agType";
+	protected static final String paramForumVoteId = "voteId";
+	protected static final String paramForumVoteScore = "voteScore";
 	protected static final String jsonLoginOrNot = "loginOrNot";				
 	protected static final String jsonLoginErrorMessage = "loginerrormessage";	
 	protected static final String jsonServiceDetail = "ServiceDetail";			
@@ -38,11 +61,15 @@ final class Urls {
 	protected static final String jsonServiceUserNumber = "ServiceUserNumber";	
 	protected static final String jsonReplyCommentDetail = "ReplyCommentDetail";
 	protected static final String jsonPostList = "PostList";
+	protected static final String jsonCreatePostOrNot = "createPostOrNot";
+	protected static final String jsonPostAnnounceDetail = "PostAnnounceDetail";
 	
 	
 	protected static final String filePost = "post";
 	protected static final String fileAnnounce = "post";
 	protected static final String fileWebpostforumdetail = "webpostforumdetail";
+	protected static final String filePostList = "forum_list";
+	protected static final String filePostDetail = "forum_detail";
 	
 	
 	protected static final String build(String... parts){

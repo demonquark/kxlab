@@ -116,9 +116,13 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		if(mService == null){ mService = arguments.getParcelable(Gegevens.EXTRA_SERVICE); } 
 		
 		// load the service flavor. This determines what the user can do while viewing the service details.
+		Loggen.d(this, getTag() + " - Flavor is " + mFlavor);
 		mFlavor = (ServiceFlavor) savedstate.getSerializable(Gegevens.EXTRA_FLAVOR);
+		Loggen.d(this, getTag() + " - Flavor is " + mFlavor);
 		if(mFlavor == null) { mFlavor = (ServiceFlavor) arguments.getSerializable(Gegevens.EXTRA_FLAVOR); }
+		Loggen.d(this, getTag() + " - Flavor is " + mFlavor);
 		if(mFlavor == null) { mFlavor = ServiceFlavor.SERVICE; }
+		Loggen.d(this, getTag() + " - Flavor is " + mFlavor);
 
 		// load the comments (Note: comments remains null if it is neither in the saved state nor the arguments)
 		comments = savedstate.getParcelableArrayList(Gegevens.EXTRA_COMMENTS); 							

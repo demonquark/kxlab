@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:gravity="right" android:orientation="vertical"
-    android:layout_width="match_parent" android:layout_height="wrap_content" >
+    android:layout_width="match_parent" android:layout_height="wrap_content" 
+    android:background="@drawable/forum_reply_create_bg">
 	
 	<LinearLayout android:id="@+id/forum_reply_holder" android:orientation="horizontal"
 		android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -22,9 +23,4 @@
 		android:layout_width="match_parent" android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceSmall" 
 		android:gravity="left|top" android:text="@string/forum_reply_text" />
-	<ImageButton android:id="@android:id/button1"
-	    android:layout_width="wrap_content" android:layout_height="wrap_content"
-	    android:layout_marginRight="@dimen/list_item_horizontal_padding"
-	    android:layout_marginBottom="@dimen/list_item_vertical_padding"
-	    android:background="@drawable/ic_btn_reply" android:contentDescription="@string/niets" />
 </LinearLayout>

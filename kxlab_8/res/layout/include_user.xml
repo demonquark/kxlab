@@ -3,7 +3,7 @@
 	android:id="@+id/user_container"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:background="@drawable/setbar_bg" >
+	android:background="@drawable/forum_reply_create_owner_bg" >
 
 		<ImageView android:id="@+id/user_img"
 			android:layout_width="@dimen/list_person_img_width"
@@ -20,6 +20,14 @@
 			android:paddingTop="@dimen/list_item_vertical_padding"
             android:layout_alignParentTop="true" android:layout_toRightOf="@id/user_img" />
 
+		<TextView android:id="@+id/user_email" 
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textSize="@dimen/list_person_text" android:text="@string/user_email"
+			android:paddingTop="@dimen/list_item_vertical_padding" android:layout_alignParentTop="true"  
+			android:layout_alignParentRight="true" android:gravity="right"
+			android:layout_marginLeft="@dimen/list_person_horizontal_padding" 
+			android:layout_marginRight="@dimen/list_person_horizontal_padding" />
+		
 		<TextView android:id="@+id/user_activitylevel_title"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:textSize="@dimen/list_person_text" android:text="@string/user_activitylevel" 
@@ -31,7 +39,6 @@
 			android:textSize="@dimen/list_person_text" android:text="@string/ellipsis" 
 			android:layout_marginLeft="@dimen/list_text_spacing" android:layout_toRightOf="@+id/user_activitylevel_title"
 			android:paddingBottom="@dimen/list_item_vertical_padding" android:layout_alignBottom="@id/user_img" />
-				
 		
 		<TextView android:id="@+id/user_date"
 			android:paddingBottom="@dimen/list_item_vertical_padding"

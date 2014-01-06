@@ -121,6 +121,7 @@
 	<string name="details_dialog_comment_text">Leave a comment for this service</string>
 	<string name="details_btn_save">save changes</string>
 	<string name="details_edit_title">Edit your service</string>
+	<string name="details_edit_new_title">Create a service</string>
 	<string name="details_error_edit">An error occurred while trying to load the service information</string>
 	<string name="details_edit_confirm_title">Changes not saved</string>
 	<string name="details_edit_confirm_text">Would you like to save the changes made to your service?</string>
@@ -147,9 +148,9 @@
 	<string name="comment_score">Rating</string>
 								
 	<!-- service score dialogfragment -->
-	<string name="details_score_text01">-1:不可信</string>
-	<string name="details_score_text02">0:不确定</string>
-	<string name="details_score_text03">+1:可信</string>
+	<string name="details_score_bad">-1: negative</string>
+	<string name="details_score_okay">0: average</string>
+	<string name="details_score_great">+1: exemplary</string>
 	
 	<!-- myinfo activity -->
 	<string name="myinfo_name_title">Name</string>
@@ -230,6 +231,10 @@
 	</string-array>
 	<string name="forum_post_title">post title</string>
 	<string name="forum_post_detail">post detail</string>
+	<string name="forum_error_update_title">Error</string>
+	<string name="forum_error_update_text">Failed to download the latest data. Loaded information from cache.</string>
+	<string name="forum_error_empty_title">Empty fields</string>
+	<string name="forum_error_empty_text">Please fill in all the required fields before submitting</string>
 	<string name="forum_error_reply">An error occurred while trying to reply to the post</string>
 	<string name="forum_create_post_title">You are writing a new post for</string>
 	<string name="forum_create_reply_title">You are writing in reply to</string>
@@ -242,12 +247,16 @@
 	<string name="forum_create_confirm_text">Would you like to post your text to the server?</string>
 	<string name="forum_reply_owner">name</string>
 	<string name="forum_reply_postdate">post date</string>
-	
+	<string name="forum_vote_for">Vote for</string>
+	<string name="forum_dialog_vote_title">Rate this user</string>
+	<string name="forum_dialog_vote_text">Please rate the credibility of</string>
+				
 	<!-- user include -->
 	<string name="user_img">User</string>
-	<string name="user_name">Name</string>
+	<string name="user_name">Unknown Name</string>
 	<string name="user_activitylevel">Activity level:</string>
 	<string name="user_date">Unknown date</string>
+	<string name="user_email">Unknown email</string>
 				
 					
 	<!-- xlistView refreshable -->	

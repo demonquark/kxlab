@@ -53,7 +53,7 @@ public class OtherSettingsFragment extends BaseDetailFragment implements Profile
 		super.onCreateOptionsMenu(menu, inflater);
 	
 		// add the sort menu
-		if(settingName != null)
+		if(Gegevens.PREF_USERLIST.equals(settingName))
 			inflater.inflate(R.menu.otherusers, menu);
 	}
 	
@@ -89,6 +89,8 @@ public class OtherSettingsFragment extends BaseDetailFragment implements Profile
             	return super.onOptionsItemSelected(item);
             }
             showList(true);
+    	} else {
+    		return super.onOptionsItemSelected(item);
     	}
     	
     	return true;

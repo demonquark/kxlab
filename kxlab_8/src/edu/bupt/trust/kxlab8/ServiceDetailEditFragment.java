@@ -157,6 +157,10 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 		((Button) mRootView.findViewById(R.id.details_btn_save)).setOnClickListener(this);
 		((ImageView) mRootView.findViewById(R.id.details_btn_img)).setOnClickListener(this);
 
+		if(oldService == null){
+			((Button) mRootView.findViewById(R.id.details_btn_save)).setText(getString(R.string.details_edit_new_title));
+			((TextView) mRootView.findViewById(R.id.details_title)).setText(getString(R.string.details_edit_new_title));
+		}
 		// Just show the service information
 		showUserInformation(true);
 
@@ -388,6 +392,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 			// the update failed. Inform the user.
 			userMustClickOkay(getString(R.string.details_update_fail_title), 
 					getString(R.string.details_update_fail_text));
+			showUserInformation(true);
 		}
 	}
 

@@ -90,6 +90,7 @@ public class Gegevens {
 	/** Request and result codes */
 	public static final int CODE_GALLERY			= 59701;
 	public static final int CODE_CAMERA				= 59702;
+	public static final int CODE_CREATE				= 59703;
 	
 	/** Frequently used URLs. Note: there is no trailing slash. */
 	public static final String URL_ANDROID_MARKET 		= "http://market.android.com";

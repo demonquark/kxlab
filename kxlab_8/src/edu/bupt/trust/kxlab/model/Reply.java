@@ -1,9 +1,9 @@
 package edu.bupt.trust.kxlab.model;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 
-import edu.bupt.trust.kxlab.jsonmodel.JsonPost;
 import edu.bupt.trust.kxlab.jsonmodel.JsonReply;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -156,6 +156,11 @@ public class Reply implements Parcelable {
 	
 	public String getrTimeString(){
 		return new SimpleDateFormat("yyyy-mm-dd HH:mm:ss", Locale.US).format(rTime);
+	}
+	
+	public static ArrayList<Reply> unroll(ArrayList<Reply> replies){
+		
+		return new ArrayList<Reply> ();
 	}
 
 }

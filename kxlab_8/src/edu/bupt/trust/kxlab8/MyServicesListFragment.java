@@ -6,6 +6,7 @@ import java.util.List;
 import edu.bupt.trust.kxlab.adapters.ServicesArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.MyServicesDAO;
+import edu.bupt.trust.kxlab.data.ServicesDAO;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
 import edu.bupt.trust.kxlab.model.Settings;
 import edu.bupt.trust.kxlab.model.TrustService;
@@ -292,15 +293,16 @@ public class MyServicesListFragment extends ListFragment
 			MyServicesDAO myServicesDAO = DaoFactory.getInstance().setMyServicesDAO(getActivity(), this, servicesType);
 			switch (flag) {
 			case 0:
-				myServicesDAO.readServices(servicesType,Page.LATEST, DaoFactory.Source.WEB, new String [] {user.getEmail()});
+				myServicesDAO.readServices(servicesType,Page.LATEST, DaoFactory.Source.DUMMY, new String [] {user.getEmail()});
 				break;
 			case 1:
-				myServicesDAO.readServices(servicesType,Page.PREVIOUS, DaoFactory.Source.WEB, new String [] {user.getEmail()});
+				myServicesDAO.readServices(servicesType,Page.PREVIOUS, DaoFactory.Source.DUMMY, new String [] {user.getEmail()});
 				break;
 			default:
-				myServicesDAO.readServices(servicesType,Page.LATEST, DaoFactory.Source.WEB, new String [] {user.getEmail()});
+				myServicesDAO.readServices(servicesType,Page.LATEST, DaoFactory.Source.DUMMY, new String [] {user.getEmail()});
 				break;
 			}
+
 		}
 	}
 
@@ -308,6 +310,17 @@ public class MyServicesListFragment extends ListFragment
 	@Override public void onBasicPositiveButtonClicked(String tag, Object o) {
 		if(Gegevens.FRAG_DELETE.equals(tag)){
 			// TODO: process deletion (for now it does the same as non delete)
+			ArrayList<Integer> deleteQuery = (ArrayList<Integer>) o;
+			for(Integer i : deleteQuery){
+				int serviceSize = services.size();
+				for(int j = 0; j < serviceSize; j++){
+					if(services.get(j).getServiceid() == i){
+						services.remove(j);
+						break;
+					}
+				}
+			}
+			
 			initListView();
 		} else {
 			initListView();
@@ -351,13 +364,13 @@ public class MyServicesListFragment extends ListFragment
 	        	// Get and list the selected items
 	        	SparseBooleanArray checkedItems = getListView().getCheckedItemPositions();
 	        	String confirmationText = getString(R.string.services_delete_confirm_text);
-	        	String deleteQuery = "";
+	        	ArrayList<Integer> deleteQuery = new ArrayList<Integer> ();
 	        	int listSize = services.size();
 	        	for(int i = 0; i < listSize; i++){
 	        		if(checkedItems.get(i)){
 	        			confirmationText += "\n" + services.get(i).getServicetitle();
 	        			// TODO: put logic to build deletion query (now it just adds the serviceIds)
-	        			deleteQuery += services.get(i).getServiceid();
+	        			deleteQuery.add(services.get(i).getServiceid());
 	        		}
 	        	}
 	        	

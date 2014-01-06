@@ -2,6 +2,8 @@ package edu.bupt.trust.kxlab8;
 
 import java.util.List;
 
+import edu.bupt.trust.kxlab.data.DaoFactory;
+import edu.bupt.trust.kxlab.data.ForumDAO;
 import edu.bupt.trust.kxlab.data.ForumDAO.ForumListener;
 import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
@@ -15,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -89,7 +90,7 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 		String titleTxt = "";
 		String btnTxt = "";
 		if(mPost != null || mReply != null){
-			header = inflater.inflate(R.layout.list_item_reply, container, false);
+			header = inflater.inflate(R.layout.include_reply, container, false);
 			titleTxt = getString(R.string.forum_create_reply_title);
 			btnTxt = getString(R.string.forum_reply_btn_save);
 		} else if(mPostType != null) {
@@ -136,16 +137,21 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 				.setVisibility((showinfo) ? View.GONE : View.VISIBLE);
 		}
 		
-		if(mPost != null && mRootView != null){
-
-			User owner = mPost.getPostSponsor();
-			String postContent = mPost.getPostTitle() + "\n" + mPost.getPostDetail();
-			// Set the text 
-			((TextView) mRootView.findViewById(android.R.id.text1)).setText(owner.getUserName());
-			((TextView) mRootView.findViewById(android.R.id.text2)).setText(owner.getTimeEnter());
-			((TextView) mRootView.findViewById(android.R.id.content)).setText(postContent);
+		if(mRootView != null){
+			if(mPost != null){
+				User owner = mPost.getPostSponsor();
+				String postContent = mPost.getPostTitle() + "\n" + mPost.getPostDetail();
+				// Set the text 
+				((TextView) mRootView.findViewById(android.R.id.text1)).setText(owner.getEmail());
+				((TextView) mRootView.findViewById(android.R.id.text2)).setText(owner.getTimeEnter());
+				((TextView) mRootView.findViewById(android.R.id.content)).setText(postContent);
+			} else if (mReply != null){
+				// Set the text 
+				((TextView) mRootView.findViewById(android.R.id.text1)).setText(mReply.getrAuthorEmail());
+				((TextView) mRootView.findViewById(android.R.id.text2)).setText(mReply.getrTimeString());
+				((TextView) mRootView.findViewById(android.R.id.content)).setText(mReply.getrContent());
+			}
 		}
-
 	}
 	
 	/** Shows a dialog that asks the user if he wants to save the text he has entered up to now
@@ -172,7 +178,35 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 	 */
 	private void savePost(){
 		Loggen.v(this, "User wants to save a post");
-		mListener.performBackPress();
+		
+		// Get the content
+		String title = (mPost == null && mReply == null && mEditTitle != null) ? 
+				mEditTitle.getText().toString() : mUser.getUserName();
+		String content = mEditContent.getText().toString();
+
+		// Step 1 - verify that both fields are filled in.
+		if(title == null || title.equals("") || content == null || content.equals("")){
+			userMustClickOkay(getString(R.string.forum_error_empty_title), getString(R.string.forum_error_empty_text));
+		} else{
+			
+			// Step 2 - get the DAO
+			PostType type = (mPostType != null) ? mPostType : (mPost != null) ? mPost.getPostType() : PostType.FORUM;
+			ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this,type);
+
+			// Step 3 - determine the right DAO call
+			if(mPost == null && mReply == null){
+				// Step 3a - This is a request to create a new thread
+				forumDAO.createPost(mUser.getEmail(), type, title, content);
+			} else if (mReply != null) {
+				// Step 3a - This is a request to reply to a reply
+				forumDAO.createReplyToReply(mUser.getEmail(), mReply.getReplyId(), content);
+			} else if (mPost != null) {
+				// Step 3a - This is a request to create a new thread
+				forumDAO.createReplyToPost(mUser.getEmail(), type, mPost.getPdId(), content);
+			} else {
+				userMustClickOkay(getString(R.string.forum_error_empty_title), getString(R.string.forum_error_empty_text));
+			}	
+		}
 	}
 	
 	@Override public void onClick(View v) {
@@ -210,16 +244,28 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 		}
 	}
 
-	@Override
-	public void onCreatePost(boolean success) {
-		// TODO Auto-generated method stub
-		
+	@Override public void onCreatePost(boolean success) {
+		if(success){
+			if(getActivity() != null && getActivity() instanceof ForumPostActivity){
+				ForumPostActivity act = (ForumPostActivity) getActivity();
+				act.forceUpdate(true);
+			}
+			mListener.performBackPress();	
+		} else {
+			userMustClickOkay(getString(R.string.forum_error_empty_title), getString(R.string.forum_error_empty_text));
+		}
 	}
 
-	@Override
-	public void onCreateReply(boolean success) {
-		// TODO Auto-generated method stub
-		
+	@Override public void onCreateReply(boolean success) {
+		if(success){
+			if(getActivity() != null && getActivity() instanceof ForumPostActivity){
+				ForumPostActivity act = (ForumPostActivity) getActivity();
+				act.forceUpdate(true);
+			}
+			mListener.performBackPress();	
+		} else {
+			userMustClickOkay(getString(R.string.forum_error_empty_title), getString(R.string.forum_error_empty_text));
+		}
 	}
 
 	@Override

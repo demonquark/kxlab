@@ -3,6 +3,10 @@ package edu.bupt.trust.kxlab.data;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 abstract class DAOabstract {
 
 	/**
@@ -102,5 +106,11 @@ abstract class DAOabstract {
 	    
 	    return valid;
 	}
-
+	
+	/** Check if we have network connectivity. No point in trying anything if we have no connection. */
+	protected static boolean isNetworkAvailable(Context c) {
+	    ConnectivityManager connectivityManager = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+	}
 }

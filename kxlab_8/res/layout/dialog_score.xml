@@ -3,36 +3,29 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:orientation="vertical" >
-            
-   
-    
-    
-    <RadioGroup android:id="@+id/scoRadioGroup"
+	
+	<RadioGroup android:id="@+id/scoRadioGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:orientation="horizontal" 
+                android:orientation="vertical" 
                 android:layout_marginTop="20dp"
-                android:background="@android:drawable/editbox_background"
-                >
+                android:background="@android:drawable/editbox_background" >
                
             <RadioButton android:id="@+id/score01"
                          android:layout_width="wrap_content"
                          android:layout_height="wrap_content"
-                         android:text="@string/details_score_text01" />
+                         android:text="@string/details_score_bad" />
             
             <RadioButton android:id="@+id/score02"
                          android:layout_width="wrap_content"
                          android:layout_height="wrap_content"
-                         android:text="@string/details_score_text02" />
+                         android:text="@string/details_score_okay" />
             
             <RadioButton android:id="@+id/score03"
                          android:layout_width="wrap_content"
                          android:layout_height="wrap_content"
-                         android:text="@string/details_score_text03" />
+                         android:text="@string/details_score_great" />
               
-    </RadioGroup>
-     
-    
-            
- </LinearLayout>
+    </RadioGroup>        
+</LinearLayout>

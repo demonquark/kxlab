@@ -1,18 +1,14 @@
 package edu.bupt.trust.kxlab.adapters;
 
-import java.io.File;
 import java.util.List;
 
 import edu.bupt.trust.kxlab.model.Comment;
-import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
-import edu.bupt.trust.kxlab8.R;
 
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
@@ -48,21 +44,11 @@ public class CommentsArrayAdapter extends ArrayAdapter <Comment>{
 				Comment comment = items.get(position);
 
 				// Set the text TODO: Figure out where to get the owner score from
-				((TextView) v.findViewById(android.R.id.text1)).setText(comment.getCommentdetail());
-				((TextView) v.findViewById(R.id.comment_owner_name)).setText(comment.getUseremail());
-				((TextView) v.findViewById(R.id.comment_owner_score_text)).setText("TODO");
-				((TextView) v.findViewById(R.id.comment_owner_time)).setText(comment.getCommenttimeString());
-				((TextView) v.findViewById(R.id.comment_score_text)).setText(comment.getCommentscore());
+				((TextView) v.findViewById(android.R.id.content)).setText(comment.getCommentdetail());
+				((TextView) v.findViewById(android.R.id.text1)).setText(comment.getUseremail());
+				((TextView) v.findViewById(android.R.id.text2)).setText(comment.getCommenttimeString());
+				((TextView) v.findViewById(android.R.id.title)).setText(comment.getCommentscore());
 
-				// Set the image TODO: Figure out where to get the user image from
-				File imgFile = new File(comment.getUseremail() != null ? comment.getUseremail() : "");
-				ImageView thumb = (ImageView) v.findViewById(R.id.comment_owner_img);
-				if(imgFile.exists()){
-				    thumb.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
-				    		imgFile.getAbsolutePath(),
-				    		thumb.getLayoutParams().width, thumb.getLayoutParams().height));
-				}
-				
 //				Loggen.d(this, "text: " + comment.getUseremail() + " | " + comment.getCommentdetail() 
 //						+ " | file: " + imgFile.getAbsolutePath());
 	        } catch (Exception e) {

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Random;
 
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -16,72 +17,154 @@ import android.os.Environment;
 public class MyServicesDAOdummy extends ServicesDAOabstract {
 
 	private File cacheDir;
-	private int counter;
+	private Random rand;
 
 	public MyServicesDAOdummy(OnServicesRawDataReceivedListener listener){
 		cacheDir = new File(Environment.getExternalStorageDirectory(), 
 				Gegevens.FILE_USERDIRSD + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE);
+
 		this.listener = listener;
-		this.counter = 0;
+		this.rand = new Random();
 	}
 
 	@Override protected void readServices(final String path) {
 		
-		new AsyncTask<Void, Integer, Void>  (){
+		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				try { Thread.sleep(300); } catch (InterruptedException e) { e.printStackTrace(); }
 				return null;
 			}
 
 			@Override protected void onPostExecute(Void v) {
 				String response = null;
 				if(path != null){
-					//String filename = (path.contains(".")) ? path : path + ServicesDAOlocal.REPLACE_extension; 
-					//response = readFromFile(filename);
-					String s = "[" +
-							"{\"serviceid\":107,\"servicetype\":1,\"servicetitle\":\"1\",\"servicedetail\":\"1\",\"servicecreatetime\":1385365825000,\"servicelastedittime\":1385365825000,\"credibilityScore\":\"0\",\"servicephoto\":null,\"useremail\":\"3\",\"servicestatus\":1}," +
-									"{\"serviceid\":90,\"servicetype\":1,\"servicetitle\":\"1\",\"servicedetail\":\"前天，在《咱们结婚吧扭，但也算是个能得不对了\",\"servicecreatetime\":1385114472000,\"servicelastedittime\":1385114472000,\"credibilityScore\":\"0\",\"servicephoto\":null,\"useremail\":\"3\",\"servicestatus\":1}," +
-									"{\"serviceid\":87,\"servicetype\":1,\"servicetitle\":\"1\",\"servicedetail\":\"前天，在《咱们结婚吧》里头听到妞儿说的话，“结婚就是两个人搭伙过日子，你要谈到什么爱不爱的，那就不对了，跑题了。”当时虽然觉得这话有点凄凉、有点别扭，但也算是个能让自己生活好过一些的箴言。 昨天，我看了韩寒主编的《很高兴见到你》里头的一篇文章，突然就觉得不对了，西式婚礼的誓词是什么，“我愿意爱他、安慰他、尊重他、保护他，像你爱自己一样。" +
-									"不论他生病或是健康、富有或贫穷，始终忠於他，直到离开世界！”这才是婚姻的真谛啊，爱是排在第一位的啊。 所以，我将帖子发在这里，只是想提醒广大征友者以及应征者，相亲也是为了在千万人中找到那个彼此说出“我愿意”的人，千万不要让婚姻变了味道。 发牢骚完毕\",\"servicecreatetime\":1385049600000,\"servicelastedittime\":1385085600000,\"credibilityScore\":\"0\",\"servicephoto\":null,\"useremail\":\"3\",\"servicestatus\":1}," +
-									"{\"serviceid\":14,\"servicetype\":1,\"servicetitle\":\"13\",\"servicedetail\":\"13\",\"servicecreatetime\":1383840000000,\"servicelastedittime\":1383879600000,\"credibilityScore\":\"0\",\"servicephoto\":null,\"useremail\":\"3\",\"servicestatus\":1}]";
-					response = s;
+					response = readFromFile(randomServicesList(path));
+					
+					while(response.contains("\"servicephoto\":null")){
+						response = response.replaceFirst("\"servicephoto\":null", "\"servicephoto\":\"" 
+								+ randomPic().getAbsolutePath() + "\"");
+					}
 				}
-				
-				listener.onReadServices(new RawResponse(response, path));
+				listener.onReadServices(new RawResponse(response, "dummyserviceslist"));
 			}
-	
 		}.execute();
 		
 	}
 
 	@Override protected void readService(String path) {
-		
+
+		new AsyncTask<Void, Integer, Void>  () {
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(300); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+		        Loggen.v(this, "Send a request with: " + randomServiceDetails().getAbsolutePath());
+				String response = readFromFile(randomServiceDetails());
+				while(response.contains("\"servicephoto\":null")){
+					response = response.replaceFirst("\"servicephoto\":null", "\"servicephoto\":\"" 
+							+ randomPic().getAbsolutePath() + "\"");
+				}
+				listener.onReadService(new RawResponse(response, "dummservicedetail"));
+			}
+		}.execute();
 	}
 
 	@Override protected void updateServiceScore(String path) {
-		
+		new AsyncTask<Void, Integer, Void>  () {
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1500); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				listener.writeServiceScore(new RawResponse(null, "dummservicedetailscore"));
+			}
+		}.execute();
 	}
 
 	@Override protected void createServiceComment(String path) {
-		
-	}
-	
-	public String randomPic(){
-		String filename = "service";
+		new AsyncTask<Void, Integer, Void>  () {
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1500); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
 
-		counter ++;
-		int i = counter % 8;
-		filename += (i < 3) ? i + ".jpg" : (i == 4) ? "0.png" : (i == 6) ? "0.gif" : ".dat";
-		
-		return new File(cacheDir, filename).getAbsolutePath();
+			@Override protected void onPostExecute(Void v) {
+				listener.writeServiceComment(new RawResponse(null, "dummservicedetailcomment"));
+			}
+		}.execute();
 	}
 	
-	public String readFromFile(String filename) {
-        File file = new File(cacheDir, filename);
+	@Override protected void createService(String path) {
+		new AsyncTask<Void, Integer, Void>  () {
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1500); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				listener.onCreateService(new RawResponse()); 
+			}
+		}.execute();
+	}
+	
+	@Override protected void editService(String path) { 
+		new AsyncTask<Void, Integer, Void>  () {
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1500); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				listener.onEditService(new RawResponse()); 
+			}
+		}.execute();
+	}
+
+	public File randomPic(){
+		String filename = "service";
+		
+		int i = counter(8);
+		filename += (i < 6) ? i + ".jpg" : (i < 7) ?  (i - 6) + ".png" : "0.gif";
+		
+		return new File(cacheDir, filename);
+	}
+	
+	public File randomServiceDetails(){
+		String filename = "servicedetail";
+		
+		int i = counter(4);
+		filename += i + ".dat";
+		
+		return new File(cacheDir, filename);
+	}
+	
+	public File randomServicesList(String categoryTag){
+		
+		String [] categories = {"community", "recommend", "apply" };
+		if(categoryTag == null){ categoryTag = ""; }
+		String filename = categories[counter(3)];
+		
+		for(int i = 0; i < categories.length; i++){
+			if(categoryTag.contains(categories[i])){
+				filename = categories[i];
+			}
+		}
+		
+		int i = counter(1);
+		filename += i + ".dat";
+		
+		return new File(cacheDir, filename);
+	}
+	
+	private int counter(int modulus){
+		return (rand.nextInt(100) % modulus);
+	}
+
+	
+	public String readFromFile(File file) {
         byte[] b  = new byte[(int)file.length()];
 		int len = b.length;
         Loggen.v(this, "Reading from file: " + file.getName());
@@ -103,32 +186,8 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 		}
 		
 		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
-		
 	}
 
-	@Override
-	protected void searchService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void editService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void createService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void deleteService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
+	@Override protected void searchService(String path) { }
+	@Override protected void deleteService(String path) { }
 }

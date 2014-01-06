@@ -86,6 +86,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 		// set the on click listener for the log out button
 		((Button) mRootView.findViewById(R.id.myinfo_btn_logout)).setOnClickListener(this);
 		((ImageButton) mRootView.findViewById(R.id.myinfo_btn_activityrecord)).setOnClickListener(this);
+		((View) mRootView.findViewById(R.id.myinfo_txt_activityrecord)).setOnClickListener(this);
 		
 		return mRootView;
 	}
@@ -173,6 +174,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 				logoutUser();
 				break;
 			case R.id.myinfo_btn_activityrecord:
+			case R.id.myinfo_txt_activityrecord:
 				Loggen.v(this,"Clicked activity record.");
 				// hide the activity record from guests
 				if(mUser != null && mUser.isLogin()){

@@ -5,17 +5,18 @@ import java.util.List;
 import edu.bupt.trust.kxlab.utils.JsonTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
-public class WebPostForumDetail {
+public class JsonPostForumDetail {
 
 	private JsonPost PostDetail;
 	private JsonUser PostSponsor;
 	private List<JsonReply> PostReply;
 	private JsonreReply reReply;
 	
-	public WebPostForumDetail(JsonPost post, JsonUser user, List<JsonReply> replies){
+	public JsonPostForumDetail(JsonPost post, JsonUser user, List<JsonReply> replies,JsonreReply reReply){
 		this.PostDetail = post;
 		this.PostSponsor = user;
 		this.PostReply = replies;
+		this.reReply = reReply;
 	}
 	
 	public JsonPost getPostDetail() {
@@ -43,19 +44,14 @@ public class WebPostForumDetail {
 		this.reReply = reReply;
 	}
 	
-	public boolean updateWithNew(WebPostForumDetail b, boolean pushToEnd){
+	public boolean updateWithNew(JsonPostForumDetail b, boolean pushToEnd){
 		
 		PostDetail.updateFromJsonPost(b.PostDetail);
 		PostSponsor.updateFromJsonUser(b.PostSponsor);
 
 		boolean overlap = false;
 		Loggen.i(this, "start update with new: replies");
-		
-		if(pushToEnd){
-			overlap = JsonTools.updateRepliesEndOfList(PostReply, b.PostReply);
-		} else {
-			overlap =  JsonTools.updateRepliesFrontOfList(PostReply, b.PostReply);
-		}
+		overlap =  JsonTools.updateReplies(PostReply, b.PostReply, pushToEnd);
 		
 		Loggen.i(this, "start update with new: re replies");
 		overlap = overlap && reReply.updateWithNew(b.reReply, pushToEnd);

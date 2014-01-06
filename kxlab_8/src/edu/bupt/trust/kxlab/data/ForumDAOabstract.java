@@ -17,12 +17,13 @@ abstract class ForumDAOabstract extends DAOabstract {
 	protected OnForumRawDataReceivedListener listener;
 	
 	// Methods to be implemented by the children
-	protected abstract void createPost(String path);		// method for "/forum/createPost"
-	protected abstract void createReply(String path); 		// method for "/forum/replyPost"
-	protected abstract void createVote(String path); 		// method for "/forum/replyPost"
-	protected abstract void readPostList(String path);		// method for "/forum/postForumDetail"
-	protected abstract void readPost(String path, Page page);			// method for "/forum/postList"
-	protected abstract void readAnnounceFAQ(String path);	// method for "/forum/postAnnounceDetail"
+	protected abstract void createPost(String email, String type, String title, String content);		// method for "/forum/createPost"
+	protected abstract void createReply(String email, String type, int postId, String content); 		// method for "/forum/replyPost"
+	protected abstract void createVote(String email, int voteId, int voteScore); 		// method for "/forum/replyPost"
+	protected abstract void readPostList(String postType, int currentSize, Page page);		// method for "/forum/postForumDetail"
+	protected abstract void readPost(String postType, int currentSize, Page page, int postId);			// method for "/forum/postList"
+	protected abstract void readAnnounceList(String type, int currentSize, final Page page);	// method for "/forum/postAnnounceDetail"
+	protected abstract void readAnnounceFAQ(String type, int postId);	// method for "/forum/postAnnounceDetail"
 	protected abstract void searchPostList(String path);	// method for "/service/postSearchList"
 	
 	interface OnForumRawDataReceivedListener {
@@ -32,6 +33,7 @@ abstract class ForumDAOabstract extends DAOabstract {
 		void onReadPostList(RawResponse response);
 		void onReadPost(RawResponse response);
 		void onReadAnnounceFAQ(RawResponse response);
+		void onReadAnnounceList(RawResponse response);
 		void onSearchPostList(RawResponse response);
 	}
 

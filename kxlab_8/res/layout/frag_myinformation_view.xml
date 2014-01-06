@@ -62,7 +62,8 @@
 	    	</TableRow>
 	        
 	        <!-- the activity record -->
-			<RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+			<RelativeLayout android:id="@+id/myinfo_txt_activityrecord" 
+			    android:layout_width="match_parent" android:layout_height="wrap_content"
 			    android:layout_marginTop="@dimen/row_vertical_padding">
 				<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
 				    android:layout_centerVertical="true" android:layout_alignParentLeft="true"
@@ -70,7 +71,7 @@
 				    android:text="@string/myinfo_activityrecord_title" />
 			    <ImageButton android:id="@+id/myinfo_btn_activityrecord" android:layout_alignParentRight="true"
 	           		android:layout_width="wrap_content" android:layout_height="wrap_content"
-	           		android:src="@drawable/ic_action_next_item" android:contentDescription="@string/niets" />
+	           		android:background="@drawable/ic_action_next_item" android:contentDescription="@string/niets" />
 			</RelativeLayout>
 	
 	        <!-- the phone number -->

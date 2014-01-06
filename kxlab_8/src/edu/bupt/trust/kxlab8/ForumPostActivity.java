@@ -17,11 +17,13 @@ import android.support.v4.app.FragmentTransaction;
  */
 public class ForumPostActivity extends BaseDetailActivity {
 	
+	private boolean forceUpdate = false;
+	
 	@Override protected void onCreate(Bundle savedInstanceState) {
 		Loggen.v(this, "Creating forum post activity.");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_generic);
-
+		
 		// disable the button for this footer menu item
 		findViewById(R.id.footer_forum).setEnabled(false);
 		
@@ -124,5 +126,15 @@ public class ForumPostActivity extends BaseDetailActivity {
 				ft.commit();
 			}
 		}
+	}
+	
+	public void forceUpdate(boolean force) {
+		Loggen.i(this, "Activity result is okay.");
+		setResult(force ? BaseActivity.RESULT_OK : BaseActivity.RESULT_CANCELED);
+		forceUpdate = force;
+	}
+	
+	public boolean getForceUpdate(){
+		return forceUpdate;
 	}
 }
