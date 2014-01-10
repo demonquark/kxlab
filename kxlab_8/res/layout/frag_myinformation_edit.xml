@@ -47,7 +47,8 @@
 	        </RelativeLayout>
 	        
 	        <!-- the name edit text -->
-	        <TableRow android:layout_width="match_parent" android:layout_height="wrap_content"
+	        <TableRow android:id="@+id/myinfo_row_name" 
+	            android:layout_width="match_parent" android:layout_height="wrap_content"
 	            android:layout_marginTop="@dimen/row_vertical_padding">
 				<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
 				    android:text="@string/myinfo_name_title" />

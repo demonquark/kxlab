@@ -67,7 +67,7 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		super.onCreateOptionsMenu(menu, inflater);
 	
 		// add the forum menu
-		if(mPost != null && 
+		if(mPost != null &&
 				(mPost.getPostType()  == PostType.FORUM || mPost.getPostType() == PostType.SUGGESTION)){
 			inflater.inflate(R.menu.forum_detail, menu);
 		}
@@ -77,7 +77,11 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
     	int itemId = item.getItemId();
         switch (itemId) {
         	case R.id.action_create:
-				if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, mPost); }
+				if(mListener != null && mUser.isLogin()) { 
+					mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, mPost); 
+				} else {
+					userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
+				}
             break;
             default:
             	return super.onOptionsItemSelected(item);
@@ -261,7 +265,11 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 				for(Reply r : replies){ if(replyId == r.getReplyId()){ reply = r; break; }}
 				
 				if(mListener != null && reply != null) { 
-					mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, reply); 
+					if(mUser.isLogin()){
+						mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, reply); 	
+					} else {
+						userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
+					}
 				}
 			break;
 			default:

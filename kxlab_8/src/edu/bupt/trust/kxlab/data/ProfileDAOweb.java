@@ -4,16 +4,12 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.utils.Loggen;
-
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 
 /**
  * <p>The ProfileDAOweb manages the profile data from the web.</p>
- * 
- * TODO: Figure out who should check for Internet connection. Currently that is the Activity's responsibility. 
+ *  
  * Which kind of makes sense, because we need context to determine connectivity...
  * 
  * @author Krishna
@@ -22,25 +18,27 @@ import android.net.NetworkInfo;
 
 class ProfileDAOweb extends ProfileDAOabstract{
 	
-	// Server URL address strings
-	public static final String urlBase 		= Urls.urlBASE;
-	
 	// HTTP client 
 	private AsyncHttpClient asyncHttpClient;
 	
 	/** <p>Constructor with a listener to send the raw data back to. </p> */
 	public ProfileDAOweb(OnProfileRawDataReceivedListener listener){
 		
-		// make a http client
+		// make an HTTP client
 		asyncHttpClient = new AsyncHttpClient();
 		this.listener = listener;
 	}
 
-	@Override protected void login(String path) {
-		// TODO: figure out who is in charge of creating the path
-		Loggen.i(this, "Sending request: " + Urls.build(urlBase, path));
+	@Override protected void login(String email, String password) {
+		// determine the path to send to the server
+		String path = Urls.build(Urls.urlBASE, Urls.pathProfileLogin);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramUserEmail, email);
+		params.put(Urls.paramProfilePassword, password);
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
-		asyncHttpClient.get(Urls.build(urlBase, path), new ProfileResponseHandler(){
+		Loggen.i(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
 					listener.onLogin(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
@@ -55,75 +53,143 @@ class ProfileDAOweb extends ProfileDAOabstract{
 		
 	}
 
-	@Override protected void readUserInformation(String path) {
-		// TODO: figure out who is in charge of creating the path
-		Loggen.i(this, "Sending request: " + Urls.build(urlBase, path));
+	@Override protected void readUserInformation(String email) {
+
+		// build the query
+		String path = Urls.build(Urls.urlBASE, Urls.pathProfileUserInfo);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramEmail, email != null ? email : "");
+		path = AsyncHttpClient.getUrlWithQueryString(false, path, params);
 		
-		asyncHttpClient.get(Urls.build(urlBase, path), new ProfileResponseHandler(){
+		// determine the cache file name
+		final String cachefilename = ProfileDAOlocal.getUserInformationFilename(email);
+		
+		Loggen.v(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
-					listener.onReadUserInformation(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+					listener.onReadUserInformation(new RawResponse(response, cachefilename)); } }
 			@Override public void onFailure(Throwable error, String content) {
 				if(listener != null){
-					listener.onReadUserInformation(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+					listener.onReadUserInformation(new RawResponse(error, content, cachefilename)); } }
 		});
 	}
 
-	@Override protected void readActivityHistory(String path) {
-		// TODO Auto-generated method stub
+	@Override protected void readActivityHistory(String email, int size, final Page page) {
+		// build the query
+		String path = Urls.build(Urls.urlBASE, Urls.pathProfileHistory);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramEmail, email != null ? email : "");
+		params.put(Urls.paramProfileListSize, String.valueOf(listSize));
+		params.put(Urls.paramProfileListPage, String.valueOf(determinePage(size, page))); 
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
-	}
-
-	@Override protected void changePhoto(String path) {
-		// TODO Auto-generated method stub
+		// determine the cache file name
+		final String cachefilename = ProfileDAOlocal.getActivityHistoryFilename(email);
 		
-	}
-
-	@Override protected void changePassword(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override protected void changePhonenumber(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override protected void changeSource(String path) {
-		// TODO Auto-generated method stub
-		
-	} 
-	
-	/** Check if we have network connectivity. No point in trying anything if we have no connection. */
-	protected static boolean isNetworkAvailable(Context c) {
-	    ConnectivityManager connectivityManager = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
-	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-	    return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+		Loggen.v(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					RawResponse rawResponse = new RawResponse(response, cachefilename);
+					rawResponse.page = page;
+					listener.onReadActivityHistory(rawResponse); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					RawResponse rawResponse = new RawResponse(error, content, cachefilename);
+					rawResponse.page = page;
+					listener.onReadActivityHistory(rawResponse); } }
+		});	
 	}
 	
-    /**
-     * Will encode url, if not disabled, and adds params on the end of it
-     *
-     * @param url             String with URL, should be valid URL without params
-     * @param params          RequestParams to be appended on the end of URL
-     * @param shouldEncodeUrl whether url should be encoded (replaces spaces with %20)
-     * @return encoded url if requested with params appended if any available
-     */
-    public static String getPath(boolean shouldEncodeUrl, String path, RequestParams params) {
-    	return AsyncHttpClient.getUrlWithQueryString(shouldEncodeUrl, path, params);
-    }
+	@Override protected void changePhoto(String email, String photo) {
 
-	
-	/**
-	 * Handler for the HTTP response from the server.
-	 * This just forwards the HTTP response to the ServicesDAOweb methods
-	 * @author Krishna
-	 */
-	private class ProfileResponseHandler extends AsyncHttpResponseHandler {
-		@Override public void onStart() { Loggen.v(this , "onStart: staring async http client."); }
-		@Override public void onSuccess(String response) { Loggen.v(this , "onSuccess: success async http client."); }
-		@Override public void onFailure(Throwable error, String content) { Loggen.e(this , "onFailure: failed async http client."); }
-		@Override public void onFinish() { Loggen.v(this , "onFinish: finish async http client."); }		
+		// build the query
+		String path = Urls.build(Urls.urlBASE, Urls.pathProfileChangePhoto);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramEmail, email != null ? email : "");
+		params.put(Urls.paramProfilePhotoImage, photo != null ? photo : "");
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
+		
+		// determine the cache file name
+		final String cachefilename = ProfileDAOlocal.getOldUserFilename(email);
+		
+		Loggen.v(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onChangePhoto(new RawResponse(response, cachefilename)); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onChangePhoto(new RawResponse(error, content, cachefilename)); } }
+		});	
+	}
 
+	@Override protected void changePassword(String email, String password, String newPassword) {
+		// build the query
+		String path = Urls.build(Urls.urlBASE, Urls.pathProfileChangePassword);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramEmail, email != null ? email : "");
+		params.put(Urls.paramProfilePassword, password != null ? password : "");
+		params.put(Urls.paramProfileNewPassword, newPassword != null ? newPassword : "");
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
+		
+		// determine the cache file name
+		final String cachefilename = ProfileDAOlocal.getOldUserFilename(email);
+		
+		Loggen.v(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onChangePassword(new RawResponse(response, cachefilename)); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onChangePassword(new RawResponse(error, content, cachefilename)); } }
+		});	
+	}
+
+	@Override protected void changePhonenumber(String email, String phonenumber) {
+		// build the query
+		String path = Urls.build(Urls.urlBASE, Urls.pathProfileChangePhone);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramEmail, email != null ? email : "");
+		params.put(Urls.paramProfilePhoneNumber, phonenumber != null ? phonenumber : "");
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
+		
+		// determine the cache file name
+		final String cachefilename = ProfileDAOlocal.getOldUserFilename(email);
+		
+		Loggen.v(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onChangePhonenumber(new RawResponse(response, cachefilename)); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onChangePhonenumber(new RawResponse(error, content, cachefilename)); } }
+		});	
+	}
+
+	@Override protected void changeSource(String email, int type) {
+		// build the query
+		String path = Urls.build(Urls.urlBASE, Urls.pathProfileChangeSource);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramEmail, email != null ? email : "");
+		params.put(Urls.paramProfileSource, String.valueOf(type));
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
+		
+		// determine the cache file name
+		final String cachefilename = ProfileDAOlocal.getOldUserFilename(email);
+		
+		Loggen.v(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					listener.onChangeSource(new RawResponse(response, cachefilename)); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					listener.onChangeSource(new RawResponse(error, content, cachefilename)); } }
+		});	
+		
 	}
 }

@@ -10,7 +10,7 @@ import edu.bupt.trust.kxlab.data.ServicesDAO;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesDetailListener;
-import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.Comment;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.TrustService;
@@ -391,13 +391,14 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 
 	@Override public void onReadUserList(List<User> users) {}
 	@Override public void onCreateService(boolean success) { }
-	@Override public void onReadActivityHistory(ActivityHistory history) {}
+	@Override public void onReadActivityHistory(List<ActivityRecord> records) {}
 	@Override public void onChangeUser(User newUser, String errorMessage) {}
-	@Override public void onChangePhoto(boolean success, String errorMessage) {}
-	@Override public void onChangePassword(boolean success, String errorMessage) {}
-	@Override public void onChangePhonenumber(boolean success, String errorMessage) {}
-	@Override public void onChangeSource(boolean success, String errorMessage) {}
 	@Override public void onEditService(boolean success) { }
-	@Override public void onLocalFallback() {}
+
+	@Override
+	public void onLogin(boolean success, String errorMessage) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

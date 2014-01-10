@@ -4,10 +4,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -72,39 +74,6 @@ public class FileManager {
 	    return copied;
 	}
 	
-	public static void writeStringToFile(File folder, String filename, String message) throws IOException {
-        
-		// create the file
-		File file = new File(folder, filename);
-        Loggen.v(FileManager.class, "Writing to file: " + file.getName());
-
-        // overwrite the file with the new message string
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
-		writer.write(message);
-		writer.close(); 
-	}
-
-	public String readStringFromFile(File file) throws IOException {
-        Loggen.v(this, "Reading from file: " + file.getName());
-
-        // get the file length
-		byte[] b  = new byte[(int)file.length()];
-		int len = b.length;
-
-		// read the file input
-		InputStream in = new FileInputStream(file);
-		int total = 0;
-		while (total < len) {
-			int result = in.read(b, total, len - total);
-			if (result == -1) { break; }
-			total += result;
-		}
-		in.close();
-			
-		// convert to UTF-8 text
-		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
-	}
-	
 	public static void deleteFile(File file){
 		if (file.isDirectory()) {
 	        String[] children = file.list();
@@ -115,6 +84,78 @@ public class FileManager {
 	    	file.delete();
 	    }
 	}
+	
+	
+	/**
+	 * <p>Reads and returns the content of a file as UTF-8 String.</p>
+	 * 
+	 * @param file the absolute path to the file
+	 * @return String containing file content or null if file does not exist
+	 */
+	public static String readFromFile(File file) {
+        Loggen.v(FileManager.class, "Reading file: " + file.getName()+ ((file.exists() ? " (exists)" : " (does not exist)")));
+		
+		// make sure we have a file
+		if(!file.exists()){ return null; }
+		
+        byte[] b  = new byte[(int)file.length()];
+		int len = b.length;
+
+		InputStream in = null;
+		try{
+			in = new FileInputStream(file);
+			int total = 0;
+			while (total < len) {
+				int result = in.read(b, total, len - total);
+				if (result == -1) { break; }
+				total += result;
+			}
+		} catch (IOException e) { e.printStackTrace(); 
+		} finally {
+			if (in != null) { 
+				try { in.close(); } catch (IOException e) { e.printStackTrace(); } 
+			} 
+		}
+		
+		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
+	}
+
+	/**
+	 * <p>Writes a (UTF-8) String to a file. The method will overwrite an existing file.</p>
+	 * 
+	 * @param file the absolute path to the file
+	 * @param string the String you wish to write to the file
+	 * @return String containing file content or null if file does not exist
+	 */
+	public static boolean writeToFile(File file, String string) {
+        Loggen.v(FileManager.class, "Writing to file: " + file.getName());
+		
+        boolean succesful = false;
+        
+		// make sure we have a file
+        
+		if(file.getParentFile() != null){ file.getParentFile().mkdirs(); }
+		Writer out = null;
+		try { 
+			out = new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(file.getAbsolutePath()), "UTF8"));
+			out.write(string);
+			out.flush();
+			out.close();
+			succesful = true;
+			
+		} catch (UnsupportedEncodingException e) { e.printStackTrace();
+		} catch (IOException e)  { e.printStackTrace();
+		} catch (Exception e) { e.printStackTrace(); 
+		} finally {
+			if (out != null) { 
+				try { out.close(); } catch (IOException e) { e.printStackTrace(); } 
+			} 
+		}
+		
+		return succesful;
+	}
+	
 	
 	public static void writeBitmapToFile(File folder, String filename, Bitmap bmp) throws IOException{
 		FileOutputStream out = new FileOutputStream(filename);
@@ -158,4 +199,39 @@ public class FileManager {
 		}
 
 	}
+	
+	public static boolean isExternalStorageAvailable() {
+		return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+	}
+
+	public static File setCacheDir(Context c) {
+		File cacheDir;
+		
+		if(FileManager.isExternalStorageAvailable()){
+			// If we have access to the external card. Create a folder there. 
+			if(c != null){
+				cacheDir = c.getExternalCacheDir();
+			} else {
+				// If we have access to the external card. Create a folder there. 
+				cacheDir = new File(Environment.getExternalStorageDirectory(), 
+						Gegevens.FILE_USERDIRSD + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE);
+			}
+		} else {
+			// If we have no access to the external card. Create a subfolder in the data folder
+			if(c != null){
+				cacheDir = c.getCacheDir();
+			} else {
+				// If we have no access to the external card. Create a subfolder in the data folder 
+				cacheDir = new File(Environment.getDataDirectory(), 
+						Gegevens.FILE_USERDIRPHONE + Gegevens.FILE_SEPARATOR + Gegevens.FILE_CACHE);
+			}
+		}
+
+		// Make sure the directory exists
+		if(!cacheDir.exists()){ cacheDir.mkdirs(); }
+		Loggen.v(FileManager.class, "Cache directory is: " + cacheDir.getAbsolutePath());
+
+		return cacheDir;
+	}
+
 }

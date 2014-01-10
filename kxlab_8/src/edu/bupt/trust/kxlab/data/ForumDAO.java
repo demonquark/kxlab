@@ -8,7 +8,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 import android.content.Context;
@@ -26,6 +25,7 @@ import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
 import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.model.User;
+import edu.bupt.trust.kxlab.utils.JsonTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener{
@@ -43,7 +43,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 	// Inward facing methods (used to communicate with the class providing the data)
 	protected ForumDAO(Context c, ForumListener listener){
 		dummy = new ForumDAOdummy(this);
-		local = new ForumDAOlocal(this);
+		local = new ForumDAOlocal(this, c);
 		web = new ForumDAOweb(this);
 		this.forumlistener = new WeakReference <ForumListener> (listener);
 	}
@@ -240,22 +240,6 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		
 		return jsonreplies.size();
 	} 
-	
-	/**
-	 * Check server response whether it's JSON format
-	 */
-	private boolean isJson(String message) {
-		if (message == "" || message == null) {
-			return false;
-		} else {
-			try {
-				new JsonParser().parse(message);
-				return true;
-			} catch (JsonParseException e) {
-				return false;
-			}
-		}
-	}
 
 	@Override public void onReadPostList(RawResponse response) {
 		Loggen.v(this, "Got a response onReadPostList: " + response.message);
@@ -271,7 +255,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 				JsonPostList postList = null;
 				
 				// Step 1 - convert the message into a JSON object
-				if(isJson(response.message)){
+				if(JsonTools.isValidJSON(response.message)){
 					postList = gson.fromJson(response.message,JsonPostList.class);
 					
 					// Step 2 - update the message with the cache content
@@ -324,7 +308,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		boolean success = (response.errorStatus == RawResponse.Error.NONE && 
 				(response.message == null || response.message.equals("")));
 
-		if(isJson(response.message)){
+		if(JsonTools.isValidJSON(response.message)){
 			try{
 				// Step 1 - convert the message into a JSON object
 				JsonElement je = new JsonParser().parse(response.message);
@@ -349,7 +333,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 
 		// check if everything went smoothly
 		boolean success = (response.errorStatus == RawResponse.Error.NONE && 
-				(response.message == null || response.message.equals("") || isJson(response.message)));
+				(response.message == null || response.message.equals("") || JsonTools.isValidJSON(response.message)));
 		
 		// send the data back to the listener
 		if (forumlistener.get() != null){ forumlistener.get().onCreateReply(success); }
@@ -357,7 +341,8 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 
 	@Override
 	public void onCreateVote(RawResponse response) {
-		// TODO Auto-generated method stub
+		// TODO: Validate response. send the data back to the listener
+		if (forumlistener.get() != null){ forumlistener.get().onCreateVote(true); }
 		
 	}
 
@@ -374,7 +359,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		if(response.errorStatus == RawResponse.Error.NONE){
 			try{
 				JsonPostForumDetail newPost = null;
-				if(isJson(response.message)){
+				if(JsonTools.isValidJSON(response.message)){
 					newPost = gson.fromJson(response.message,JsonPostForumDetail.class);
 				} else {
 					newPost = gson.fromJson(local.readFromFile(response.path), JsonPostForumDetail.class);
@@ -466,7 +451,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 				JsonAnnounceList announceList = null;
 				
 				// Step 1 - convert the message into a JSON object
-				if(isJson(response.message)){
+				if(JsonTools.isValidJSON(response.message)){
 					announceList = gson.fromJson(response.message,JsonAnnounceList.class);
 					
 					// Step 2 - update the message with the cache content
@@ -531,7 +516,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		Post post = null;
 		
 		// check if everything went smoothly
-		if(response.errorStatus == RawResponse.Error.NONE && isJson(response.message)){
+		if(response.errorStatus == RawResponse.Error.NONE && JsonTools.isValidJSON(response.message)){
 			try{
 				// Step 1 - convert the message into a JSON object
 				JsonElement je = new JsonParser().parse(response.message);

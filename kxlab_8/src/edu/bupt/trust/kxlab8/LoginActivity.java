@@ -1,13 +1,13 @@
 package edu.bupt.trust.kxlab8;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.List;
 
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
-import edu.bupt.trust.kxlab.data.ProfileDAO.LoginListener;
+import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
+import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -17,13 +17,12 @@ import android.support.v7.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class LoginActivity extends BaseActivity implements LoginListener{
+public class LoginActivity extends BaseActivity implements ProfileListener{
 
 	/**
 	 * 用户 保存用户名和密码
@@ -249,6 +248,11 @@ public class LoginActivity extends BaseActivity implements LoginListener{
 			mSettings.setUserFace(userFace);
 			mSettings.saveSettingsToSharedPreferences(this);
 		}
+
+		@Override public void onReadUserList(List<User> users) {}
+		@Override public void onReadUserInformation(User user) { }
+		@Override public void onReadActivityHistory(List<ActivityRecord> records) { }
+		@Override public void onChangeUser(User newUser, String errorMessage) { }
 		
-	}
+}
 

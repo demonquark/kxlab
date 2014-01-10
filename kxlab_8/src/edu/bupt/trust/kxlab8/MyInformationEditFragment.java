@@ -3,10 +3,14 @@ package edu.bupt.trust.kxlab8;
 import java.io.File;
 import java.util.List;
 
+import com.google.gson.Gson;
+
 import edu.bupt.trust.kxlab.data.DaoFactory;
+import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
+import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
@@ -131,6 +135,8 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 		// set the on click listener for the log out button
 		((Button) mRootView.findViewById(R.id.myinfo_btn_save)).setOnClickListener(this);
 		((ImageView) mRootView.findViewById(R.id.myinfo_btn_img)).setOnClickListener(this);
+		((View) mRootView.findViewById(R.id.myinfo_row_name)).setVisibility(View.GONE);
+		
 
 		// If we already have a user, just show the user information
 		enablePasswordEditing(allowPasswordEditing);
@@ -238,19 +244,20 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 	private void saveUser(){
 		
 		// get the saved password was repeated correctly
-		String password2 = oldUser.getPassword();
+		String password2 = ((EditText) mRootView.findViewById(R.id.myinfo_edit_confirm_password)).getText().toString();
 		if(mRootView != null){
 			((EditText) mRootView.findViewById(R.id.myinfo_edit_confirm_password)).getText().toString();
 		}
 		
 		// make sure the password was repeated correctly
 		if( "".equals(newUser.getPassword()) || !password2.equals(newUser.getPassword()) ) {
+			Loggen.v(this, "password: |" + newUser.getPassword() + "| confirm |" + password2 +"|");
 			// give an alert if the values do not match
 			userMustClickOkay(	getString(R.string.myinfo_passwords_dont_match_title), 
 								getString(R.string.myinfo_passwords_dont_match_text)); 
 		} else if (getActivity() != null) { 
 			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(),this);
-			profileDAO.updateUser(oldUser, newUser);
+			profileDAO.changeUser(Source.WEB, oldUser, newUser);
 			showUserInformation(false);
 		} else {
 			// Inform the user that we could not save the information.
@@ -270,6 +277,7 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 			if(allowPasswordEditing) { 
 				((TableRow) mRootView.findViewById(R.id.myinfo_row_confirm_password)).setVisibility(View.VISIBLE);
 				edittext.setText("");
+				((EditText) mRootView.findViewById(R.id.myinfo_edit_confirm_password)).setText("");
 				edittext.requestFocus();
 				if(getActivity() != null){
 					getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
@@ -377,6 +385,13 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 
 
 	@Override public void onChangeUser(User updatedUser, String errorMessage) {
+		Loggen.v(this,"Received User changed update from DAO.");
+		JsonUser newguy = newUser.getJsonUser();
+		JsonUser updateguy = updatedUser.getJsonUser();
+
+		Loggen.v(this,"newguy: " + new Gson().toJson(newguy));
+		Loggen.v(this,"update: " + new Gson().toJson(updateguy));
+		
 		
 		// hide the progress bar (i.e. show the user information)
 		showUserInformation(true);
@@ -416,14 +431,8 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 
 	
 	@Override public void onReadUserInformation(User user) { }
-	@Override public void onReadActivityHistory(ActivityHistory history) { }
-	@Override public void onChangePhoto(boolean success, String errorMessage) { }
-	@Override public void onChangePassword(boolean success, String errorMessage) { }
-	@Override public void onChangePhonenumber(boolean success, String errorMessage) { }
-	@Override public void onChangeSource(boolean success, String errorMessage) { }
-
+	@Override public void onReadActivityHistory(List<ActivityRecord> records) { }
 	@Override public void onReadUserList(List<User> users) { }
-	@Override public void onLocalFallback() { }
 	
 	
 	/** This class handles all the EditText fields. 
@@ -447,13 +456,24 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
                 newUser.setPhoneNumber(editable.toString());
                 break;
             case R.id.myinfo_edit_source:
-                newUser.setSource(Integer.parseInt(editable.toString()));
+            	try{
+            		newUser.setSource(Integer.parseInt(editable.toString()));	
+            	}catch(NumberFormatException e){
+            		newUser.setSource(0);	
+            	}
                 break;
             case R.id.myinfo_edit_password:
     			newUser.setPassword(editable.toString());
                 break;
 	        }
 	    }
+	}
+
+
+	@Override
+	public void onLogin(boolean success, String errorMessage) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

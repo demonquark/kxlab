@@ -1,13 +1,13 @@
 package edu.bupt.trust.kxlab.data;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 abstract class DAOabstract {
+
+	int listSize = 4;
 
 	/**
 	 * <p>Converts the path of a URL address to a file name. <br /> 
@@ -90,23 +90,27 @@ abstract class DAOabstract {
 		return fileName;
 	}
 	
-	
-	/**
-	 * <p>Checks to see if the supplied string is valid JSON.</p>
-	 * 
-	 * @param test the (JSON) string that you want to test
-	 * @return whether or not this is a valid JSON string 
-	 */
-	protected static boolean isValidJSON(String test){
-	    boolean valid = false;
-	    try {
-	    	new JSONObject(test);
-	        valid = true;
-	    } catch(JSONException ex) { }
-	    
-	    return valid;
+	protected int determinePage(int numberOfitems, Page page){
+		
+		// calculate the current page number
+		int pagenumber = 0;
+		
+		// change the page number accordingly
+		switch(page){
+		case CURRENT:
+			pagenumber = 0;
+			break;
+		case LATEST:
+			pagenumber = 0;
+			break;
+		case PREVIOUS:
+			pagenumber= numberOfitems / listSize;
+			break;
+		}
+
+		return pagenumber;
 	}
-	
+
 	/** Check if we have network connectivity. No point in trying anything if we have no connection. */
 	protected static boolean isNetworkAvailable(Context c) {
 	    ConnectivityManager connectivityManager = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);

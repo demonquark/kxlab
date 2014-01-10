@@ -11,7 +11,6 @@ public class ForumDAOweb extends ForumDAOabstract {
 
 	// HTTP client 
 	private AsyncHttpClient asyncHttpClient;
-	int listSize = 10;
 
 	public ForumDAOweb(OnForumRawDataReceivedListener listener){
 		asyncHttpClient = new AsyncHttpClient();
@@ -26,7 +25,7 @@ public class ForumDAOweb extends ForumDAOabstract {
 		params.put(Urls.paramForumPostListSize, String.valueOf(listSize));
 		params.put(Urls.paramForumPostListPage, String.valueOf(determinePage(currentSize, page))); 
 		params.put(Urls.paramForumPostType, type);
-		path = ServicesDAOweb.getPath(true, path, params);
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
 		// determine the cache file name
 		final String cachefilename = ForumDAOlocal.getPostListFilename(type);
@@ -56,7 +55,7 @@ public class ForumDAOweb extends ForumDAOabstract {
 		params.put(Urls.paramForumPostListSize, String.valueOf(listSize));
 		params.put(Urls.paramForumPostListPage, String.valueOf(determinePage(currentSize, page))); 
 		params.put(Urls.paramForumAgType, type);
-		path = ServicesDAOweb.getPath(true, path, params);
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
 		// determine the cache file name
 		final String cachefilename = ForumDAOlocal.getPostListFilename(type);
@@ -87,7 +86,7 @@ public class ForumDAOweb extends ForumDAOabstract {
 		params.put(Urls.paramForumPostReplyListSize, String.valueOf(listSize));
 		params.put(Urls.paramForumPostReplyListPage, String.valueOf(determinePage(currentSize, page))); 
 		params.put(Urls.paramForumPostId, String.valueOf(postId));
-		path = ServicesDAOweb.getPath(true, path, params);
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
 		// determine the cache file name
 		final String cachefilename = ForumDAOlocal.getPostDetailFilename(postId, postType);
@@ -117,7 +116,7 @@ public class ForumDAOweb extends ForumDAOabstract {
 		RequestParams params = new RequestParams();
 		params.put(Urls.paramForumPostType, type); 
 		params.put(Urls.paramForumPostId, String.valueOf(postId));
-		path = ServicesDAOweb.getPath(true, path, params);
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
 		// determine the cache file name
 		final String cachefilename = ForumDAOlocal.getPostDetailFilename(postId, type);
@@ -145,7 +144,7 @@ public class ForumDAOweb extends ForumDAOabstract {
 		params.put(Urls.paramForumPostDetail, content); 
 		params.put(Urls.paramForumPostType, type);
 		params.put(Urls.paramForumEmail, email);
-		path = ServicesDAOweb.getPath(true, path, params);
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
 		// Send the request to the server 
 		Loggen.v(this, "Sending request: " + path );
@@ -179,7 +178,7 @@ public class ForumDAOweb extends ForumDAOabstract {
 			params.put(Urls.paramForumPostType, type);
 			params.put(Urls.paramForumPostId, String.valueOf(postId));
 		}
-		path = ServicesDAOweb.getPath(true, path, params);
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
 		// Send the request to the server 
 		Loggen.v(this, "Sending request: " + path );
@@ -202,7 +201,7 @@ public class ForumDAOweb extends ForumDAOabstract {
 		params.put(Urls.paramForumVoteId, String.valueOf(voteId));
 		params.put(Urls.paramForumVoteScore, String.valueOf(voteScore)); 
 		params.put(Urls.paramForumEmail, email);
-		path = ServicesDAOweb.getPath(true, path, params);
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
 		// Send the request to the server 
 		Loggen.v(this, "Sending request: " + path );
@@ -221,28 +220,4 @@ public class ForumDAOweb extends ForumDAOabstract {
 
 	@Override protected void searchPostList(String path) {
 	}
-	
-	private int determinePage(int numberOfitems, Page page){
-		
-		// calculate the current page number
-		int pagenumber = 0;
-		
-		// change the page number accordingly
-		switch(page){
-		case CURRENT:
-			pagenumber = 0;
-			break;
-		case LATEST:
-			pagenumber = 0;
-			break;
-		case PREVIOUS:
-			pagenumber= numberOfitems / listSize;
-			break;
-		}
-
-		return pagenumber;
-	}
-
-	
-
 }

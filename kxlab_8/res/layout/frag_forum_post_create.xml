@@ -14,7 +14,7 @@
             	android:layout_marginBottom="@dimen/activity_vertical_margin" />
 			<EditText android:id="@+id/forum_post_text"
 			    android:layout_width="match_parent" android:layout_height="wrap_content"
-				android:singleLine="false" android:lines="10" android:inputType="textMultiLine"
+				android:singleLine="false" android:lines="5" android:inputType="textMultiLine"
 				android:gravity="top|left" android:scrollHorizontally="false" 
 				android:hint="@string/forum_post_detail_hint" android:text="@string/niets"
 			    android:textAppearance="?android:attr/textAppearanceMedium" 

@@ -55,6 +55,8 @@ public class Gegevens {
 	public static final String FILE_EXT_LOG 		= ".log";
 	public static final String FILE_EXT_JET 		= ".jet";
 	public static final String FILE_EXT_JPG 		= ".jpg";
+	public static final String FILE_EXT_PNG 		= ".png";
+	public static final String FILE_EXT_GIF 		= ".gif";
 	public static final String FILE_EXT_DAT 		= ".dat";
 	public static final String FILE_SEPARATOR 		= "/"; 
 	public static final String FILE_CACHE			= "cache";

@@ -10,7 +10,7 @@ import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.FileManager;
 import edu.bupt.trust.kxlab.utils.Gegevens;
@@ -222,13 +222,8 @@ public class OtherSettingsFragment extends BaseDetailFragment implements Profile
 
 	// Not used
 	@Override public void onReadUserInformation(User user) { }
-	@Override public void onReadActivityHistory(ActivityHistory history) { }
+	@Override public void onReadActivityHistory(List<ActivityRecord> records) { }
 	@Override public void onChangeUser(User newUser, String errorMessage) { }
-	@Override public void onChangePhoto(boolean success, String errorMessage) {	}
-	@Override public void onChangePassword(boolean success, String errorMessage) {	}
-	@Override public void onChangePhonenumber(boolean success, String errorMessage) {	}
-	@Override public void onChangeSource(boolean success, String errorMessage) {	}
-	@Override public void onLocalFallback() { }
 
 	@Override public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
 		// Really bad implementation, cause I'm lazy
@@ -266,5 +261,11 @@ public class OtherSettingsFragment extends BaseDetailFragment implements Profile
 				mListener.performBackPress();	
 			}
 		}		
+	}
+
+	@Override
+	public void onLogin(boolean success, String errorMessage) {
+		// TODO Auto-generated method stub
+		
 	}
 }

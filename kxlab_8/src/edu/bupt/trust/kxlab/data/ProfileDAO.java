@@ -2,22 +2,25 @@ package edu.bupt.trust.kxlab.data;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.gson.Gson;
-import com.loopj.android.http.RequestParams;
+import com.google.gson.reflect.TypeToken;
+
 
 import android.content.Context;
-import android.os.AsyncTask;
+import android.util.Log;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
-import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.jsonmodel.JsonUserInformation;
 import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
+import edu.bupt.trust.kxlab.utils.Gegevens;
+import edu.bupt.trust.kxlab.utils.JsonTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedListener{
@@ -25,27 +28,14 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	ProfileDAOweb web;
 	ProfileDAOlocal local;
 	ProfileDAOdummy dummy;
-	WeakReference <LoginListener> loginlistener;
 	WeakReference <ProfileListener> profileListener;
 	
-	
 	// Outward facing methods (used by the class requesting the data)
-	public void setLoginListener(LoginListener listener) { 
-		this.loginlistener = new WeakReference <LoginListener> (listener); 
-	}
 	public void setProfileListener(ProfileListener listener) { 
 		this.profileListener = new WeakReference <ProfileListener> (listener); 
 	}
-	public void setCacheDir(Context c) { local.setCacheDir(c); }
 	
 	// Inward facing methods (used to communicate with the class providing the data)
-	protected ProfileDAO(Context c, LoginListener listener){
-		local = new ProfileDAOlocal(this, c);
-		web = new ProfileDAOweb(this);
-		dummy = new ProfileDAOdummy(this);
-		this.loginlistener = new WeakReference <LoginListener> (listener);
-	}
-	
 	protected ProfileDAO(Context c, ProfileListener listener){
 		local = new ProfileDAOlocal(this, c);
 		web = new ProfileDAOweb(this);
@@ -53,13 +43,8 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		this.profileListener = new WeakReference <ProfileListener> (listener);
 	}
 	
-	
 	public User generateUser(){
 		return dummy.randomUser();
-	}
-
-	public void login(String email, String password){
-		login(Source.WEB, email, password);
 	}
 
 	/**
@@ -70,30 +55,14 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	 * @param password
 	 */
 	public void login(Source source, String email, String password){
-		
-		// determine the path to send to the server
-		String path = Urls.pathProfileLogin;
-
-		if(email != null && password != null){
-			// build the query
-			RequestParams params = new RequestParams();
-			params.put(Urls.paramUserEmail, email);
-			params.put(Urls.paramProfilePassword, password);
-			path = ServicesDAOweb.getPath(true, path, params);
-
-			// contact the web
-			if(source == Source.WEB) { web.login(path); 
-			} else { dummy.login(path);  }
-		}else {
-			// no user name or password was provided. Fail by default. 
-			this.onLogin(new RawResponse(RawResponse.Error.ILLEGALARGUMENT, "", path));
+		// contact the web
+		if(source == Source.WEB) { 
+			web.login(email, password); 
+		} else { 
+			dummy.login(email, password); 
 		}
 	}
 	
-	public void readUserInformation(String email){
-		readUserInformation(Source.WEB, email);
-	}
-
 	/**
 	 * Getting the details of a profile gets you the information of a person.
 	 * The user information is saved to cache and loaded if the web request fails.
@@ -101,30 +70,26 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	 * @param source
 	 */
 	public void readUserInformation(Source source, String email){
-		// determine the path to send to the server
-		String path = Urls.pathProfileUserInfo;
-
 		if(email != null){
-			// build the query
-			RequestParams params = new RequestParams();
-			params.put(Urls.paramUserEmail, email);
-			path = ServicesDAOweb.getPath(false, path, params);
-
-			// contact the web
-			if(source == Source.WEB) { 
-				web.readUserInformation(path); 
-			}else if(source == Source.LOCAL) { 
-				local.readFromFile(ProfileDAOlocal.pathToFileName(path));
-			} else {
-				dummy.readUserInformation(path);
+			// let the correct source handle the request
+			switch (source) {
+			case DEFAULT:
+			case WEB:
+				web.readUserInformation(email); 
+				break;
+			case LOCAL:
+				local.readUserInformation(email); 
+				break;
+			case DUMMY:
+				dummy.readUserInformation(email); 
+				break;
 			}
 		}else {
-			// no user name was provided. Fail by default. 
-			this.onReadUserInformation(new RawResponse(RawResponse.Error.ILLEGALARGUMENT, "", path));
+			// no user email was provided. Fail by default. 
+			this.onReadUserInformation(new RawResponse(RawResponse.Error.ILLEGALARGUMENT, "", ""));
 		}
-
 	}
-
+	
 	/**
 	 * Getting the details of a profile gets you the information of a person.
 	 * The user information is saved to cache and loaded if the web request fails.
@@ -132,55 +97,146 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	 * @param source
 	 */
 	public void readUserList(Source source){
-			dummy.readUsers(null);
+		dummy.readUsers(null);
 	}
 
 	/** Update from the old user to the new user. 
 	 *  Because each change to the user is an individual server request, 
 	 *  we will only send requests for the changes provided.
 	 *  If the old user is null, we will update all the values of the given user. */
-	public void updateUser(User oldUser, User newUser){
-		
-		final User updatedUser = new User(newUser);
-		
-		// determine the path to send to the server
-		new AsyncTask<Void, Integer, Void>  (){
-			@Override protected Void doInBackground(Void... params) {
-				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
-				return null;
+	public void changeUser(Source source, User oldUser, User newUser){
+		// can't do anything if don't have new user.
+		if(newUser != null ){
+			// create JSON users.
+			JsonUser oldJson = (oldUser != null) ? oldUser.getJsonUser() : new JsonUser();
+			JsonUser newJson = (newUser != null) ? newUser.getJsonUser() : new JsonUser();
+			
+			// update the users
+			// let the correct source handle the request
+			switch (source) {
+			case DEFAULT:
+			case WEB:
+				changeUser(oldJson, newJson);
+				break;
+			case LOCAL:
+			case DUMMY:
+				changeUser(newJson, newJson);
+				break;
 			}
-
-			@Override protected void onPostExecute(Void v) {
-				if(profileListener.get() != null){ profileListener.get().onChangeUser(updatedUser, null); }
-			}
-	
-		}.execute();
+		} else {
+			if(profileListener.get() != null){ 
+				profileListener.get().onChangeUser(null, RawResponse.Error.ILLEGALARGUMENT.toString()); }
+		}
 	}
-
+	
+	
 	/** Reads the activity history of the given user.
 	 *  Note: only the email variable of the user is used to get the history. */
-	public void readActivityHistory(User user){
+	public void readActivityHistory(Source source, User user, List<ActivityRecord> records, Page page){
 		
-		final ActivityHistory history = new ActivityHistory();
-		for (int i = 0; i < 30; i++){
-			Calendar x = Calendar.getInstance();
-			x.set(2000 + i, i % 12, (i * 2 ) % 28);
-			ActivityRecord r = new ActivityRecord(x.getTimeInMillis(), "a string for " + i, (i % 3) - (i % 4));
-			history.addRecord(r);
+		// save the current page to the cache 
+		if(page != Page.CURRENT || (source == Source.WEB && records != null ) ){ 
+			overwriteActivityHistory(user, records); 
 		}
 		
-		// determine the path to send to the server
-		new AsyncTask<Void, Integer, Void>  (){
-			@Override protected Void doInBackground(Void... params) {
-				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
-				return null;
-			}
+		// determine the records size 
+		int recordSize = (records != null) ? records.size() : 0;
 
-			@Override protected void onPostExecute(Void v) {
-				if(profileListener.get() != null){ profileListener.get().onReadActivityHistory(history); }
+		if(user != null && user.getEmail() != null){
+			// let the correct source handle the request
+			switch (source) {
+			case DEFAULT:
+			case WEB:
+				web.readActivityHistory(user.getEmail(), recordSize, page);
+				break;
+			case LOCAL:
+				local.readActivityHistory(user.getEmail(), recordSize, page);
+				break;
+			case DUMMY:
+				dummy.readActivityHistory(user.getEmail(), recordSize, page);
+				break;
 			}
+		}else {
+			// no user email was provided. Fail by default. 
+			this.onReadUserInformation(new RawResponse(RawResponse.Error.ILLEGALARGUMENT, "", ""));
+		}
+	}
+
+	/** Update from the old user to the new user. 
+	 *  Because each change to the user is an individual server request, 
+	 *  we will only send requests for the changes provided.
+	 *  If the old user is null, we will update all the values of the given user. */
+	private void changeUser(JsonUser oldUser, JsonUser newUser){
+		
+		Gson gson = new Gson();
+		
+		// save the users to the cache.
+		String oldUserFileName = ProfileDAOlocal.getOldUserFilename(oldUser.getEmail());
+		String newUserFileName = ProfileDAOlocal.getNewUserFilename(newUser.getEmail());
+		local.writeToFile(oldUserFileName, gson.toJson(oldUser));
+		local.writeToFile(newUserFileName, gson.toJson(newUser));
+		
+		if(newUser.getPhonenumber() != null && !newUser.getPhonenumber().equals(oldUser.getPhonenumber())){
+			// change the phone number
+			web.changePhonenumber(newUser.getEmail(), newUser.getPhonenumber());
+		} else if(newUser.getType() != oldUser.getType()){
+			// change the type
+			web.changeSource(newUser.getEmail(), newUser.getType());
+		} else if (newUser.getPhoto() != null && !newUser.getPhoto().equals(oldUser.getPhoto())){
+			// change the photo
+			// TODO: Fix the photo logic
+			web.changePhoto(newUser.getEmail(), dummy.randomString());
+		} else if (newUser.getPassword() != null && !newUser.getPassword().equals(oldUser.getPassword())){
+			// change the password
+			web.changePassword(newUser.getEmail(), oldUser.getPassword(), newUser.getPassword());
+		} else {
+			// convert the JSON user to user info format
+			JsonUserInformation userinfo = new JsonUserInformation();
+			userinfo.setUserInformation(newUser);
+
+			// save the user information to the cache
+			String userinfoFileName = ProfileDAOlocal.getUserInformationFilename(newUser.getEmail());
+			local.writeToFile(userinfoFileName, gson.toJson(userinfo));
+			
+			// done updating. Call the listener
+			User updatedUser = new User(newUser);
+			updatedUser.setLogin(true);
+			if(profileListener.get() != null){ profileListener.get().onChangeUser(updatedUser, null); }
+		}
+	}
 	
-		}.execute();
+	private void overwriteActivityHistory(User user, List<ActivityRecord> records) {
+		if(user != null && user.getEmail() != null){
+			// create a JSON representation of the records
+			ArrayList <ActivityRecord> jsonRecords = new ArrayList<ActivityRecord> ();
+			if(records != null) { jsonRecords.addAll(records); }
+
+			// write to file
+			String cachefilename = ProfileDAOlocal.getActivityHistoryFilename(user.getEmail());
+			local.writeToFile(cachefilename, new Gson().toJson(jsonRecords));
+			Loggen.v(this, "saved content to file.");
+
+		}
+	}
+	
+	private boolean success(RawResponse response, String elementName){
+		boolean success = false;
+
+		if(response.errorStatus == RawResponse.Error.NONE){
+			try { // Check the JSON for incidence of the element name
+				JSONObject jo = new JSONObject(response.message);
+				int successInt = (jo.has(elementName)) ? jo.getInt(elementName) : 0;
+				success = (successInt > 0); 
+			} catch (JSONException e){
+				Loggen.e(this, "We were given an invalid JSON string.");
+			} catch (ClassCastException e){
+				Loggen.e(this, "The error message could not be parsed to a string.");
+			}
+		} else {
+			Loggen.e(this, "We encountered an error: " + response.errorStatus.toString());
+		}
+		
+		return success;
 	}
 
 	@Override public void onLogin(RawResponse response) {
@@ -208,7 +264,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 			Loggen.e(this, "We encountered an error onLogin: " + response.errorStatus.toString());
 		}
 		
-		if(loginlistener.get() != null){ loginlistener.get().onLogin(success, errorMessage); }
+		if(profileListener.get() != null){ profileListener.get().onLogin(success, errorMessage); }
 	}
 	
 	@Override public void onReadUserList(RawResponse response) {
@@ -225,14 +281,38 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		Loggen.v(this, "Got a response onReadUserInformation: " + response.message);
 		
 		User user = null;
-		
 		if(response.errorStatus == RawResponse.Error.NONE){
 			try { 
-				// Try to convert the JSON to userInformation and save it to user object 
-				JsonUser userinfo = new Gson().fromJson(response.message, JsonUser.class);
-				user = new User(userinfo);
+				// Step 1 - convert the message into a JSON object
+				JsonUserInformation userinfo = new Gson().fromJson(response.message, JsonUserInformation.class);
 				
-				// TODO: save the image to file (Right now we use the server results)
+				// Step 2 - convert the JSON object into a User
+				if(userinfo != null && userinfo.getUserInformation() != null){
+					
+					// TODO: FIGURE OUT WHAT TO DO WITH IMAGES 
+					// Step 2 - get the saved user information
+					Loggen.v(this, "Read file: " + local.readFromFile(response.path));
+					JsonUserInformation olduser = 
+							new Gson().fromJson(local.readFromFile(response.path), JsonUserInformation.class);
+					
+					// Step 3 - Copy the user image to the file
+					String userimage;
+					if(olduser != null && olduser.getUserInformation() != null 
+							&& (userimage = olduser.getUserInformation().getPhoto()) != null 
+							&& (userimage.endsWith(Gegevens.FILE_EXT_JPG) 
+							|| userimage.endsWith(Gegevens.FILE_EXT_PNG) 
+							|| userimage.endsWith(Gegevens.FILE_EXT_GIF))){
+						userinfo.getUserInformation().setPhoto(userimage);
+					} else {
+						userinfo.getUserInformation().setPhoto(dummy.randomPic().getAbsolutePath());
+					}
+
+					// Step 4 - do the final conversion
+					user = new User(userinfo.getUserInformation());
+
+					// Step 5 - save the user information to the cache
+					local.writeToFile(response.path, new Gson().toJson(userinfo));
+				}
 				
 			} catch (com.google.gson.JsonSyntaxException e){
 				Loggen.e(this, "We were given an invalid JSON string.");
@@ -246,43 +326,146 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	}
 	
 	@Override public void onReadActivityHistory(RawResponse response) {
-		// TODO Auto-generated method stub
+		List <ActivityRecord> records = null;
+		Gson gson = new Gson();
 		
+		if (response.errorStatus == RawResponse.Error.NONE
+				&& JsonTools.isValidJSON(response.message)) {
+
+			// Step 1 - convert the message into a JSON object
+			java.lang.reflect.Type listType = new TypeToken<ArrayList<ActivityRecord>>() { }.getType();
+			records = gson.fromJson(response.message, listType);
+			if(records == null) { records = new ArrayList<ActivityRecord> (); } 
+			
+			// Step 2 - update the message with the cache content
+			if(response.page != Page.CURRENT){
+			
+				// Step 2a - read the existing data from cache. 
+				Loggen.i(this, "Start getting old records.");
+				List <ActivityRecord> oldRecords = gson.fromJson(local.readFromFile(response.path), listType);
+
+				// Step 2b - read the existing data from cache. 
+				if(oldRecords != null){
+					// loop through all the old records
+					for(int i = oldRecords.size() - 1; i >= 0; i--){
+
+						// get the id and set overlap to false
+						int oldId = oldRecords.get(i).getAhId();
+						boolean overlap = false;
+
+						// compare each old record to all the new records
+						for(ActivityRecord record : records){
+							// if the old record is also in the new records, the records overlap
+							if( oldId == record.getAhId()){ overlap = true; }
+						}
+						
+						// if the records did not overlap, add this record to the list of records
+						if(!overlap)
+							records.add(0,oldRecords.get(i));
+					}
+				}
+			}
+
+			// Step 3 - save the date to the cache
+			if (response.path != null) {
+				local.writeToFile(response.path, gson.toJson(records));
+			}
+		} else {
+			Log.e("Kris", "We encountered an error: " + response.message);
+		}
+
+		// send the activity records back
+		if (profileListener.get() != null){ profileListener.get().onReadActivityHistory(records); }
+
 	}
 	
 	@Override public void onChangePhoto(RawResponse response) {
-		// TODO Auto-generated method stub
 		
+		// read the cached users
+		JsonUser oldUser = 
+				new Gson().fromJson(local.readFromFile(response.path), JsonUser.class);
+		JsonUser newUser = 
+				new Gson().fromJson(local.readFromFile(
+						response.path.replaceFirst(Urls.fileOldUser, Urls.fileNewUser)), 
+						JsonUser.class);
+
+		// check if the user has changed
+		if(success(response, Urls.jsonPhotoChangeOrNot)){
+			oldUser.setPhoto(newUser.getPhoto());
+		} else {
+			newUser.setPhoto(oldUser.getPhoto());
+		}
+
+		// let the DAO determine if there are any more user variables that need to be changed
+		changeUser(oldUser, newUser);
 	}
 	
 	@Override public void onChangePassword(RawResponse response) {
-		// TODO Auto-generated method stub
+		// read the cached users
+		JsonUser oldUser = 
+				new Gson().fromJson(local.readFromFile(response.path), JsonUser.class);
+		JsonUser newUser = 
+				new Gson().fromJson(local.readFromFile(
+						response.path.replaceFirst(Urls.fileOldUser, Urls.fileNewUser)), 
+						JsonUser.class);
+
+		// check if the user has changed
+		if(success(response, Urls.jsonPasswordChangeOrNot)){
+			oldUser.setPassword(newUser.getPassword());
+		} else {
+			newUser.setPassword(oldUser.getPassword());
+		}
 		
+		// let the DAO determine if there are any more user variables that need to be changed
+		changeUser(oldUser, newUser);
 	}
 	
 	@Override public void onChangePhonenumber(RawResponse response) {
-		// TODO Auto-generated method stub
+		// read the cached users
+		JsonUser oldUser = 
+				new Gson().fromJson(local.readFromFile(response.path), JsonUser.class);
+		JsonUser newUser = 
+				new Gson().fromJson(local.readFromFile(
+						response.path.replaceFirst(Urls.fileOldUser, Urls.fileNewUser)), 
+						JsonUser.class);
+
+		// check if the user has changed
+		if(success(response, Urls.jsonPhoneChangeOrNot)){
+			oldUser.setPhonenumber(newUser.getPhonenumber());
+		} else {
+			newUser.setPhonenumber(oldUser.getPhonenumber());
+		}
 		
+		// let the DAO determine if there are any more user variables that need to be changed
+		changeUser(oldUser, newUser);
 	}
 	
 	@Override public void onChangeSource(RawResponse response) {
-		// TODO Auto-generated method stub
+		Loggen.v(this, "source change response: " + response.message + " | " + response.errorStatus);
+		// read the cached users
+		JsonUser oldUser = 
+				new Gson().fromJson(local.readFromFile(response.path), JsonUser.class);
+		JsonUser newUser = 
+				new Gson().fromJson(local.readFromFile(
+						response.path.replaceFirst(Urls.fileOldUser, Urls.fileNewUser)), 
+						JsonUser.class);
+
+		// check if the user has changed
+		if(success(response, Urls.jsonSourceChangeOrNot)){
+			oldUser.setType(newUser.getType());
+		} else {
+			newUser.setType(oldUser.getType());
+		}
 		
+		// let the DAO determine if there are any more user variables that need to be changed
+		changeUser(oldUser, newUser);
 	}
 
-	public interface LoginListener {
-		public void onLogin(boolean success, String errorMessage);
-	}
-	
 	public interface ProfileListener {
+		public void onLogin(boolean success, String errorMessage);
 		public void onReadUserList(List <User> users);
 		public void onReadUserInformation(User user);
-		public void onReadActivityHistory(ActivityHistory history);
+		public void onReadActivityHistory(List<ActivityRecord> records);
 		public void onChangeUser(User newUser, String errorMessage);
-		public void onChangePhoto(boolean success, String errorMessage);
-		public void onChangePassword(boolean success, String errorMessage);
-		public void onChangePhonenumber(boolean success, String errorMessage);
-		public void onChangeSource(boolean success, String errorMessage);
-		public void onLocalFallback();
 	}
 }

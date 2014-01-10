@@ -71,7 +71,11 @@ public class BaseActivity extends ActionBarActivity  implements BasicDialogListe
 			openActivity(new Intent(this, ForumThreadActivity.class));
 		break;
 		case R.id.footer_myinformation:
-			openActivity(new Intent(this, MyInformationActivity.class));
+			if(mSettings.getUser().isLogin()){
+				openActivity(new Intent(this, MyInformationActivity.class));
+			} else{
+				userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
+			}
 		break;
 		case R.id.footer_other:
 			openActivity(new Intent(this, OtherActivity.class));

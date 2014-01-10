@@ -2,6 +2,9 @@ package edu.bupt.trust.kxlab.utils;
 
 import java.util.List;
 
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+
 import edu.bupt.trust.kxlab.jsonmodel.JsonAnnounceFAQ;
 import edu.bupt.trust.kxlab.jsonmodel.JsonPost;
 import edu.bupt.trust.kxlab.jsonmodel.JsonReply;
@@ -240,5 +243,20 @@ public class JsonTools {
 		
 		return overlap;
 	}
-
+	
+	/**
+	 * <p>Checks to see if the supplied string is valid JSON.</p>
+	 * 
+	 * @param test the (JSON) string that you want to test
+	 * @return whether or not this is a valid JSON string 
+	 */
+	public static boolean isValidJSON(String test){
+	    boolean valid = false;
+	    try {
+	    	new JsonParser().parse(test);
+	        valid = true;
+	    } catch(JsonSyntaxException ex) { }
+	    
+	    return valid;
+	}
 }

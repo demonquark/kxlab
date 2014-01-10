@@ -60,7 +60,8 @@ public class ForumThreadListFragment extends BaseListFragment
 
 		// add the forum menu
 		Loggen.d(this, "post type is " + mPostType);
-		if(mPostType == PostType.FORUM || mPostType == PostType.SUGGESTION){
+		if(((BaseActivity) getActivity()).mSettings.getUser().isLogin()
+				&& (mPostType == PostType.FORUM || mPostType == PostType.SUGGESTION)){
 			inflater.inflate(R.menu.forum, menu);
 		}
 	}
@@ -240,14 +241,17 @@ public class ForumThreadListFragment extends BaseListFragment
 			
 			Post p = mPosts.get(position);
 			if(p.isPoll()){
-				DialogFragmentScore.newInstance(true)
+				if(((BaseActivity) getActivity()).mSettings.getUser().isLogin()){
+					DialogFragmentScore.newInstance(true)
 					.setTitle(getString(R.string.forum_dialog_vote_title))
 					.setMessage(getString(R.string.forum_dialog_vote_text) + " " + p.getPostSponsor().getEmail())
 					.setPositiveButtonText(getString(R.string.submit))
 					.setNegativeButtonText(getString(R.string.cancel))
 					.setCancelableAndReturnSelf(false)
 					.show(getFragmentManager(), Gegevens.FRAG_SCORE);
-	
+				} else {
+					userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
+				}
 			} else {
 				startPostActivity(mPosts.get(position));	
 			}
@@ -257,13 +261,16 @@ public class ForumThreadListFragment extends BaseListFragment
 	@Override public void onReadPostList(List<Post> posts) {
 		Loggen.v(this, "Got a response onReadPostList. posts exist? " + (posts != null));
 		if(posts != null && mPosts != null){
+			// We got a response and are updating an existing list
 			mPosts.clear();
 			mPosts.addAll(posts);
 		} else if(posts == null && mPosts == null){
+			// We got no response and have no existing list
 			userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
 			mPosts = new ArrayList<Post> ();
 			getData(Source.LOCAL, Page.CURRENT);
-		} else {
+		} else if (mPosts == null) {
+			// We got a response, but have no existing list 
 			 mPosts = (ArrayList<Post>) posts;			
 		}
 		

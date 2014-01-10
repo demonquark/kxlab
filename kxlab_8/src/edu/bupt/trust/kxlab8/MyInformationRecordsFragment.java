@@ -1,33 +1,39 @@
 package edu.bupt.trust.kxlab8;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.bupt.trust.kxlab.adapters.ActivityRecordsArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
+import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
+import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
-import android.content.Intent;
+import edu.bupt.trust.kxlab.widgets.XListView;
+import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class MyInformationRecordsFragment extends BaseDetailFragment implements ProfileListener {
+public class MyInformationRecordsFragment extends BaseDetailFragment implements ProfileListener, IXListViewListener {
 	
 	private User mUser;
-	private ActivityHistory mHistory;
+	private ArrayList<ActivityRecord> mRecords;
 	private View mRootView;
+	private XListView mListView;
 	
 	public MyInformationRecordsFragment(){
 		// Empty constructor required for MyInformationFragment
@@ -47,18 +53,23 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 		if(mUser == null){ mUser = arguments.getParcelable(Gegevens.EXTRA_USER); } 
 
 		// load the history (Note: history remains null if it is neither in the saved state nor the arguments)
-		mHistory = savedstate.getParcelable(Gegevens.EXTRA_RECORDS); 							
-		if(mHistory == null){ mHistory = arguments.getParcelable(Gegevens.EXTRA_RECORDS); } 
+		mRecords = savedstate.getParcelableArrayList(Gegevens.EXTRA_RECORDS); 							
+		if(mRecords == null){ mRecords = arguments.getParcelableArrayList(Gegevens.EXTRA_RECORDS); } 	
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Loggen.v(this, getTag() + " - Creating the MyInformationRecordsFragment view. ");
 
 		// Inflate the root view and save references to useful views as class variables
-		mRootView = inflater.inflate(R.layout.frag_generic_list, container, false);
-		inflater.inflate(R.layout.list_header_myinformation, 
+		mRootView = inflater.inflate(R.layout.frag_generic_xlist, container, false);
+		inflater.inflate(R.layout.include_user, 
 				((ViewGroup) mRootView.findViewById(R.id.fixed_header_holder)), true);
-		
+
+		mListView = (XListView) mRootView.findViewById(android.R.id.list);
+		mListView.setPullLoadEnable(true);
+		mListView.setPullRefreshEnable(false);
+		mListView.setXListViewListener(this);
+
 		return mRootView;
 	}
 	
@@ -66,22 +77,14 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 		super.onViewStateRestored(savedInstanceState);
 		Loggen.v(this, getTag() + " - Restoring MyInformationRecordsFragment instance state.");
 
-		// load the user if requested (generally only if we just created the fragment)
-		if(mHistory == null){
-			
-			if(getActivity() != null && mUser != null){
-				// Load the user from the DAO
-				ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
-				profileDAO.readActivityHistory(mUser);
-				Loggen.v(this, "Restoring saved Instancestate: Getting reading activity history from server");
-			} else {
-				// inform the user that we cannot load the activity history
-				userMustClickOkay("Error", "Can't load activity history");
-			}
+		// load the records if requested (generally only if we just created the fragment)
+		if(mRecords == null){
+			// Load the services from the DAO
+			getData(Source.WEB, Page.CURRENT);
 		}
 		
-		// If we already have a user, just show the user information
-		showList(mHistory != null);
+		// If we already have a set of records, just show the records
+		showList(mRecords != null);
 
 	}
 
@@ -89,11 +92,22 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 		super.onSaveInstanceState(outState);
 		Loggen.v(this, getTag() + " - Saving MyInformationRecordsFragment instance state.");
 		// save the list of comments to the instance state
-		outState.putParcelable(Gegevens.EXTRA_USER, mUser);
-		outState.putParcelable(Gegevens.EXTRA_RECORDS, mHistory);
+		if(mUser != null) { outState.putParcelable(Gegevens.EXTRA_USER, mUser); }
+		if(mRecords != null) { outState.putParcelableArrayList(Gegevens.EXTRA_RECORDS, mRecords); }
 	}
 	
 	private void showList(boolean showinfo) {
+		
+		if(mListView != null){ 
+			if(mListView.isPullLoading()){
+				mListView.stopLoadMore();
+			}
+			if(mListView.isPullRefreshing()){
+				mListView.stopRefresh(); 
+				mListView.updateHeaderTime();
+			}
+		}
+
 		if(mRootView != null){
 			// show or hide the information
 			((ProgressBar) mRootView.findViewById(R.id.progress_bar))
@@ -101,14 +115,14 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 			((LinearLayout) mRootView.findViewById(R.id.content_holder))
 				.setVisibility((showinfo) ? View.VISIBLE : View.GONE);
 			((TextView) mRootView.findViewById(android.R.id.empty))
-				.setVisibility( (mHistory != null && mHistory.getRecords().size() > 0 ) ? View.GONE : View.VISIBLE);
+				.setVisibility( (mRecords != null && mRecords.size() == 0 ) ? View.VISIBLE : View.GONE);
 			
 			
 			// load the user information
 			if(mUser != null && showinfo){
 				// Set the image
 				File imgFile = new File(mUser.getPhotoLocation());
-				ImageView avatar = (ImageView) mRootView.findViewById(R.id.myinfo_owner_img);
+				ImageView avatar = (ImageView) mRootView.findViewById(R.id.user_img);
 				if(imgFile.exists()){
 					avatar.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
 				    		imgFile.getAbsolutePath(),
@@ -117,75 +131,71 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 				}
 				
 				// Set the user information
-				((TextView) mRootView.findViewById(R.id.myinfo_owner_name)).setText(mUser.getUserName());
-				((TextView) mRootView.findViewById(R.id.myinfo_owner_time))
-					.setText(getString(R.string.myinfo_joindate_title) + "\n" + mUser.getTimeEnter());
-				String grade = (mHistory != null) ? String.valueOf(mHistory.getFinalGrade()) : mUser.getActivityScore();
-				((TextView) mRootView.findViewById(R.id.myinfo_owner_score))
-					.setText(getString(R.string.myinfo_activityrecord_title) + ": " + grade );
+				((TextView) mRootView.findViewById(R.id.user_name)).setText(mUser.getUserName());
+				((TextView) mRootView.findViewById(R.id.user_email)).setText(mUser.getEmail());
+				((TextView) mRootView.findViewById(R.id.user_date)).setText(mUser.getTimeEnterString());
+				((TextView) mRootView.findViewById(R.id.user_activitylevel_text)).setText(mUser.getActivityScore());
 			}
 			
-			
 			// load the activity history
-			if(mHistory != null && getActivity() != null && showinfo){
-				
-				// get the list
-				ListView activityList = ((ListView) mRootView.findViewById(android.R.id.list));
-				
-				// load and set the adapter
-				Loggen.v(this, getTag() + " - Loading the adapter with " + mHistory.getRecords().size() + " items.");
-				activityList.setAdapter(new ActivityRecordsArrayAdapter(getActivity(), 
-						R.layout.list_item_activityrecord, android.R.id.text1, mHistory.getRecords()));
-				
-				// set the choice mode and reaction to the choices 
-				activityList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			if(mRecords != null && mListView != null && showinfo){
+				Loggen.v(this, getTag() + " - Loading the adapter with " + mRecords.size() + " items.");
+
+				if(mListView.getAdapter() == null ){ 
+					// The records have not been loaded to the list view. Do that now
+					if(getActivity() != null){
+						mListView.setAdapter(new ActivityRecordsArrayAdapter(getActivity(), 
+								R.layout.list_item_activityrecord, android.R.id.text1, mRecords));
+					}
+				} else {
+					// The comments are already loaded to the list view.
+					((BaseAdapter)((HeaderViewListAdapter)mListView.getAdapter())
+							.getWrappedAdapter()).notifyDataSetChanged();
+				}
 			}
 		}
 	}
 	
-	private void logoutUser(){
-		mUser.setLogin(false);
+	private void getData(Source source, Page page) {
 		if(getActivity() != null){
-			// return to the login activity
-			BaseActivity parentActivity = (BaseActivity) getActivity();
-			parentActivity.openActivity(new Intent(parentActivity, LoginActivity.class));
+			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
+			profileDAO.readActivityHistory(source, mUser, mRecords, page);
 		}
 	}
 
-	@Override public void onClick(View v) {
-		int id = v.getId();
-		switch(id){
-			case R.id.myinfo_btn_logout:
-				logoutUser();
-				break;
-			case R.id.myinfo_btn_activityrecord:
-        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, mUser); }
-				break;
-			default:
-				super.onClick(v);
-			break;
-		}
+	@Override public void onRefresh() {
+		Loggen.v(this, " called onRefresh.");
+		getData(Source.WEB, Page.LATEST);
+	}
+	
+	@Override
+	public void onLoadMore() {
+		Loggen.v(this, " called onLoadMore.");
+		getData(Source.WEB, Page.PREVIOUS);
 	}
 
-	@Override public void onReadActivityHistory(ActivityHistory history) {
-		// Inform the user of any failures
-		if(history == null){
-			userMustClickOkay(getString(R.string.myinfo_no_records_title), getString(R.string.myinfo_no_records_text));
+	@Override public void onReadActivityHistory(List <ActivityRecord> records) {
+		Loggen.v(this, "Got a response onReadActivityHistory. records exist? " + (records != null));
+		if(records != null && mRecords != null){
+			// We got a response and are updating an existing list
+			mRecords.clear();
+			mRecords.addAll(records);
+		} else if(records == null && mRecords == null){
+			// We got no response and have no existing list
+			userMustClickOkay(getString(R.string.myinfo_no_records_title), getString(R.string.myinfo_no_records_text)); 
+			mRecords = new ArrayList<ActivityRecord> ();
+			getData(Source.LOCAL, Page.CURRENT);
+		} else if (mRecords == null){
+			// We got a response and have no existing list
+			mRecords = (ArrayList<ActivityRecord>) records;			
 		}
 		
-		// update the list
-		mHistory = history;
-		showList(true);
+		showList(true);		
 	}
 
 	// Not used
 	@Override public void onReadUserInformation(User user) { }
 	@Override public void onChangeUser(User newUser, String errorMessage) { }
 	@Override public void onReadUserList(List<User> users) { }
-	@Override public void onChangePhoto(boolean success, String errorMessage) {	}
-	@Override public void onChangePassword(boolean success, String errorMessage) {	}
-	@Override public void onChangePhonenumber(boolean success, String errorMessage) {	}
-	@Override public void onChangeSource(boolean success, String errorMessage) {	}
-	@Override public void onLocalFallback() { }
-
+	@Override public void onLogin(boolean success, String errorMessage) {	}
 }

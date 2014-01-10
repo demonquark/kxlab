@@ -45,7 +45,7 @@ public class ActivityRecordsArrayAdapter extends ArrayAdapter <ActivityRecord>{
 				// Get the TrustService
 				ActivityRecord record = items.get(position);
 				String title = record.getDateString();
-				String text1 = record.getType();
+				String text1 = record.getWhatDo();
 				String text2 = String.valueOf(record.getScore());
 //				Loggen.d(this,  "title: " + title + " | " + "text: " + text1 + " | " + text2 );
 				

@@ -7,7 +7,7 @@ import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.model.ActivityHistory;
+import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.Settings;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
@@ -32,6 +32,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 	
 	private User mUser;
 	private View mRootView;
+	private boolean loaded;
 	
 	public MyInformationViewFragment(){
 		// Empty constructor required for MyInformationFragment
@@ -73,8 +74,9 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 		Bundle arguments = (getArguments() != null) ? getArguments() : new Bundle();
 		
 		// load the user (Note: user remains null if it is neither in the saved state nor the arguments)
-		mUser = savedstate.getParcelable(Gegevens.EXTRA_USER); 							
-		if(mUser == null){ mUser = arguments.getParcelable(Gegevens.EXTRA_USER); } 
+		mUser = savedstate.getParcelable(Gegevens.EXTRA_USER); 					
+		loaded = (mUser != null);
+		if(mUser == null){ mUser = arguments.getParcelable(Gegevens.EXTRA_USER); }
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -96,10 +98,10 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 		Loggen.v(this, getTag() + " - Restoring MyInformation instance state.");
 
 		// load the user if requested (generally only if we just created the fragment)
-		if(mUser == null && getActivity() != null){
+		if((mUser == null || !loaded ) && getActivity() != null){
 			// Load the user from the DAO
 			ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
-			profileDAO.readUserInformation(Source.DUMMY, Settings.getInstance(getActivity()).getUser().getEmail());
+			profileDAO.readUserInformation(Source.WEB, Settings.getInstance(getActivity()).getUser().getEmail());
 			Loggen.v(this, "Restoring saved Instancestate: Getting user from site");
 		}
 		
@@ -137,7 +139,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 			// load the user information
 			if(mUser != null && showinfo){
 				// Set the image
-				File imgFile = new File(mUser.getPhotoLocation());
+				File imgFile = new File(mUser.getPhotoLocation() != null ? mUser.getPhotoLocation() : "");
 				ImageView avatar = (ImageView) mRootView.findViewById(R.id.myinfo_img);
 				if(imgFile.exists()){
 					
@@ -150,7 +152,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 				// Set the user information
 				((TextView) mRootView.findViewById(R.id.myinfo_name)).setText(mUser.getUserName());
 				((TextView) mRootView.findViewById(R.id.myinfo_email)).setText(mUser.getEmail());
-				((TextView) mRootView.findViewById(R.id.myinfo_joindate)).setText(mUser.getTimeEnter());
+				((TextView) mRootView.findViewById(R.id.myinfo_joindate)).setText(mUser.getTimeEnterString());
 				((TextView) mRootView.findViewById(R.id.myinfo_activitylevel)).setText(mUser.getActivityScore());
 				((TextView) mRootView.findViewById(R.id.myinfo_phone)).setText(mUser.getPhoneNumber());
 				((TextView) mRootView.findViewById(R.id.myinfo_source)).setText(String.valueOf(mUser.getSource()));
@@ -180,7 +182,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 				if(mUser != null && mUser.isLogin()){
 	        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOLIST, mUser); }
 				} else {
-					userMustClickOkay("Guest", "Guest activities are not recorded.");
+					userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
 				}
 				break;
 			default:
@@ -194,6 +196,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 		if(user != null){ 
 			// show the user information
 			mUser = user;
+			mUser.setLogin(true);
 		}else{
 			// show an error message
 			userMustClickOkay(getString(R.string.myinfo_no_user_title), getString(R.string.myinfo_no_user_text));
@@ -204,16 +207,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 
 	// Not used
 	@Override public void onReadUserList(List<User> users) { }
-	@Override public void onReadActivityHistory(ActivityHistory history) {	}
-	@Override public void onChangePhoto(boolean success, String errorMessage) {	}
-	@Override public void onChangePassword(boolean success, String errorMessage) {	}
-	@Override public void onChangePhonenumber(boolean success, String errorMessage) {	}
-	@Override public void onChangeSource(boolean success, String errorMessage) {	}
-	@Override public void onLocalFallback() { }
-
-	@Override
-	public void onChangeUser(User newUser, String errorMessage) {
-		// TODO Auto-generated method stub
-		
-	}
+	@Override public void onChangeUser(User newUser, String errorMessage) { }
+	@Override public void onLogin(boolean success, String errorMessage) { }
+	@Override public void onReadActivityHistory(List<ActivityRecord> records) { }
 }

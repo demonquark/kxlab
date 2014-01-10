@@ -22,6 +22,7 @@ public class User implements Parcelable {
 	private String webPhoto;
 	private boolean isLogin;
 	public int id;
+	private int roleId;
 	
 	public User() {
 		email = "";
@@ -34,6 +35,7 @@ public class User implements Parcelable {
 		Source = 1;
 		phoneNumber = "";
 		isLogin=false;
+		roleId= 1;
 	}
 	
 	public User(String email) {
@@ -47,6 +49,7 @@ public class User implements Parcelable {
 		Source = 1;
 		phoneNumber = "";
 		isLogin=false;
+		roleId = 1;
 	}
 	
 	public User(JsonUser userinfo){
@@ -61,7 +64,8 @@ public class User implements Parcelable {
 			activityScore = String.valueOf(userinfo.getActivityScore());
 			Source = userinfo.getType();
 			phoneNumber = userinfo.getPhonenumber();
-			isLogin=false;
+			isLogin = false;
+			roleId = userinfo.getRoleId();
 		}
 	}
 
@@ -81,6 +85,7 @@ public class User implements Parcelable {
 		Source = in.readInt();
 		phoneNumber = in.readString();
 		isLogin = (in.readInt() != 0);
+		roleId = in.readInt();
     }
 
     // this is used to regenerate your object.
@@ -104,6 +109,7 @@ public class User implements Parcelable {
     	dest.writeInt(Source);
     	dest.writeString(phoneNumber);
     	dest.writeInt(isLogin ? 1 : 0);
+    	dest.writeInt(roleId);
     }
 
 	
@@ -202,6 +208,7 @@ public class User implements Parcelable {
 		Source = otherUser.getSource();
 		phoneNumber = otherUser.getPhoneNumber();
 		isLogin= otherUser.isLogin;
+		roleId= otherUser.roleId;
 	}
 	
 	
@@ -216,9 +223,10 @@ public class User implements Parcelable {
 		userinfo.setPhonenumber(phoneNumber);
 		userinfo.setJointime(timeEnter);
 		userinfo.setLastLoginTime(lastLoginTime);
-		// TODO : USE INT as activity score
-		userinfo.setActivityScore(3);
-		userinfo.setRoleId(1);
+		userinfo.setPhoto(photoLocation);
+		try{ userinfo.setActivityScore(Integer.parseInt(activityScore));
+		}catch(NumberFormatException e){ userinfo.setActivityScore(0); }
+		userinfo.setRoleId(roleId);
 		userinfo.setType(Source);
 		userinfo.setId(id);
 		
@@ -232,7 +240,7 @@ public class User implements Parcelable {
 			date = Long.parseLong(timeEnter);
 		} catch(Exception e){ }
 		
-		return new SimpleDateFormat("yyyy-mm-dd HH:mm:ss", Locale.US).format(date);
+		return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(date);
 	}
 	
 	
@@ -245,7 +253,7 @@ public class User implements Parcelable {
 
 	    //cast to native object is now safe
 	    User that = (User)aThat;
-
+	    
 	    //now a proper field-by-field evaluation can be made
 	    return
 	    	((this.email != null) ? this.email.equals(that.email) : that.email == null) &&

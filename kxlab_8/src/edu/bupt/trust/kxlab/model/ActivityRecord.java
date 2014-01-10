@@ -7,27 +7,34 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class ActivityRecord implements Parcelable {
-	private long date;
-	private String type;
+	private int ahId;
+	private long activityTime;
+	private String whatDo;
+	private String email;
 	private int score;
 	
 	public ActivityRecord(){
-		date = 0;
-		type = "";
+		ahId = -1;
+		activityTime = 0;
+		whatDo = "";
+		email = "";
 		score = 0;
 	}
 	
-	public ActivityRecord(long date, String type, int score){
-		this.date = date;
-		this.type = type;
+	public ActivityRecord(long date, String whatDo, String email, int score){
+		this.ahId = -1;
+		this.activityTime = date;
+		this.whatDo = whatDo;
+		this.email = email;
 		this.score = score;
 	}
 
-
     private ActivityRecord(Parcel in) {
     	// Note: you need to read the items in the same order that you wrote them
-    	date = in.readLong();
-		type = in.readString();
+    	ahId = in.readInt();
+    	activityTime = in.readLong();
+    	whatDo = in.readString();
+    	email = in.readString();
 		score = in.readInt();
     }
 
@@ -42,30 +49,47 @@ public class ActivityRecord implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
     	// Note: you need to write the items in the same order that you intend to read them
-    	dest.writeLong(date);
-    	dest.writeString(type);
+    	dest.writeInt(ahId);
+    	dest.writeLong(activityTime);
+    	dest.writeString(whatDo);
+    	dest.writeString(email);
     	dest.writeInt(score);
     }
 	
-	public long getDate(){
-		return date;
+	public int getAhId() {
+		return ahId;
 	}
-	
-	public String getType(){
-		return type;
-				
+
+	public long getActivityTime() {
+		return activityTime;
 	}
-	
+
+	public String getWhatDo() {
+		return whatDo;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setAhId(int ahId) {
+		this.ahId = ahId;
+	}
+
+	public void setActivityTime(long activityTime) {
+		this.activityTime = activityTime;
+	}
+
+	public void setWhatDo(String whatDo) {
+		this.whatDo = whatDo;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
 	public int getScore(){
 		return score;
-	}
-	
-	public void setDate(long date){
-		if(date > 0 ) { this.date = date; }
-	}
-	
-	public void setType(String type){
-		if(type != null) { this.type = type; }
 	}
 	
 	public void setScore(int score){
@@ -73,7 +97,7 @@ public class ActivityRecord implements Parcelable {
 	}
 	
 	public String getDateString(){
-		return new SimpleDateFormat("MMM dd ''yy HH:mm:ss", Locale.US).format(date);
+		return new SimpleDateFormat("MMM dd ''yy HH:mm:ss", Locale.US).format(activityTime);
 	}
 }
 

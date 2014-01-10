@@ -6,6 +6,10 @@ final class Urls {
 	protected static final String pathProfileLogin = "userManagementByPhone/login";				
 	protected static final String pathProfileUserInfo = "userManagementByPhone/userInformation";
 	protected static final String pathProfileHistory = "userManagementByPhone/activityHistory";	
+	protected static final String pathProfileChangePassword = "userManagementByPhone/changePassword";	
+	protected static final String pathProfileChangePhoto = "userManagementByPhone/changePhotoImage";	
+	protected static final String pathProfileChangePhone = "userManagementByPhone/changePhoneNumber";	
+	protected static final String pathProfileChangeSource= "userManagementByPhone/changeSource";	
 	protected static final String pathMyServiceCreate = "servicemanagementbyphone/createService";
 	protected static final String pathMyServiceDelete = "servicemanagementbyphone/deleteMyService";
 	protected static final String pathMyServiceEdit = "servicemanagementbyphone/editMyService";
@@ -54,6 +58,13 @@ final class Urls {
 	protected static final String paramForumAgType = "agType";
 	protected static final String paramForumVoteId = "voteId";
 	protected static final String paramForumVoteScore = "voteScore";
+	protected static final String paramProfileListPage = "listPage";
+	protected static final String paramProfileListSize = "listSize";
+	protected static final String paramProfilePhotoImage = "photoImage";
+	protected static final String paramProfileSource = "source";
+	protected static final String paramProfilePhoneNumber = "phoneNumber";
+	protected static final String paramProfileNewPassword = "newPassword";
+	
 	protected static final String jsonLoginOrNot = "loginOrNot";				
 	protected static final String jsonLoginErrorMessage = "loginerrormessage";	
 	protected static final String jsonServiceDetail = "ServiceDetail";			
@@ -63,13 +74,21 @@ final class Urls {
 	protected static final String jsonPostList = "PostList";
 	protected static final String jsonCreatePostOrNot = "createPostOrNot";
 	protected static final String jsonPostAnnounceDetail = "PostAnnounceDetail";
-	
+	protected static final String jsonUserInformation = "UserInformation";
+	protected static final String jsonSourceChangeOrNot = "sourceChangeOrNot";
+	protected static final String jsonPhoneChangeOrNot = "phoneChangeOrNot";
+	protected static final String jsonPhotoChangeOrNot = "photoChangeOrNot";
+	protected static final String jsonPasswordChangeOrNot = "passwordChangeOrNot";
 	
 	protected static final String filePost = "post";
 	protected static final String fileAnnounce = "post";
 	protected static final String fileWebpostforumdetail = "webpostforumdetail";
 	protected static final String filePostList = "forum_list";
 	protected static final String filePostDetail = "forum_detail";
+	protected static final String fileUserInformation = "profile_info_";
+	protected static final String fileOldUser = "profile_old_user_";
+	protected static final String fileNewUser = "profile_new_user_";
+	protected static final String fileActivityHistory = "profile_history_";
 	
 	
 	protected static final String build(String... parts){

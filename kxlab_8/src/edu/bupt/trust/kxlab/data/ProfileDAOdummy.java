@@ -1,13 +1,18 @@
 package edu.bupt.trust.kxlab.data;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 
 import com.google.gson.Gson;
 
 import android.os.AsyncTask;
 import android.os.Environment;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
+import edu.bupt.trust.kxlab.model.ActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -32,8 +37,8 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 		this.rand = new Random();
 	}
 
-	@Override protected void login(final String path) {
-		Loggen.i(this, "Dummy login for: " + path);
+	@Override protected void login(String email, String password) {
+		Loggen.i(this, "Dummy login for: " + email + " | " + password);
 		
 		new AsyncTask<Void, Integer, Void>  (){
 			@Override protected Void doInBackground(Void... params) {
@@ -117,13 +122,13 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 		case 0:
 			response = "{\"id\":9,\"name\":\"George Soros\",\"password\":\"wss\",\"type\":0," 
 					+ "\"sex\":\"男\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
-					+ "\"email\":\"watchalooking@qq.com\",\"phonenumber\":\"15810531590\","
+					+ "\"email\":\"1@qq.com\",\"phonenumber\":\"15810531590\","
 					+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
 					+ "\"activityScore\":10,\"roleId\":1}";
 		case 1:
 			response = "{\"id\":9,\"name\":\"Felix the Cat\",\"password\":\"wss\",\"type\":0," 
 					+ "\"sex\":\"女\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
-					+ "\"email\":\"coolcat@places.com\",\"phonenumber\":\"15810531590\","
+					+ "\"email\":\"1@qq.com\",\"phonenumber\":\"15810531590\","
 					+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
 					+ "\"activityScore\":10,\"roleId\":1}";
 		}
@@ -144,28 +149,58 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 		return (rand.nextInt(100) % modulus);
 	}
 	
-	@Override protected void readActivityHistory(String path) {
-		// TODO Auto-generated method stub
+	public String randomString(){
+		String [] randomStrings = {"randomString","lalala","好久不见","algodifferente" };
 		
+		return randomStrings[counter(randomStrings.length)] + counter(50);
+	}
+	
+	@Override protected void readActivityHistory(String email, int size, Page page) {
+		
+		// Generate a bunch of records
+		List <ActivityRecord> newrecords = new ArrayList<ActivityRecord> ();
+		for (int i = 0; i < 5; i++){
+			Calendar x = Calendar.getInstance();
+			x.set(2000 + i, i % 12, (i * 2 ) % 28);
+			ActivityRecord r = new ActivityRecord(x.getTimeInMillis(), "a string for " + i, email, (i % 3) - (i % 4));
+			r.setAhId(counter(20));
+			r.setWhatDo("a string for " + r.getAhId());
+			newrecords.add(r);
+		}
+		
+		// create a raw response
+		String response = new Gson().toJson(newrecords);
+		final RawResponse rawResponse = new RawResponse(response);
+		rawResponse.path =  ProfileDAOlocal.getActivityHistoryFilename(email);
+		rawResponse.page = page;
+		
+		// determine the path to send to the server
+		new AsyncTask<Void, Integer, Void>  (){
+			@Override protected Void doInBackground(Void... params) {
+				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
+				return null;
+			}
+
+			@Override protected void onPostExecute(Void v) {
+				listener.onReadActivityHistory(rawResponse);
+			}
+		}.execute();
 	}
 
-	@Override protected void changePhoto(String path) {
-		// TODO Auto-generated method stub
-		
+	@Override protected void changePhoto(String email, String photo) {
+		listener.onChangePhoto(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));		
 	}
 
-	@Override protected void changePassword(String path) {
-		// TODO Auto-generated method stub
-		
+	@Override protected void changePassword(String email, String password, String newPassword) {
+		listener.onChangePassword(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 	}
 
-	@Override protected void changePhonenumber(String path) {
-		// TODO Auto-generated method stub
-		
+	@Override protected void changePhonenumber(String email, String phonenumber) {
+		listener.onChangePhonenumber(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 	}
 
-	@Override protected void changeSource(String path) {
-		// TODO Auto-generated method stub
-		
-	} 
+	@Override protected void changeSource(String email, int type) {
+		listener.onChangeSource(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
+	}
+	
 }

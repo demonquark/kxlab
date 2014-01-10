@@ -5,7 +5,6 @@ import java.util.HashMap;
 import android.content.Context;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesDetailListener;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
-import edu.bupt.trust.kxlab.data.ProfileDAO.LoginListener;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesDetailListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
@@ -87,15 +86,6 @@ public class DaoFactory {
 		return profileDAO;
 	}
 
-	public ProfileDAO setProfileDAO(Context c, LoginListener listener){
-		if(profileDAO == null) { 
-			profileDAO = new ProfileDAO(null, listener); 
-		} else {
-			profileDAO.setLoginListener(listener);
-		}
-		return profileDAO;
-	}
-	
 	public ForumDAO setForumDAO(Context c, ForumDAO.ForumListener listener, PostType type){
 		ForumDAO forumDAO;
 		if(forumDAOMap.get(type) == null) {
