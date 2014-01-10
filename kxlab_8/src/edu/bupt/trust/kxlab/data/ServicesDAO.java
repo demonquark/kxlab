@@ -8,6 +8,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -19,9 +20,15 @@ import com.loopj.android.http.RequestParams;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.data.ServicesDAOabstract.OnServicesRawDataReceivedListener;
+import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
+import edu.bupt.trust.kxlab.jsonmodel.JsonUserInformation;
 import edu.bupt.trust.kxlab.model.Comment;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
+import edu.bupt.trust.kxlab.model.User;
+import edu.bupt.trust.kxlab.utils.Gegevens;
+import edu.bupt.trust.kxlab.utils.JsonTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 public class ServicesDAO implements OnServicesRawDataReceivedListener {
@@ -32,9 +39,6 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	private static int commentPageNo = 0;
 	private static int searchListPageNo = 0;
 	
-	public enum Type {
-		COMMUNITY, RECOMMENDED, APPLY
-	};
 
 	private ServicesDAOlocal local;
 	private ServicesDAOweb web;
@@ -71,14 +75,6 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		this.detaillistener = new WeakReference<ServicesDetailListener> (listener);
 	}
 
-	public void readServices(Type type) {
-		readServices(type, new String[] {});
-	}
-
-	public void readServices(Type type, String... parameters) {
-		readServices(type, Page.LATEST, Source.DEFAULT, parameters);
-	}
-
 	/**
 	 * 
 	 * @param type
@@ -86,7 +82,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	 *            parameter[0] represents user mail,parameter[1] represents
 	 *            service title,parameter[2] represents service detail
 	 */
-	public void createService(Type type, String[] parameters) {
+	public void createService(ServiceType type, String[] parameters) {
 		int typeParam = 0;
 		switch (type) {
 		case COMMUNITY:
@@ -180,94 +176,44 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	 * @param parameters
 	 *            parameters[0] matches user email
 	 */
-	public void readServices(Type type, Page p, Source source,
-			String[] parameters) {
+	public void readServices(Source source, ServiceType type, ServiceFlavor flavor, String email, 
+								List <TrustService> services, Page page) {
 
-		int typeparam = 0;
-		int pageNo = 0;
-		switch (type) {
-		case COMMUNITY:
-			typeparam = 1;
-			switch (p) {
-			case PREVIOUS:
-				pageNo = ++communityServicePageNo;
-				break;
-			case LATEST:
-				if (communityServicePageNo > 0)
-					pageNo = --communityServicePageNo;
-				break;
-			}
-			break;
-		case RECOMMENDED:
-			typeparam = 2;
-			switch (p) {
-			case PREVIOUS:
-				pageNo = ++recommendedServiceListPageNo;
-				break;
-			case LATEST:
-				if (recommendedServiceListPageNo > 0)
-					pageNo = --recommendedServiceListPageNo;
-				break;
-			}
-			break;
-		case APPLY:
-			typeparam = 3;
-			switch (p) {
-			case PREVIOUS:
-				pageNo = ++applyServiceListPageNo;
-				break;
-			case LATEST:
-				if (applyServiceListPageNo > 0)
-					pageNo = --applyServiceListPageNo;
-				break;
-			}
-			break;
+		// save the current page to the cache 
+		if(page != Page.CURRENT || (source == Source.WEB && services != null ) ){ 
+			Loggen.v(this, "saved content to file.");
+			overwriteServicesList(type, flavor, services); 
 		}
+		
+		// determine the records size 
+		int size = (services != null) ? services.size() : 0;
 
-		// Get the path of the read services page
-		String path = Urls.pathMyServiceList;
-		if (parameters != null && parameters.length > 0) {
-
-			RequestParams params = new RequestParams();
-			params.put(Urls.paramUserEmail, parameters[0]); // user email
-			params.put(Urls.paramServiceType, typeparam + ""); // service type
-			params.put(Urls.paramServiceListPage, pageNo + ""); // list page
-			params.put(Urls.paramServiceListSize, LIST_SIZE); // list size
-			path = ServicesDAOweb.getPath(true, path, params);
-		}
-		Loggen.i(this, "Got path: " + path);
-		// Send the path to the correct DAO (Note: for DAOlocal, we send the
-		// file name instead of the path)
+		// let the correct source handle the request
 		switch (source) {
 		case DEFAULT:
-			if (local.fileExists(ServicesDAOlocal.pathToFileName(path))) {
-				local.readServices(ServicesDAOlocal.pathToFileName(path));
-			} else {
-				web.readServices(path);
-			}
-			break;
 		case WEB:
-			web.readServices(path);
+			web.readServices(email, flavor, type, size, page);
 			break;
 		case LOCAL:
-			local.readServices(ServicesDAOlocal.pathToFileName(path));
+			local.readServices(email, flavor, type, size, page);
 			break;
 		case DUMMY:
-			switch (type) {
-			case COMMUNITY:
-				dummy.readServices("community");
-				break;
-			case RECOMMENDED:
-				dummy.readServices("recommended");
-				break;
-			case APPLY:
-				dummy.readServices("apply");
-				break;
-			}
-
+			dummy.readServices(email, flavor, type, size, page);
 			break;
 		}
+	}
+	
+	
+	
 
+	private void overwriteServicesList(ServiceType type, ServiceFlavor flavor, List<TrustService> services) {
+		if(services != null){
+			// write to file
+			String cachefilename = ServicesDAOlocal.getServicesListFilename(type.getFragName(), flavor.toString());
+			local.writeToFile(cachefilename, new Gson().toJson(services));
+			Loggen.v(this, "saved content to file.");
+
+		}
 	}
 
 	/**
@@ -277,7 +223,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	 * @param parameters
 	 *            parameters[0] matches search key word, [1] matches user email,
 	 */
-	public void searchService(Type type, Page p, String[] parameters) {
+	public void searchService(ServiceType type, Page p, String[] parameters) {
 		switch (p) {
 		case PREVIOUS:
 			searchListPageNo++;
@@ -348,7 +294,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		switch (source) {
 		case DEFAULT:
 			if (local.fileExists(ServicesDAOlocal.pathToFileName(path))) {
-				local.readServices(ServicesDAOlocal.pathToFileName(path));
+//				local.readServices(ServicesDAOlocal.pathToFileName(path));
 			} else {
 				web.readService(path);
 			}
@@ -507,28 +453,79 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 
 	@Override
 	public void onReadServices(RawResponse response) {
-		Loggen.i(this, "Got a response: " + response.message);
-		ArrayList<TrustService> services = null;
+		
+		List <TrustService> services = null;
+		Gson gson = new Gson();
+		
 		if (response.errorStatus == RawResponse.Error.NONE
-				&& isJson(response.message)) {
+				&& JsonTools.isValidJSON(response.message)) {
 
-			// first save the data to the cache
-			if (response.path != null && response.message != null) {
-				local.writeToFile(response.path, response.message);
-			}
-
-			// Next create a list of Services using the JSON message
-			// TODO: implement
-			services = new ArrayList<TrustService>();
-			Gson gson = new Gson();
-			java.lang.reflect.Type listType = new TypeToken<ArrayList<TrustService>>() {
-			}.getType();
+			// Step 1 - convert the message into a JSON object
+			java.lang.reflect.Type listType = new TypeToken<ArrayList<TrustService>>() { }.getType();
 			services = gson.fromJson(response.message, listType);
+			if(services == null) { services = new ArrayList<TrustService> (); } 
+			
+			// Step 2 - update the message with the cache content
+			if(response.page != Page.CURRENT){
+			
+				// Step 2a - read the existing data from cache. 
+				Loggen.v(this, "Start getting old services.");
+				List <TrustService> oldRecords = gson.fromJson(local.readFromFile(response.path), listType);
 
+				// Step 2b - read the existing data from cache. 
+				if(oldRecords != null){
+					// loop through all the old users
+					for(int i = oldRecords.size() - 1; i >= 0; i--){
+
+						// get the id and set overlap to false
+						int oldId = oldRecords.get(i).getServiceid();
+						boolean overlap = false;
+
+						// compare each old record to all the new records
+						for(TrustService service : services){
+							// if the old record is also in the new records, the records overlap
+							if( oldId == service.getServiceid()){ overlap = true; }
+						}
+						
+						// if the records did not overlap, add this record to the list of records
+						if(!overlap)
+							services.add(0,oldRecords.get(i));
+					}
+				}
+			}
+			
+			// TODO: FIGURE OUT WHAT TO DO WITH IMAGES 
+			for(TrustService service : services){
+
+				String serviceFileName = ServicesDAOlocal.getServiceFilename(service.getServiceid());
+
+				// Step 3 - get the saved user information
+				TrustService oldService = gson.fromJson(local.readFromFile(serviceFileName), TrustService.class);
+				
+				// Step 4 - Copy the image to the file
+				String image;
+				if(oldService != null && (image = oldService.getServicephoto()) != null 
+						&& (image.endsWith(Gegevens.FILE_EXT_JPG) 
+						|| image.endsWith(Gegevens.FILE_EXT_PNG) 
+						|| image.endsWith(Gegevens.FILE_EXT_GIF))){
+					service.setServicephoto(image);
+				} else {
+					service.setServicephoto(dummy.randomPic().getAbsolutePath());
+				}
+				
+				// Step 6 - Write the service to file
+				local.writeToFile(serviceFileName, gson.toJson(service));
+			}
+			
+			// Step 7 - save the date to the cache
+			if (response.path != null) {
+				local.writeToFile(response.path, gson.toJson(services));
+			}
+			
 		} else {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
-
+		
 		if (listlistener.get() != null) {
 			listlistener.get().onReadServices(services);
 		}

@@ -55,8 +55,18 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 		}.execute();
 	}
 
-	@Override protected void readUsers(String path) {
-		Loggen.i(this, "Dummy read user lists for: " + path);
+	@Override protected void readUsers(String sortkey, int size, Page page) {
+		Loggen.i(this, "Dummy read user lists for: " + sortkey);
+		
+		// determine the cache file name
+		final String filename = ProfileDAOlocal.getUserListFilename(sortkey);
+		
+		// create a bunch of users
+		ArrayList<JsonUser> users = new ArrayList<JsonUser> ();
+		for(int i =0; i < 4; i++){
+			users.add(randomUser().getJsonUser());
+		}
+		final String response = new Gson().toJson(users);
 		
 		new AsyncTask<Void, Integer, Void>  (){
 			@Override protected Void doInBackground(Void... params) {
@@ -65,11 +75,10 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 			}
 
 			@Override protected void onPostExecute(Void v) {
-				listener.onReadUserList(new RawResponse("", "dummyuserslist"));
+				listener.onReadUserList(new RawResponse(response, filename));
 			}
 	
 		}.execute();
-		
 	}
 
 	@Override protected void readUserInformation(final String path) {

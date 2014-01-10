@@ -32,8 +32,21 @@ class ProfileDAOlocal extends ProfileDAOabstract{
 		listener.onLogin(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 	}
 
-	@Override protected void readUsers(String path) {
-		// TODO Auto-generated method stub
+	@Override protected void readUsers(String sortkey, int size, Page page) {
+		Loggen.v(this, "Request to read user list: " + sortkey);
+		
+		// determine the cache file name
+		String filename = ProfileDAOlocal.getUserListFilename(sortkey);
+
+		// Read the file and create a raw response
+		String response = readFromFile(filename);
+		
+		// create a response
+		RawResponse rawResponse = new RawResponse(response, filename);
+		if(response == null){ rawResponse.errorStatus = RawResponse.Error.FILE_NOT_FOUND; }
+		
+		// Return the raw response
+		listener.onReadUserInformation(rawResponse);
 	}
 
 	/** <p>Load saved data from file. </p> */
@@ -110,4 +123,9 @@ class ProfileDAOlocal extends ProfileDAOabstract{
 	public static String getActivityHistoryFilename(String email){
 		return Urls.fileActivityHistory + email + Gegevens.FILE_EXT_DAT;
 	}
+
+	public static String getUserListFilename(String sortKey){
+		return Urls.fileActivityHistory + sortKey + Gegevens.FILE_EXT_DAT;
+	}
+
 }

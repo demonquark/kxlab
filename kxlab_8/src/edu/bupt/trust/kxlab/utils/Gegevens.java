@@ -46,6 +46,8 @@ public class Gegevens {
 	public static final String EXTRA_POST			= "post";
 	public static final String EXTRA_REPLY			= "reply";
 	public static final String EXTRA_REPLIES		= "replies";
+	public static final String EXTRA_LOADING		= "loading";
+	public static final String EXTRA_SORTKEY		= "sortkey";
 	
 	/** Folder and file names */
 	public static final String FILE_EXT_MP3 		= ".mp3";
@@ -80,6 +82,7 @@ public class Gegevens {
 	public static final String FRAG_INFOVIEW 		= "infoview";
 	public static final String FRAG_INFOEDIT 		= "infoedit";
 	public static final String FRAG_INFOLIST 		= "infolist";
+	public static final String FRAG_USERLIST 		= "userlist";
 	public static final String FRAG_SETTINGS 		= "settings";
 	public static final String FRAG_FORUM	 		= "forum";
 	public static final String FRAG_SUGGESTION 		= "suggestion";

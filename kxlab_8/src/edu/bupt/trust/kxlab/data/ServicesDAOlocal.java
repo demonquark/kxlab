@@ -9,6 +9,10 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
+import edu.bupt.trust.kxlab.model.ServiceType;
+import edu.bupt.trust.kxlab.utils.FileManager;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
@@ -40,14 +44,21 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 	}
 
 
-	@Override
-	protected void readServices(String filename) {
-		Loggen.v(this, "Request to read services: " + filename);
+	@Override protected void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, Page page) {
+
+		// determine the cache file name
+		final String cachefilename = ServicesDAOlocal.getServicesListFilename(type.getFragName(), flavor.toString());
 		
-		// Read the file and return the content
-		String response = readFromFile(filename); 
-		listener.onReadServices(new RawResponse(response, filename));
+		// read from the file
+		String response = readFromFile(cachefilename);
 		
+		// create a response
+		RawResponse rawResponse = new RawResponse(response, cachefilename);
+		if(response == null){ rawResponse.errorStatus = RawResponse.Error.FILE_NOT_FOUND; }
+		rawResponse.page = page;
+		
+		// send back the response
+		listener.onReadServices(rawResponse);
 	}
 
 	@Override
@@ -105,47 +116,13 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 		return (file.exists() && file.lastModified() > System.currentTimeMillis() - maxTimeInCache);
 	}
 
-	public void writeToFile(String filename, String message) {
-        File file = new File(cacheDir, filename  + Gegevens.FILE_EXT_DAT);
-        Loggen.v(this, "Writing to file: " + file.getName());
-		BufferedWriter writer = null;
-		try {// write the output to the file
-        	writer = new BufferedWriter(new FileWriter(file, false));
-			writer.write(message);
-		} catch (IOException e) { e.printStackTrace(); 
-		} finally { 
-			if (writer != null) { 
-				try { writer.close(); } catch (IOException e) { e.printStackTrace(); } 
-			} 
-		}
-	}
-
 	public String readFromFile(String filename) {
-        File file = new File(cacheDir, filename +  Gegevens.FILE_EXT_DAT);
-        byte[] b  = new byte[(int)file.length()];
-		int len = b.length;
-        Loggen.v(this, "Reading from file: " + file.getName());
-
-		InputStream in = null;
-		try{
-			in = new FileInputStream(file);
-			int total = 0;
-			while (total < len) {
-				int result = in.read(b, total, len - total);
-				if (result == -1) { break; }
-				total += result;
-			}
-		} catch (IOException e) { e.printStackTrace(); 
-		} finally {
-			if (in != null) { 
-				try { in.close(); } catch (IOException e) { e.printStackTrace(); } 
-			} 
-		}
-		
-		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
-		
+		return FileManager.readFromFile(new File(cacheDir, filename + Gegevens.FILE_EXT_DAT));
 	}
-
+	
+	public boolean writeToFile(String filename, String string) {
+		return FileManager.writeToFile(new File(cacheDir, filename + Gegevens.FILE_EXT_DAT), string);
+	}
 
 	@Override
 	protected void searchService(String path) {
@@ -172,6 +149,15 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 	protected void deleteService(String path) {
 		// TODO Auto-generated method stub
 		
+	}
+
+
+	public static String getServicesListFilename(String type, String flavor) {
+		return Urls.fileServiceList + flavor + "_" + type   + Gegevens.FILE_EXT_DAT;
+	}
+	
+	public static String getServiceFilename(int id) {
+		return Urls.fileService + id + Gegevens.FILE_EXT_DAT;
 	}
 	
 //	public static String readString(File file) throws IOException {

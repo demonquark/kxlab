@@ -117,7 +117,9 @@ public class FileManager {
 			} 
 		}
 		
-		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
+        Loggen.v(FileManager.class, "Reading file: " + Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString());
+
+        return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
 	}
 
 	/**
@@ -128,7 +130,7 @@ public class FileManager {
 	 * @return String containing file content or null if file does not exist
 	 */
 	public static boolean writeToFile(File file, String string) {
-        Loggen.v(FileManager.class, "Writing to file: " + file.getName());
+        Loggen.v(FileManager.class, "Writing to file: " + file.getName() + " | " + string);
 		
         boolean succesful = false;
         

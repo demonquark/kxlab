@@ -55,6 +55,7 @@ public class User implements Parcelable {
 	public User(JsonUser userinfo){
 		this();
 		if(userinfo != null){
+			id = userinfo.getId();
 			email = userinfo.getEmail();
 			userName = userinfo.getName();
 			password = userinfo.getPassword();

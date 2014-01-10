@@ -8,6 +8,9 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Random;
 
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
+import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
@@ -28,7 +31,7 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 		this.rand = new Random();
 	}
 
-	@Override protected void readServices(final String path) {
+	@Override protected void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, Page page) {
 		
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
@@ -38,8 +41,8 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 
 			@Override protected void onPostExecute(Void v) {
 				String response = null;
-				if(path != null){
-					response = readFromFile(randomServicesList(path));
+				if("" != null){
+					response = readFromFile(randomServicesList(""));
 					
 					while(response.contains("\"servicephoto\":null")){
 						response = response.replaceFirst("\"servicephoto\":null", "\"servicephoto\":\"" 

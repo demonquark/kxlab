@@ -119,6 +119,7 @@ public class ForumThreadListFragment extends BaseListFragment
 		int bottomPadding = (int) getResources().getDimension(R.dimen.footer_height);
 		mRootView.findViewById(R.id.list_top_container).setPadding(0,0,0,bottomPadding);
 		
+		// set this fragment as the listener for the xlist 
 		mListView = (XListView) mRootView.findViewById(android.R.id.list);
 		mListView.setPullLoadEnable(true);
 		mListView.setXListViewListener(this);
@@ -143,7 +144,7 @@ public class ForumThreadListFragment extends BaseListFragment
 
 	@Override public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		Loggen.v(this, getTag() + " - Saving ServiceList instance state.");
+		Loggen.v(this, getTag() + " - Saving ThreadList instance state.");
 		// save the list of services to the instance state
 		if(mPosts != null) { outState.putParcelableArrayList(Gegevens.EXTRA_POSTS, mPosts); }
 		outState.putSerializable(Gegevens.EXTRA_POSTTYPE, mPostType);

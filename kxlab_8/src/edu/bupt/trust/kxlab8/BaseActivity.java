@@ -1,5 +1,6 @@
 package edu.bupt.trust.kxlab8;
 
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.Settings;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.widgets.BottomBar;
@@ -62,10 +63,24 @@ public class BaseActivity extends ActionBarActivity  implements BasicDialogListe
 		int id = view.getId();
 		switch(id){
 		case R.id.footer_services:
-			openActivity(new Intent(this, ServicesListActivity.class));
-		break;
 		case R.id.footer_myservice:
-			openActivity(new Intent(this, MyServicesListActivity.class));
+			// create an bundle with the specific flavor
+			Bundle b = new Bundle();
+			if(id == R.id.footer_myservice)
+				b.putSerializable(Gegevens.EXTRA_FLAVOR, ServiceFlavor.MYSERVICE);
+			else
+				b.putSerializable(Gegevens.EXTRA_FLAVOR, ServiceFlavor.SERVICE);
+				
+			// add the bundle to the intent and open the activity
+			Intent intent = new Intent(this, ServicesListActivity.class);
+			intent.putExtra(Gegevens.EXTRA_MSG, b);
+			
+			if(this instanceof ServicesListActivity){
+		        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		        startActivity(intent);
+			} else{
+					openActivity(intent);
+			}
 		break;
 		case R.id.footer_forum:
 			openActivity(new Intent(this, ForumThreadActivity.class));

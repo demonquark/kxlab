@@ -6,6 +6,7 @@ final class Urls {
 	protected static final String pathProfileLogin = "userManagementByPhone/login";				
 	protected static final String pathProfileUserInfo = "userManagementByPhone/userInformation";
 	protected static final String pathProfileHistory = "userManagementByPhone/activityHistory";	
+	protected static final String pathProfileuserList = "userManagementByPhone/userlist";	
 	protected static final String pathProfileChangePassword = "userManagementByPhone/changePassword";	
 	protected static final String pathProfileChangePhoto = "userManagementByPhone/changePhotoImage";	
 	protected static final String pathProfileChangePhone = "userManagementByPhone/changePhoneNumber";	
@@ -18,7 +19,7 @@ final class Urls {
 	protected static final String pathMyServiceDetail = "servicemanagementbyphone/serviceDetail";
 	protected static final String pathServiceScore = "servicemanagementbyphone/importServiceScore";
 	protected static final String pathServiceComment = "servicemanagementbyphone/importServiceComment";
-	protected static final String pathServiceList = "servicemanagementbyphone/myServiceList";
+	protected static final String pathServiceList = "servicemanagementbyphone/serviceList";
 	protected static final String pathServiceDetail = "servicemanagementbyphone/serviceDetail";
 	protected static final String pathForumPostList = "forum/postList";
 	protected static final String pathForumPostDetail = "forum/postForumDetail";
@@ -64,6 +65,9 @@ final class Urls {
 	protected static final String paramProfileSource = "source";
 	protected static final String paramProfilePhoneNumber = "phoneNumber";
 	protected static final String paramProfileNewPassword = "newPassword";
+	protected static final String paramProfileUserListSortKey = "userListSortKey";
+	protected static final String paramProfileUserListSize = "userListSize";
+	protected static final String paramProfileUserListPage = "userListPage";
 	
 	protected static final String jsonLoginOrNot = "loginOrNot";				
 	protected static final String jsonLoginErrorMessage = "loginerrormessage";	
@@ -89,6 +93,9 @@ final class Urls {
 	protected static final String fileOldUser = "profile_old_user_";
 	protected static final String fileNewUser = "profile_new_user_";
 	protected static final String fileActivityHistory = "profile_history_";
+	protected static final String fileUserList = "profile_userlist_";
+	protected static final String fileServiceList = "services_list_";
+	protected static final String fileService = "service_";
 	
 	
 	protected static final String build(String... parts){

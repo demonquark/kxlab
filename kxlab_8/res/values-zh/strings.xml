@@ -22,6 +22,9 @@
 	<string name="login">登 录</string>
 	<string name="findPasswordLabel">找回密码</string>
 	<string name="guestLabel">我是游客</string>
+	<string name="login_guest">login as guest</string>
+	<string name="login_recover_password">recover password</string>
+		
 	<!-- 用户名密码不能空 -->
 	<string name="strLoginReplyAmpty">not allow null</string>
 	<!--用户名密码错误  -->
@@ -118,6 +121,7 @@
 	<string name="details_dialog_comment_text">Leave a comment for this service</string>
 	<string name="details_btn_save">save changes</string>
 	<string name="details_edit_title">Edit your service</string>
+	<string name="details_edit_new_title">Create a service</string>
 	<string name="details_error_edit">An error occurred while trying to load the service information</string>
 	<string name="details_edit_confirm_title">Changes not saved</string>
 	<string name="details_edit_confirm_text">Would you like to save the changes made to your service?</string>
@@ -144,10 +148,10 @@
 	<string name="comment_score">Rating</string>
 								
 	<!-- service score dialogfragment -->
-	<string name="details_score_text01">-1:不可信</string>
-	<string name="details_score_text02">0:不确定</string>
-	<string name="details_score_text03">+1:可信</string>
-	
+	<string name="details_score_bad">-1: 不可信</string>
+	<string name="details_score_okay">0: 不确定</string>
+	<string name="details_score_great">+1: 可信</string>
+		
 	<!-- myinfo activity -->
 	<string name="myinfo_name_title">Name</string>
 	<string name="myinfo_name_text">Unknown name</string>
@@ -191,13 +195,15 @@
 	<string name="myinfo_records_empty">No records</string>
 	<string name="myinfo_no_records_title">No records</string>
 	<string name="myinfo_no_records_text">We could not download the activity history.</string>
+	<string name="myinfo_guest_title">Guest</string>
+	<string name="myinfo_guest_text">The requested option is not available to guests</string>
 	
 	<!--  other activity -->
 	<string name="other_language">Language</string>
 	<string name="other_language_en">English</string>
 	<string name="other_language_zh">中文</string>
 	<string name="other_userlist">用户列表</string>
-	<string name="other_deletecache">Delete Cache</string>
+	<string name="other_deletecache">Reset Cache</string>
 	<string-array name="settings_titles">
 		<item>@string/other_language</item>
 		<item>@string/other_userlist</item>
@@ -213,11 +219,12 @@
 	<string name="other_sort_name_desc">&#8744; Name</string>
 	<string name="other_sort_activitylevel_asc">&#8743; Activity level</string>
 	<string name="other_sort_activitylevel_desc">&#8744; Activity level</string>
-			
+	<string name="other_sort_jointime_desc">&#8744; Join time</string>
+				
 	<!-- forum activity -->
 	<string name="forum_tab_discussion">Discussion</string>
 	<string name="forum_tab_suggestion">Suggestions</string>
-	<string name="forum_tab_announcement">Announcements</string>
+	<string name="forum_tab_announcement">Announce</string>
 	<string name="forum_tab_faq">FAQ</string>
 	<string-array name="forum_tabs">
 		<item>@string/forum_tab_discussion</item>
@@ -227,7 +234,33 @@
 	</string-array>
 	<string name="forum_post_title">post title</string>
 	<string name="forum_post_detail">post detail</string>
-			
+	<string name="forum_error_update_title">Error</string>
+	<string name="forum_error_update_text">Failed to download the latest data. Loaded information from cache.</string>
+	<string name="forum_error_empty_title">Empty fields</string>
+	<string name="forum_error_empty_text">Please fill in all the required fields before submitting</string>
+	<string name="forum_error_reply">An error occurred while trying to reply to the post</string>
+	<string name="forum_create_post_title">You are writing a new post for</string>
+	<string name="forum_create_reply_title">You are writing in reply to</string>
+	<string name="forum_post_detail_hint">Write your content here.</string>
+	<string name="forum_post_btn_save">post</string>
+	<string name="forum_reply_detail_hint">Write your content here.</string>
+	<string name="forum_reply_btn_save">post reply</string>
+	<string name="forum_reply_text">Reply text</string>
+	<string name="forum_create_confirm_title">Changes not saved</string>
+	<string name="forum_create_confirm_text">Would you like to post your text to the server?</string>
+	<string name="forum_reply_owner">name</string>
+	<string name="forum_reply_postdate">post date</string>
+	<string name="forum_vote_for">Vote for</string>
+	<string name="forum_dialog_vote_title">Rate this user</string>
+	<string name="forum_dialog_vote_text">Please rate the credibility of</string>
+				
+	<!-- user include -->
+	<string name="user_img">User</string>
+	<string name="user_name">Unknown Name</string>
+	<string name="user_activitylevel">Activity level:</string>
+	<string name="user_date">Unknown date</string>
+	<string name="user_email">Unknown email</string>
+					
 	<!-- xlistView refreshable -->	
 	<string name="xlistview_header_hint_normal">pull refresh</string>
     <string name="xlistview_header_hint_ready">relase to refresh</string>

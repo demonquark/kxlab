@@ -190,7 +190,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		local.writeToFile(ForumDAOlocal.getPostListFilename(type.getServerType()), 
 				new GsonBuilder().serializeNulls().create().toJson(postList));
 		
-		Loggen.i(this, "Done writing to file.");
+		Loggen.v(this, "Done writing to file.");
 	} 
 	
 	private int overwritePostForumDetail(Post post, ArrayList<Reply> replies){
@@ -236,7 +236,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		local.writeToFile(ForumDAOlocal.getPostDetailFilename(post.getPdId(), post.getPostType().getServerType()), 
 				new GsonBuilder().serializeNulls().create().toJson(oldDetails));
 		
-		Loggen.i(this, "Done writing to file.");
+		Loggen.v(this, "Done writing to file.");
 		
 		return jsonreplies.size();
 	} 

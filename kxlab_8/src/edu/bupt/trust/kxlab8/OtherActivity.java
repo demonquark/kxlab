@@ -44,25 +44,37 @@ public class OtherActivity extends BaseDetailActivity {
 	/** Callback from the fragment
 	 * This implementation processes settings that require an additional fragment: <br />
 	 * From: irrelevant
-	 * - Goal = FRAG_INFOLIST: The user selected an item and needs a new .
+	 * - Goal = FRAG_INFOLIST: The user selected an item and needs a new fragment.
 	 * @param from - The tag of the sending fragment. Note: is NOT the same as the name in the back stack
 	 * @param to - The tag of the target fragment. Note: is NOT the same as the name in the back stack
 	 * @param o - Should be a string indicating the name of the setting. (Not sure about this... Might change...)
 	 */
 	@Override public void onActionSelected(String from, String to, Object o) {
-		if(Gegevens.FRAG_INFOLIST.equals(to) && o instanceof String){
-			// create a bundle and add the provided user to it
+		if(o instanceof String){
+			// create a bundle and add the provided settings name
 			Bundle arguments = new Bundle();
 			arguments.putString(Gegevens.EXTRA_MSG, (String) o ); 
-			
-			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			// launch the edit fragment
-			OtherSettingsFragment listFragment = new OtherSettingsFragment();
-			listFragment.setArguments(arguments);
-			ft.replace(R.id.details, listFragment, Gegevens.FRAG_INFOLIST);
-			ft.addToBackStack(Gegevens.FRAG_INFOLIST);
-			ft.commit();
+
+			if(Gegevens.FRAG_INFOLIST.equals(to)){
+				
+				// launch the standard settings fragment
+				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+				OtherSettingsFragment listFragment = new OtherSettingsFragment();
+				listFragment.setArguments(arguments);
+				ft.replace(R.id.details, listFragment, Gegevens.FRAG_INFOLIST);
+				ft.addToBackStack(Gegevens.FRAG_INFOLIST);
+				ft.commit();
+			} else if(Gegevens.FRAG_USERLIST.equals(to)) {
+				
+				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+				// launch the user list fragment
+				OtherUsersFragment listFragment = new OtherUsersFragment();
+				listFragment.setArguments(arguments);
+				ft.replace(R.id.details, listFragment, Gegevens.FRAG_USERLIST);
+				ft.addToBackStack(Gegevens.FRAG_USERLIST);
+				ft.commit();
+
+			}
 		}
 	}
-	
 }

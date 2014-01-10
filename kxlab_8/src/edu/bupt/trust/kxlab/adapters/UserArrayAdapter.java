@@ -47,7 +47,7 @@ public class UserArrayAdapter extends ArrayAdapter <User>{
 				User user = items.get(position);
 				
 				// Set the text
-				((TextView) v.findViewById(android.R.id.text1)).setText(user.getTimeEnter());
+				((TextView) v.findViewById(android.R.id.text1)).setText(user.getTimeEnterString());
 				((TextView) v.findViewById(android.R.id.text2)).setText(user.getActivityScore());
 				((TextView) v.findViewById(android.R.id.title)).setText(user.getUserName());
 				((TextView) v.findViewById(android.R.id.content)).setText(user.getEmail());

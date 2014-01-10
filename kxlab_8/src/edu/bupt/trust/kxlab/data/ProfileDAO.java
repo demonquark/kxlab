@@ -18,6 +18,7 @@ import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
 import edu.bupt.trust.kxlab.jsonmodel.JsonUserInformation;
 import edu.bupt.trust.kxlab.model.ActivityRecord;
+import edu.bupt.trust.kxlab.model.SortKey;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.JsonTools;
@@ -96,8 +97,29 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	 * @param email
 	 * @param source
 	 */
-	public void readUserList(Source source){
-		dummy.readUsers(null);
+	public void readUserList(Source source, SortKey sortKey, List<User> users, Page page){
+		
+		// save the current page to the cache 
+		if(page != Page.CURRENT || (source == Source.WEB && users != null ) ){ 
+			overwriteUserList(sortKey, users); 
+		}
+		
+		// determine the records size 
+		int size = (users != null) ? users.size() : 0;
+
+		// let the correct source handle the request
+		switch (source) {
+		case DEFAULT:
+		case WEB:
+			web.readUsers(sortKey.getServerType(), size, page);
+			break;
+		case LOCAL:
+			local.readUsers(sortKey.getServerType(), size, page);
+			break;
+		case DUMMY:
+			dummy.readUsers(sortKey.getServerType(), size, page);
+			break;
+		}
 	}
 
 	/** Update from the old user to the new user. 
@@ -111,7 +133,6 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 			JsonUser oldJson = (oldUser != null) ? oldUser.getJsonUser() : new JsonUser();
 			JsonUser newJson = (newUser != null) ? newUser.getJsonUser() : new JsonUser();
 			
-			// update the users
 			// let the correct source handle the request
 			switch (source) {
 			case DEFAULT:
@@ -158,7 +179,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 			}
 		}else {
 			// no user email was provided. Fail by default. 
-			this.onReadUserInformation(new RawResponse(RawResponse.Error.ILLEGALARGUMENT, "", ""));
+			this.onReadActivityHistory(new RawResponse(RawResponse.Error.ILLEGALARGUMENT, "", ""));
 		}
 	}
 
@@ -219,6 +240,20 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		}
 	}
 	
+	private void overwriteUserList(SortKey sortKey, List<User> users) {
+		if(users != null){
+			// create a JSON representation of the records
+			ArrayList <JsonUser> jsonUsers = new ArrayList<JsonUser> ();
+			if(users != null) { for(User user : users){ jsonUsers.add(user.getJsonUser()); } }
+
+			// write to file
+			String cachefilename = ProfileDAOlocal.getUserListFilename(sortKey.getServerType());
+			local.writeToFile(cachefilename, new Gson().toJson(jsonUsers));
+			Loggen.v(this, "saved content to file.");
+
+		}
+	}
+	
 	private boolean success(RawResponse response, String elementName){
 		boolean success = false;
 
@@ -268,10 +303,86 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	}
 	
 	@Override public void onReadUserList(RawResponse response) {
+		List <User> users = null;
+		Gson gson = new Gson();
 		
-		ArrayList<User> users = new ArrayList<User> ();
-		for(int i =0; i < 4; i++){
-			users.add(dummy.randomUser());
+		if (response.errorStatus == RawResponse.Error.NONE
+				&& JsonTools.isValidJSON(response.message)) {
+
+			// Step 1 - convert the message into a JSON object
+			java.lang.reflect.Type listType = new TypeToken<ArrayList<JsonUser>>() { }.getType();
+			List <JsonUser> jsonUsers = gson.fromJson(response.message, listType);
+			if(jsonUsers == null) { jsonUsers = new ArrayList<JsonUser> (); } 
+			
+			// Step 2 - update the message with the cache content
+			if(response.page != Page.CURRENT){
+			
+				// Step 2a - read the existing data from cache. 
+				Loggen.v(this, "Start getting old users.");
+				List <JsonUser> oldRecords = gson.fromJson(local.readFromFile(response.path), listType);
+
+				// Step 2b - read the existing data from cache. 
+				if(oldRecords != null){
+					// loop through all the old users
+					for(int i = oldRecords.size() - 1; i >= 0; i--){
+
+						// get the id and set overlap to false
+						int oldId = oldRecords.get(i).getId();
+						boolean overlap = false;
+
+						// compare each old record to all the new records
+						for(JsonUser user : jsonUsers){
+							// if the old record is also in the new records, the records overlap
+							if( oldId == user.getId()){ overlap = true; }
+						}
+						
+						// if the records did not overlap, add this record to the list of records
+						if(!overlap)
+							jsonUsers.add(0,oldRecords.get(i));
+					}
+				}
+			}
+			
+			// TODO: FIGURE OUT WHAT TO DO WITH IMAGES 
+			for(JsonUser user : jsonUsers){
+
+				String userinfoFileName = ProfileDAOlocal.getUserInformationFilename(user.getEmail());
+
+				// Step 3 - get the saved user information
+				JsonUserInformation olduser = 
+						gson.fromJson(local.readFromFile(userinfoFileName), JsonUserInformation.class);
+				
+				// Step 4 - Copy the user image to the file
+				String userimage;
+				if(olduser != null && olduser.getUserInformation() != null 
+						&& (userimage = olduser.getUserInformation().getPhoto()) != null 
+						&& (userimage.endsWith(Gegevens.FILE_EXT_JPG) 
+						|| userimage.endsWith(Gegevens.FILE_EXT_PNG) 
+						|| userimage.endsWith(Gegevens.FILE_EXT_GIF))){
+					user.setPhoto(userimage);
+				} else {
+					user.setPhoto(dummy.randomPic().getAbsolutePath());
+				}
+				
+				// Step 5 - Save the user as json user information
+				JsonUserInformation newUser = new JsonUserInformation();
+				newUser.setUserInformation(user);
+
+				// Step 6 - Write the userinformation to file
+				local.writeToFile(userinfoFileName, gson.toJson(newUser));
+			}
+			
+			// Step 7 - save the date to the cache
+			if (response.path != null) {
+				local.writeToFile(response.path, gson.toJson(jsonUsers));
+			}
+			
+			// Step 8 - convert the json users to users
+			users = new ArrayList<User> ();
+			for(JsonUser user : jsonUsers){ users.add(new User(user)); }
+			
+		} else {
+			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 		
 		if (profileListener.get() != null){ profileListener.get().onReadUserList(users); }
@@ -376,7 +487,6 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 
 		// send the activity records back
 		if (profileListener.get() != null){ profileListener.get().onReadActivityHistory(records); }
-
 	}
 	
 	@Override public void onChangePhoto(RawResponse response) {

@@ -163,90 +163,90 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	public void readServices(Type type, Page p, Source source,
 			String[] parameters) {
 
-		int typeparam = 0;
-		int pageNo = 0;
-		switch (type) {
-		case COMMUNITY:
-			typeparam = 1;
-			switch (p) {
-			case PREVIOUS:
-				pageNo = ++communityServicePageNo;
-				break;
-			case LATEST:
-				if (communityServicePageNo > 0)
-					pageNo = --communityServicePageNo;
-				break;
-			}
-			break;
-		case RECOMMENDED:
-			typeparam = 2;
-			switch (p) {
-			case PREVIOUS:
-				pageNo = ++recommendedServiceListPageNo;
-				break;
-			case LATEST:
-				if (recommendedServiceListPageNo > 0)
-					pageNo = --recommendedServiceListPageNo;
-				break;
-			}
-			break;
-		case APPLY:
-			typeparam = 3;
-			switch (p) {
-			case PREVIOUS:
-				pageNo = ++applyServiceListPageNo;
-				break;
-			case LATEST:
-				if (applyServiceListPageNo > 0)
-					pageNo = --applyServiceListPageNo;
-				break;
-			}
-			break;
-		}
-
-		// Get the path of the read services page
-		String path = Urls.pathMyServiceList;
-		if (parameters != null && parameters.length > 0) {
-
-			RequestParams params = new RequestParams();
-			params.put(Urls.paramUserEmail, parameters[0]); // user email
-			params.put(Urls.paramServiceType, typeparam + ""); // service type
-			params.put(Urls.paramServiceListPage, pageNo + ""); // list page
-			params.put(Urls.paramServiceListSize, LIST_SIZE); // list size
-			path = ServicesDAOweb.getPath(true, path, params);
-		}
-		Loggen.i(this, "Got path: " + path);
-		// Send the path to the correct DAO (Note: for DAOlocal, we send the
-		// file name instead of the path)
-		switch (source) {
-		case DEFAULT:
-			if (local.fileExists(ServicesDAOlocal.pathToFileName(path))) {
-				local.readServices(ServicesDAOlocal.pathToFileName(path));
-			} else {
-				web.readServices(path);
-			}
-			break;
-		case WEB:
-			web.readServices(path);
-			break;
-		case LOCAL:
-			local.readServices(ServicesDAOlocal.pathToFileName(path));
-			break;
-		case DUMMY:
-			switch (type) {
-			case COMMUNITY:
-				dummy.readServices("community");
-				break;
-			case RECOMMENDED:
-				dummy.readServices("recommended");
-				break;
-			case APPLY:
-				dummy.readServices("apply");
-				break;
-			}
-
-			break;
-		}
+//		int typeparam = 0;
+//		int pageNo = 0;
+//		switch (type) {
+//		case COMMUNITY:
+//			typeparam = 1;
+//			switch (p) {
+//			case PREVIOUS:
+//				pageNo = ++communityServicePageNo;
+//				break;
+//			case LATEST:
+//				if (communityServicePageNo > 0)
+//					pageNo = --communityServicePageNo;
+//				break;
+//			}
+//			break;
+//		case RECOMMENDED:
+//			typeparam = 2;
+//			switch (p) {
+//			case PREVIOUS:
+//				pageNo = ++recommendedServiceListPageNo;
+//				break;
+//			case LATEST:
+//				if (recommendedServiceListPageNo > 0)
+//					pageNo = --recommendedServiceListPageNo;
+//				break;
+//			}
+//			break;
+//		case APPLY:
+//			typeparam = 3;
+//			switch (p) {
+//			case PREVIOUS:
+//				pageNo = ++applyServiceListPageNo;
+//				break;
+//			case LATEST:
+//				if (applyServiceListPageNo > 0)
+//					pageNo = --applyServiceListPageNo;
+//				break;
+//			}
+//			break;
+//		}
+//
+//		// Get the path of the read services page
+//		String path = Urls.pathMyServiceList;
+//		if (parameters != null && parameters.length > 0) {
+//
+//			RequestParams params = new RequestParams();
+//			params.put(Urls.paramUserEmail, parameters[0]); // user email
+//			params.put(Urls.paramServiceType, typeparam + ""); // service type
+//			params.put(Urls.paramServiceListPage, pageNo + ""); // list page
+//			params.put(Urls.paramServiceListSize, LIST_SIZE); // list size
+//			path = ServicesDAOweb.getPath(true, path, params);
+//		}
+//		Loggen.i(this, "Got path: " + path);
+//		// Send the path to the correct DAO (Note: for DAOlocal, we send the
+//		// file name instead of the path)
+//		switch (source) {
+//		case DEFAULT:
+//			if (local.fileExists(ServicesDAOlocal.pathToFileName(path))) {
+//				local.readServices(ServicesDAOlocal.pathToFileName(path));
+//			} else {
+//				web.readServices(path);
+//			}
+//			break;
+//		case WEB:
+//			web.readServices(path);
+//			break;
+//		case LOCAL:
+//			local.readServices(ServicesDAOlocal.pathToFileName(path));
+//			break;
+//		case DUMMY:
+//			switch (type) {
+//			case COMMUNITY:
+//				dummy.readServices("community");
+//				break;
+//			case RECOMMENDED:
+//				dummy.readServices("recommended");
+//				break;
+//			case APPLY:
+//				dummy.readServices("apply");
+//				break;
+//			}
+//
+//			break;
+//		}
 
 	}
 
@@ -328,7 +328,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 		switch (source) {
 		case DEFAULT:
 			if (local.fileExists(ServicesDAOlocal.pathToFileName(path))) {
-				local.readServices(ServicesDAOlocal.pathToFileName(path));
+//				local.readServices(ServicesDAOlocal.pathToFileName(path));
 			} else {
 				web.readService(path);
 			}

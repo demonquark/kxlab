@@ -1,5 +1,9 @@
 package edu.bupt.trust.kxlab.data;
 
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
+import edu.bupt.trust.kxlab.model.ServiceType;
+
 /**
  * <p> The ServicesDAOAbstract class shows all the public methods that we expect a Services data access object to provide.
  * All Services data access objects must extend this class, 
@@ -20,7 +24,7 @@ abstract class ServicesDAOabstract extends DAOabstract  {
 	protected abstract void createService(String path);
 	protected abstract void deleteService(String path);
 	protected abstract void editService(String path);			// method for  "/service/editservice"
-	protected abstract void readServices(String path);			// method for "/service/serviceList"
+	protected abstract void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, Page page);			// method for "/service/serviceList"
 	protected abstract void searchService(String path);			// method for "/service/searchMyServiceList"
 	protected abstract void readService(String path); 			// method for  "/service/serviceDetail"
 	protected abstract void updateServiceScore(String path); 	// method for "/service/importServiceScore"

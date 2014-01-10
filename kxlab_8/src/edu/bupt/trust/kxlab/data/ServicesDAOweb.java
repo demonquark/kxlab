@@ -5,6 +5,10 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import edu.bupt.trust.kxlab.data.MyServicesDAOweb.ServicesResponseHandler;
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
+import edu.bupt.trust.kxlab.model.ServiceType;
+import edu.bupt.trust.kxlab.utils.Loggen;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -78,17 +82,36 @@ class ServicesDAOweb extends ServicesDAOabstract{
 		});
 	}
 
-	@Override protected void readServices(String path) {
-		// Send the request to the server 
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
-		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+	@Override 
+	protected void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, final Page page) {
+		Loggen.v(this, "Info: " + email + " | " + flavor + " | " + type + " | " + size + " | " + page + " | " + determinePage(size,page));
+
+		// build the query
+		String path = Urls.build(Urls.urlBASE, 
+				(flavor == ServiceFlavor.MYSERVICE ) ?  Urls.pathMyServiceList: Urls.pathServiceList);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramUserEmail, email != null ? email : "");
+		params.put(Urls.paramServiceType, String.valueOf(type.getServerType()));
+		params.put(Urls.paramServiceListSize, String.valueOf(listSize));
+		params.put(Urls.paramServiceListPage, String.valueOf(determinePage(size, page))); 
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
+		
+		// determine the cache file name
+		final String cachefilename = ServicesDAOlocal.getServicesListFilename(type.getFragName(), flavor.toString());
+		
+		Loggen.v(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
-					listener.onReadServices(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+					RawResponse rawResponse = new RawResponse(response, cachefilename);
+					rawResponse.page = page;
+					listener.onReadServices(rawResponse); } }
 			@Override public void onFailure(Throwable error, String content) {
 				if(listener != null){
-					listener.onReadServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
-		});
+					RawResponse rawResponse = new RawResponse(error, content, cachefilename);
+					rawResponse.page = page;
+					listener.onReadServices(rawResponse); } }
+		});	
 	}
 	
 	@Override

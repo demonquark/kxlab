@@ -12,10 +12,10 @@ public enum ServiceType {
 				fragName = Gegevens.FRAG_COMMUNITY;
 				break;
 			case RECOMMENDED:
-				fragName = Gegevens.FRAG_COMMUNITY;
+				fragName = Gegevens.FRAG_RECOMMEND;
 				break;
 			case APPLY:
-				fragName = Gegevens.FRAG_COMMUNITY;
+				fragName = Gegevens.FRAG_APPLY;
 				break;
 		}
 		return fragName;

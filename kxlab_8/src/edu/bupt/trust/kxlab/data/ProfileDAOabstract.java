@@ -18,7 +18,7 @@ abstract class ProfileDAOabstract extends DAOabstract {
 	
 	// Methods to be implemented by the children
 	protected abstract void login(String email, String password);					// method for "/profile/login"
-	protected abstract void readUsers(String path); 			// method for "/service/filterPostList"
+	protected abstract void readUsers(String sortkey, int size, Page page); 			// method for "/service/filterPostList"
 	protected abstract void readUserInformation(String email); 	// method for "/profile/userInformation"
 	protected abstract void readActivityHistory(String email, int size, Page page);	// method for "/profile/activityHistory"
 	protected abstract void changePhoto(String email, String photo);			// method for "/profile/changePhotoImage"

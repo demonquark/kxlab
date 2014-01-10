@@ -18,7 +18,7 @@ public class BaseListFragment extends Fragment implements BasicDialogListener {
 	@Override public void onAttach(Activity activity) {
 		super.onAttach(activity);
 
-		Loggen.d(this, "Attaching.");
+		Loggen.v(this, "Attaching.");
 		// Activities containing this fragment must implement its callbacks.
 		if (!(activity instanceof OnActionSelectedListener)) {
 			throw new IllegalStateException( "Activity must implement fragment's callbacks.");

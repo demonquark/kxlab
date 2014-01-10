@@ -5,26 +5,24 @@ import java.util.List;
 
 import edu.bupt.trust.kxlab.adapters.ServicesArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
-import edu.bupt.trust.kxlab.data.MyServicesDAO;
 import edu.bupt.trust.kxlab.data.ServicesDAO;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
-import edu.bupt.trust.kxlab.model.Settings;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
+import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
-import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.XListView;
-import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic.BasicDialogListener;
 import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
+import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 
-import android.app.Activity;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
@@ -36,23 +34,26 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
-public class ServicesListFragment extends ListFragment 
-						implements ServicesListListener,IXListViewListener, BasicDialogListener, OnQueryTextListener{
+public class ServicesListFragment extends BaseListFragment 
+						implements ServicesListListener, OnItemClickListener, IXListViewListener, OnQueryTextListener{
 	
 	private enum State { DELETE, LOADING, IDLE };
 	
-	private boolean mLoadServices;
-	private OnServiceSelectedListener mListener;
 	private SearchView mSearchView;
-	private LinearLayout mProgressContainer;
 	private ActionMode mActionMode;
-	ArrayList<TrustService> services;
-	ServicesDAO.Type servicesType;
+	ArrayList<TrustService> mServices;
+	ServiceType mType;
+	ServiceFlavor mFlavor;
 	private State state;
-	private User user;
+	private View mRootView;
 	private XListView mListView;
 	
 	public ServicesListFragment() {
@@ -82,9 +83,6 @@ public class ServicesListFragment extends ListFragment
     	int itemId = item.getItemId();
     	if(state != State.LOADING){
             switch (itemId) {
-            	case R.id.action_create:
-            		initListView();
-                break;
             	case R.id.action_delete:
             		if (mActionMode == null) { changeToDeleteListView(); }
                 break;
@@ -110,39 +108,45 @@ public class ServicesListFragment extends ListFragment
 		
 		// Use the tag to determine the service type
 		String tag = getTag();
-		if(Gegevens.FRAG_RECOMMEND.equals(tag)){ servicesType = ServicesDAO.Type.RECOMMENDED;
-		} else if(Gegevens.FRAG_APPLY.equals(tag)){ servicesType = ServicesDAO.Type.APPLY;
-		} else { servicesType = ServicesDAO.Type.COMMUNITY; }
-
-		Settings.getInstance(getActivity()).loadSettingsFromSharedPreferences(getActivity());
-		user=Settings.getInstance(getActivity()).getUser();
-		if (user==null) {
-			user=new User();
-		}
+		if(Gegevens.FRAG_RECOMMEND.equals(tag)){ mType = ServiceType.RECOMMENDED;
+		} else if(Gegevens.FRAG_APPLY.equals(tag)){ mType = ServiceType.APPLY;
+		} else { mType = ServiceType.COMMUNITY; }
 		
 		// load the services (Note: services remains null if it is neither in the saved state nor the arguments)
-		services = savedstate.getParcelableArrayList(Gegevens.EXTRA_SERVICES); 							
-		if(services == null){ services = arguments.getParcelableArrayList(Gegevens.EXTRA_SERVICES); } 	
+		mServices = savedstate.getParcelableArrayList(Gegevens.EXTRA_SERVICES); 							
+		if(mServices == null){ mServices = arguments.getParcelableArrayList(Gegevens.EXTRA_SERVICES); } 	
 		
+		// load the service flavor. This determines what the user can do while viewing the service details.
+		mFlavor = (ServiceFlavor) savedstate.getSerializable(Gegevens.EXTRA_FLAVOR);
+		if(mFlavor == null) { mFlavor = (ServiceFlavor) arguments.getSerializable(Gegevens.EXTRA_FLAVOR); }
+		if(mFlavor == null && getActivity() instanceof ServicesListActivity) { 
+			mFlavor = ((ServicesListActivity) getActivity()).getFlavor(); }
+		if(mFlavor == null) { mFlavor = ServiceFlavor.SERVICE; }
+		
+		Loggen.v(this, getTag() + " - Flavor is " + mFlavor + " | services exist?" + (mServices != null));
+
 		// load the state
 		state = (State) savedstate.getSerializable(Gegevens.EXTRA_STATE);
 		if(state == null){ state = State.IDLE; }
 		
-		// We just created a fragment. So reset the list on restore
-		mLoadServices = true;
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Loggen.v(this, getTag() + " - Creating the ServicesList view. ");
 
 		// Inflate the root view and save references to useful views as class variables
-		View rootView = inflater.inflate(R.layout.frag_serviceslist, container, false);
-		mListView = (XListView) rootView.findViewById(android.R.id.list);
+		mRootView = inflater.inflate(R.layout.frag_generic_xlist, container, false);
+
+		// add some padding for the footer 
+		int bottomPadding = (int) getResources().getDimension(R.dimen.footer_height);
+		mRootView.findViewById(R.id.list_top_container).setPadding(0,0,0,bottomPadding);
+
+		// set this fragment as the listener for the xlist 
+		mListView = (XListView) mRootView.findViewById(android.R.id.list);
 		mListView.setPullLoadEnable(true);
 		mListView.setXListViewListener(this);
-		mProgressContainer = (LinearLayout) rootView.findViewById(R.id.progress_container);
 
-		return rootView;
+		return mRootView;
 	}
 
 	@Override
@@ -150,62 +154,25 @@ public class ServicesListFragment extends ListFragment
 		super.onViewStateRestored(savedInstanceState);
 		Loggen.v(this, getTag() + " - Restoring ServiceList instance state.");
 
-		// load the services list if requested (generally only if we just created the fragment)
-		if(mLoadServices){
-			if(services == null){
-				// Load the services from the DAO
-				showList(false);
-				geneData();
-				Loggen.v(this, "Restoring saved Instancestate: Hide the list");
-			}else{
-				// If we already have a list of services, just show those services
-				initListView();
-			}
+		// load the posts list if requested (generally only if we just created the fragment)
+		if(mServices == null){
+			// Load the services from the DAO
+			getData(Source.WEB, Page.CURRENT);
 		}
+
+		// show or hide the list
+		showList(mServices != null);
 	}
 
 	@Override public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		Loggen.v(this, getTag() + " - Saving ServiceList instance state.");
 		// save the list of services to the instance state
-		outState.putParcelableArrayList(Gegevens.EXTRA_SERVICES, services);
+		outState.putParcelableArrayList(Gegevens.EXTRA_SERVICES, mServices);
+		outState.putSerializable(Gegevens.EXTRA_FLAVOR, mFlavor);
 		outState.putSerializable(Gegevens.EXTRA_STATE, state);
 	}
-	
-	@Override public void onAttach(Activity activity) {
-		super.onAttach(activity);
 
-		// Activities containing this fragment must implement its callbacks.
-		if (!(activity instanceof OnServiceSelectedListener)) {
-			throw new IllegalStateException( "Activity must implement fragment's callbacks.");
-		}
-		mListener = (OnServiceSelectedListener) activity;
-	}
-	
-	@Override public void onDetach() {
-		super.onDetach();
-		mListener = null;
-	}
-	
-	@Override public void onListItemClick(ListView listView, View view, int position, long id) {
-		super.onListItemClick(listView, view, position, id);
-		
-		
-		// only keep the items activated if we're in the delete state
-		if(state != State.DELETE){ listView.setItemChecked(position, false); }
-
-		// only show service details if we're in the IDLE state
-		if(state == State.IDLE){
-			// TODO: edit this to get the service details from the server (?)
-			// Now it just passes the service we have now. Which might be out of date or incomplete.
-			if(position > 0 && position <= services.size()){
-				// TODO: Figure out why the method is returning the wrong position
-				position--; 
-				mListener.onItemSelected(getTag(), position, services.get(position));
-			}
-		}
-	}
-	
     private void setupSearchView() {
     	
     	if(getActivity() != null){
@@ -218,44 +185,8 @@ public class ServicesListFragment extends ListFragment
         mSearchView.setOnQueryTextListener(this);
     }
 
-
 	private void showList(boolean showlist) {
-		mListView.setVisibility((showlist) ? View.VISIBLE : View.GONE);
-		mProgressContainer.setVisibility( (!showlist) ? View.VISIBLE : View.GONE);
-		if(!showlist) { state = State.LOADING; } else { state = State.IDLE; }
-	}
-
-	private void initListView() {
-		Loggen.v(this, getTag() + " - initlistview: Create and set a list adapter for the listview.");
-		if(getActivity() != null){
-			// load a new adapter
-			ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
-					R.layout.list_item_services, android.R.id.text1, services);
-			
-			// set the adapter
-			setListAdapter(a);
-
-			// set the choice mode and reaction to the choices 
-			mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-			
-			showList(true);
-			mLoadServices = false;
-		}
-	}
-
-	private void changeToDeleteListView() {
-		Loggen.v(this, getTag() + " - Changing to delete mode.");
-		if(getActivity() != null){
-			// set the choice mode and reaction to the choices 
-			state = State.DELETE;
-			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-			mActionMode = getActivity().startActionMode(new DeleteServicesMode ());
-		}
-	}
-	
-	@Override public void onReadServices(List<TrustService> services) {
-		Loggen.i(this, getTag() + " - Returned from onReadservices. ");
-
+		
 		if(mListView != null){ 
 			if(mListView.isPullLoading()){
 				mListView.stopLoadMore();
@@ -266,35 +197,159 @@ public class ServicesListFragment extends ListFragment
 			}
 		}
 
-		// update the services
-		this.services = (ArrayList<TrustService>) ((services != null) ? services : new ArrayList <TrustService> ());
+		// show or hide the progress bar
+		mListView.setVisibility((showlist) ? View.VISIBLE : View.GONE);
+		((ProgressBar) mRootView.findViewById(R.id.progress_bar))
+			.setVisibility((showlist) ? View.GONE : View.VISIBLE);
 		
-		// update the UI
-		initListView();
+		// TODO: update the state
+		if(!showlist) { state = State.LOADING; } else { state = State.IDLE; }
+		
+		// load the services list
+		if(mServices != null && mListView != null && showlist){
+			Loggen.v(this, getTag() + " - Loading the adapter with " + mServices.size() + " items.");
+			
+			if(mListView.getAdapter() == null ){ 
+				// The comments have not been loaded to the list view. Do that now
+				if(getActivity() != null){
+					ServicesArrayAdapter a = new ServicesArrayAdapter(getActivity(), 
+							R.layout.list_item_services, android.R.id.text1, mServices);
+					mListView.setAdapter(a);
+					mListView.setOnItemClickListener(this);
+				}
+			} else {
+				// The comments are already loaded to the list view.
+				((BaseAdapter)((HeaderViewListAdapter)mListView.getAdapter())
+						.getWrappedAdapter()).notifyDataSetChanged();
+			}
+			
+			// set the choice mode and reaction to the choices 
+			mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+			
+			if(mServices.size() == 0){
+				((TextView) mRootView.findViewById(android.R.id.empty)).setVisibility(View.VISIBLE);	
+			}
+		}
+	}
+	
+	private void changeToDeleteListView() {
+		Loggen.v(this, getTag() + " - Changing to delete mode.");
+		if(getActivity() != null){
+			// set the choice mode and reaction to the choices 
+			state = State.DELETE;
+			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+			mActionMode = getActivity().startActionMode(new DeleteServicesMode ());
+		}
+	}
+	
+	private void startServicesDetailActivity(TrustService service){
+		if(getActivity() != null){
+			// Bundle the post and send it off to the detail activity
+			Bundle b = new Bundle();
+			
+			if(service != null) {
+				b.putParcelable(Gegevens.EXTRA_SERVICE, service);
+				b.putSerializable(Gegevens.EXTRA_FLAVOR, ServiceFlavor.SERVICE);
+			}
+			Intent intent = new Intent(getActivity(), ServiceDetailActivity.class);
+			intent.putExtra(Gegevens.EXTRA_MSG, b);
+			this.startActivity(intent);
+		}
 	}
 
+
+	private void getData(Source source, Page page) {
+		if(getActivity() != null){
+			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
+			servicesDAO.readServices(source, mType, mFlavor, null, mServices, page);
+		}
+	}
+	
+	@Override public void onRefresh() {
+		Loggen.v(this, " called onRefresh.");
+		getData(Source.WEB, Page.LATEST);
+	}
+	
+	@Override
+	public void onLoadMore() {
+		Loggen.v(this, " called onLoadMore.");
+		getData(Source.WEB, Page.PREVIOUS);
+	}
+
+	@Override public void onItemClick(AdapterView<?> listView, View view, int position, long id) {
+		
+		// only keep the items activated if we're in the delete state
+		if(state != State.DELETE){ mListView.setItemChecked(position, false); }
+
+		// only show service details if we're in the IDLE state
+		if(state == State.IDLE){
+			// Pass the service we have now. Which might be out of date or incomplete.
+			if(position > 0 && position <= mServices.size()){
+				// TODO: Figure out why the method is returning the wrong position
+				position--; 
+				startServicesDetailActivity(mServices.get(position));
+			}
+		}
+	}
+	
+	@Override public void onReadServices(List<TrustService> services) {
+		Loggen.v(this, "Got a response onReadservices. services exist? " + (services != null));
+		
+		if(services != null && mServices != null){
+			// We got a response and are updating an existing list
+			mServices.clear();
+			mServices.addAll(services);
+		} else if(services == null && mServices == null){
+			// We got no response and have no existing list
+			userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
+			mServices = new ArrayList<TrustService> ();
+			getData(Source.LOCAL, Page.CURRENT);
+		} else if (mServices == null) {
+			// We got a response, but have no existing list 
+			mServices = (ArrayList<TrustService>) services;			
+		}
+		
+		showList(true);	
+	}
+
+ 	@Override
+	public void onDeleteService(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSearchService(List<TrustService> services) {
+		// TODO Auto-generated method stub
+		
+	}	
 
 	@Override public void onBasicPositiveButtonClicked(String tag, Object o) {
 		if(Gegevens.FRAG_DELETE.equals(tag)){
 			// TODO: process deletion (for now it does the same as non delete)
-			initListView();
+			showList(mServices != null);	
 		} else {
-			initListView();
+			showList(mServices != null);	
 		}
 	}
 
-	@Override public void onBasicNegativeButtonClicked(String tag, Object o) { initListView(); }
+	@Override public void onBasicNegativeButtonClicked(String tag, Object o) {showList(mServices != null); }
 
 	// Do NOT search if the user just changed the text
 	@Override public boolean onQueryTextChange(String arg0) { return false; }
 	// Contact the DAO only if the user has submitted a full request
 	@Override public boolean onQueryTextSubmit(String arg0) { 
 		Loggen.v(this, getTag() + " - text submitted. ");
-	    mSearchView.clearFocus();
+	    
+		// clear the search view
+		mSearchView.clearFocus();
 		showList(false);
+	
 		// TODO: process search (for now it just reloads the list)
-	    geneData();
-		return true; }
+		getData(Source.WEB, Page.CURRENT);
+		return true; 
+	}
 	
 	/**
 	 * DeleteServicesMode allows you to pick items from the list and delete them.<br />
@@ -311,21 +366,21 @@ public class ServicesListFragment extends ListFragment
 
 		/** Delete the selected items. */
 		@Override public void onDestroyActionMode(ActionMode mode) {
-			boolean willdelete = (mListView != null && services != null && mListView.getCheckedItemCount() > 0);
+			boolean willdelete = (mListView != null && mServices != null && mListView.getCheckedItemCount() > 0);
 			
 			// Make sure that the user has selected valid items
 	        if(willdelete){
 	        	
 	        	// Get and list the selected items
-	        	SparseBooleanArray checkedItems = getListView().getCheckedItemPositions();
+	        	SparseBooleanArray checkedItems = mListView.getCheckedItemPositions();
 	        	String confirmationText = getString(R.string.services_delete_confirm_text);
 	        	String deleteQuery = "";
-	        	int listSize = services.size();
+	        	int listSize = mServices.size();
 	        	for(int i = 0; i < listSize; i++){
 	        		if(checkedItems.get(i)){
-	        			confirmationText += "\n" + services.get(i).getServicetitle();
+	        			confirmationText += "\n" + mServices.get(i).getServicetitle();
 	        			// TODO: put logic to build deletion query (now it just adds the serviceIds)
-	        			deleteQuery += services.get(i).getServiceid();
+	        			deleteQuery += mServices.get(i).getServiceid();
 	        		}
 	        	}
 	        	
@@ -359,35 +414,4 @@ public class ServicesListFragment extends ListFragment
 		@Override public boolean onPrepareActionMode(ActionMode mode, Menu menu) { return false; }
 
 	}
-	
-	public interface OnServiceSelectedListener{
-		public void onItemSelected(String tag, int position, TrustService service);
-	}
-
-	private void geneData() {
-		if(getActivity() != null){
-			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-			servicesDAO.readServices(servicesType, Page.LATEST, DaoFactory.Source.DUMMY, new String [] {});
-		}
-	}
-
-	@Override public void onRefresh() {
-		geneData();
-	}
-
-	@Override public void onLoadMore() {
-		geneData();
-	}
-	
-	@Override
-	public void onDeleteService(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSearchService(List<TrustService> services) {
-		// TODO Auto-generated method stub
-		
-	}	
 }

@@ -48,9 +48,32 @@ class ProfileDAOweb extends ProfileDAOabstract{
 		});
 	}
 
-	@Override protected void readUsers(String path) {
-		// TODO Auto-generated method stub
+	@Override protected void readUsers(String sortkey, int size, final Page page) {
+
+		// build the query
+		String path = Urls.build(Urls.urlBASE, Urls.pathProfileuserList);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramProfileUserListSortKey, sortkey != null ? sortkey : "");
+		params.put(Urls.paramProfileUserListSize, String.valueOf(listSize));
+		params.put(Urls.paramProfileUserListPage, String.valueOf(determinePage(size, page))); 
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
+		// determine the cache file name
+		final String cachefilename = ProfileDAOlocal.getUserListFilename(sortkey);
+		
+		Loggen.v(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					RawResponse rawResponse = new RawResponse(response, cachefilename);
+					rawResponse.page = page;
+					listener.onReadUserList(rawResponse); } }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					RawResponse rawResponse = new RawResponse(error, content, cachefilename);
+					rawResponse.page = page;
+					listener.onReadUserList(rawResponse); } }
+		});	
 	}
 
 	@Override protected void readUserInformation(String email) {

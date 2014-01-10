@@ -4,6 +4,10 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
+import edu.bupt.trust.kxlab.model.ServiceType;
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -77,17 +81,17 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 		});
 	}
 
-	@Override protected void readServices(String path) {
-		// Send the request to the server 
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
-		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
-			@Override public void onSuccess(String response) {
-				if(listener != null){
-					listener.onReadServices(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
-			@Override public void onFailure(Throwable error, String content) {
-				if(listener != null){
-					listener.onReadServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
-		});
+	@Override protected void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, Page page) {
+//		// Send the request to the server 
+//		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+//		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+//			@Override public void onSuccess(String response) {
+//				if(listener != null){
+//					listener.onReadServices(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+//			@Override public void onFailure(Throwable error, String content) {
+//				if(listener != null){
+//					listener.onReadServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+//		});
 	}
 	
 	@Override

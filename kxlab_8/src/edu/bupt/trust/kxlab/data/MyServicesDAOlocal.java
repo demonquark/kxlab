@@ -10,6 +10,9 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Random;
 
+import edu.bupt.trust.kxlab.data.RawResponse.Page;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
+import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
@@ -42,7 +45,7 @@ class MyServicesDAOlocal extends ServicesDAOabstract {
 
 
 	@Override
-	protected void readServices(String filename) {
+	protected void readServices(String filename, ServiceFlavor flavor, ServiceType type, int size, Page page) {
 		Loggen.v(this, "Request to read services: " + filename);
 		
 		// Read the file and return the content

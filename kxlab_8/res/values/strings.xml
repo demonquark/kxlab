@@ -219,7 +219,8 @@
 	<string name="other_sort_name_desc">&#8744; Name</string>
 	<string name="other_sort_activitylevel_asc">&#8743; Activity level</string>
 	<string name="other_sort_activitylevel_desc">&#8744; Activity level</string>
-			
+	<string name="other_sort_jointime_desc">&#8744; Join time</string>
+				
 	<!-- forum activity -->
 	<string name="forum_tab_discussion">Discussion</string>
 	<string name="forum_tab_suggestion">Suggestions</string>
