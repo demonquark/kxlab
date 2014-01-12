@@ -58,7 +58,7 @@ public class Settings {
     	loadSettingsFromSharedPreferences(c);
 		if(Gegevens.debug){
 			
-			if(user == null || user.getUserName().equals("")){
+			if(user == null || user.getEmail().equals("")){
 				//generate a new user
 				setUser(DaoFactory.getInstance().setProfileDAO(c,(ProfileDAO.ProfileListener)null).generateUser());
 				this.saveSettingsToSharedPreferences(c);

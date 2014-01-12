@@ -6,7 +6,8 @@ import java.util.List;
 import edu.bupt.trust.kxlab.adapters.ServicesArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ServicesDAO;
-import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
+import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListener;
+import edu.bupt.trust.kxlab.model.JsonComment;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
@@ -43,7 +44,7 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class ServicesListFragment extends BaseListFragment 
-						implements ServicesListListener, OnItemClickListener, IXListViewListener, OnQueryTextListener{
+						implements ServicesListener, OnItemClickListener, IXListViewListener, OnQueryTextListener{
 	
 	private enum State { DELETE, LOADING, IDLE };
 	
@@ -261,7 +262,7 @@ public class ServicesListFragment extends BaseListFragment
 
 	private void getData(Source source, Page page) {
 		if(getActivity() != null){
-			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
+			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, mType, mFlavor);
 			servicesDAO.readServices(source, mType, mFlavor, null, mServices, page);
 		}
 	}
@@ -308,6 +309,10 @@ public class ServicesListFragment extends BaseListFragment
 		} else if (mServices == null) {
 			// We got a response, but have no existing list 
 			mServices = (ArrayList<TrustService>) services;			
+		}
+		
+		for(TrustService service : mServices){
+			service.setFlavor(mFlavor);
 		}
 		
 		showList(true);	
@@ -380,7 +385,7 @@ public class ServicesListFragment extends BaseListFragment
 	        		if(checkedItems.get(i)){
 	        			confirmationText += "\n" + mServices.get(i).getServicetitle();
 	        			// TODO: put logic to build deletion query (now it just adds the serviceIds)
-	        			deleteQuery += mServices.get(i).getServiceid();
+	        			deleteQuery += mServices.get(i).getId();
 	        		}
 	        	}
 	        	
@@ -413,5 +418,36 @@ public class ServicesListFragment extends BaseListFragment
 		@Override public boolean onActionItemClicked(ActionMode mode, MenuItem item) { return true; }
 		@Override public boolean onPrepareActionMode(ActionMode mode, Menu menu) { return false; }
 
+	}
+
+	@Override
+	public void onReadService(TrustService service, int numberOfUsers,
+			List<JsonComment> comments) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void writeServiceScore(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void writeServiceComment(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onEditService(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onCreateService(boolean success) {
+		// TODO Auto-generated method stub
+		
 	}
 }

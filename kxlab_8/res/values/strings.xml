@@ -59,6 +59,9 @@
 	<string name="bullet">&#8226;</string>
 	<string name="ellipsis">&#8230;</string>
 	<string name="niets"/>
+	<string name="no_network_title">No Internet</string>
+	<string name="no_network_text">Could not connect to the internet. Please check your network connection and try again.</string>
+		
 	<!-- menu strings -->
 	<string name="action_accept">accept</string>
 	<string name="action_search">search</string>

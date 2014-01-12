@@ -88,8 +88,7 @@ public class MyServicesListActivity extends BaseActivity implements OnServiceSel
 	}
 
 	@Override public void onItemSelected(String tag, int position, TrustService service) {
-		Loggen.v(this, "User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid() );
-		System.out.println("User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getServiceid());
+		Loggen.v(this, "User has selected "+service.getServicetitle()+" from " + tag + ". id=" + service.getId() );
 		startDetailsActivity(tag, service);
 	}
 	

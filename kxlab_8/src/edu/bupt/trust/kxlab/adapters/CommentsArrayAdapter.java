@@ -2,7 +2,7 @@ package edu.bupt.trust.kxlab.adapters;
 
 import java.util.List;
 
-import edu.bupt.trust.kxlab.model.Comment;
+import edu.bupt.trust.kxlab.model.JsonComment;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 import android.content.Context;
@@ -20,11 +20,11 @@ import android.widget.TextView;
  * @author Krishna
  *
  */
-public class CommentsArrayAdapter extends ArrayAdapter <Comment>{
+public class CommentsArrayAdapter extends ArrayAdapter <JsonComment>{
 
-	private List <Comment> items;
+	private List <JsonComment> items;
 	
-	public CommentsArrayAdapter(Context context, int resource, int textViewResourceId, List<Comment> objects) {
+	public CommentsArrayAdapter(Context context, int resource, int textViewResourceId, List<JsonComment> objects) {
 		super(context, resource, textViewResourceId, objects);
 		this.items = objects;
 	}
@@ -41,13 +41,13 @@ public class CommentsArrayAdapter extends ArrayAdapter <Comment>{
 		if(items != null){
 			try {
 				// Get the comment
-				Comment comment = items.get(position);
+				JsonComment comment = items.get(position);
 
 				// Set the text TODO: Figure out where to get the owner score from
-				((TextView) v.findViewById(android.R.id.content)).setText(comment.getCommentdetail());
-				((TextView) v.findViewById(android.R.id.text1)).setText(comment.getUseremail());
+				((TextView) v.findViewById(android.R.id.content)).setText(String.valueOf(comment.commentdetail));
+				((TextView) v.findViewById(android.R.id.text1)).setText(String.valueOf(comment.reuseremail));
 				((TextView) v.findViewById(android.R.id.text2)).setText(comment.getCommenttimeString());
-				((TextView) v.findViewById(android.R.id.title)).setText(comment.getCommentscore());
+				((TextView) v.findViewById(android.R.id.title)).setText(String.valueOf(comment.commentscore));
 
 //				Loggen.d(this, "text: " + comment.getUseremail() + " | " + comment.getCommentdetail() 
 //						+ " | file: " + imgFile.getAbsolutePath());
@@ -58,7 +58,7 @@ public class CommentsArrayAdapter extends ArrayAdapter <Comment>{
 		return v;
 	}
 	
-	public void setList(List <Comment> items){
+	public void setList(List <JsonComment> items){
 		this.items = items;
 	}
 }

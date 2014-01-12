@@ -13,17 +13,19 @@ import com.google.gson.JsonParser;
 import android.content.Context;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
-import edu.bupt.trust.kxlab.jsonmodel.JsonAnnounceFAQ;
-import edu.bupt.trust.kxlab.jsonmodel.JsonAnnounceList;
-import edu.bupt.trust.kxlab.jsonmodel.JsonPost;
-import edu.bupt.trust.kxlab.jsonmodel.JsonPostList;
-import edu.bupt.trust.kxlab.jsonmodel.JsonReply;
-import edu.bupt.trust.kxlab.jsonmodel.JsonPostForumDetail;
-import edu.bupt.trust.kxlab.jsonmodel.JsonVote;
-import edu.bupt.trust.kxlab.jsonmodel.JsonreReply;
+import edu.bupt.trust.kxlab.model.JsonAnnounceFAQ;
+import edu.bupt.trust.kxlab.model.JsonAnnounceList;
+import edu.bupt.trust.kxlab.model.JsonAnnounceOrgGuideList;
+import edu.bupt.trust.kxlab.model.JsonPost;
+import edu.bupt.trust.kxlab.model.JsonPostAnnounceDetail;
+import edu.bupt.trust.kxlab.model.JsonPostForumDetail;
+import edu.bupt.trust.kxlab.model.JsonPostList;
+import edu.bupt.trust.kxlab.model.JsonReply;
+import edu.bupt.trust.kxlab.model.JsonUser;
+import edu.bupt.trust.kxlab.model.JsonVote;
+import edu.bupt.trust.kxlab.model.JsonreReply;
 import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
-import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.JsonTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -58,7 +60,6 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		
 		// save the current page to the cache 
 		if(page != Page.CURRENT || (source == Source.WEB && posts != null ) ){ 
-			Loggen.v(this, "saved content to file.");
 			overwriteForumList(type, posts); 
 		}
 		
@@ -101,14 +102,14 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 	 * @param source can be DUMMY, WEB, LOCAL
 	 * @param type an instance of Post type
 	 */
-	public void readPost(Source source, Post post, ArrayList<Reply> replies, Page page){ 
+	public void readPost(Source source, Post post, ArrayList<JsonReply> replies, Page page){ 
 
 		int replySize = 0;
 		
 		// save the current page to the cache 
 		if(page != Page.CURRENT || (source == Source.WEB && replies != null ) ){ 
 			Loggen.v(this, "saved content to file.");
-			replySize = overwritePostForumDetail(post, replies); 
+			replySize = overwritePostDetail(post, replies);
 		}
 
 		// let the correct source handle the request
@@ -116,26 +117,26 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 			switch (source) {
 			case DEFAULT:
 			case WEB:
-				web.readAnnounceFAQ(post.getPostType().getServerType(),post.getPdId());
+				web.readAnnounceFAQ(post.getPostType().getServerType(),post.getId());
 				break;
 			case LOCAL:
-				local.readAnnounceFAQ(post.getPostType().getServerType(), post.getPdId());
+				local.readAnnounceFAQ(post.getPostType().getServerType(), post.getId());
 				break;
 			case DUMMY:
-				dummy.readAnnounceFAQ(post.getPostType().getServerType(), post.getPdId());
+				dummy.readAnnounceFAQ(post.getPostType().getServerType(), post.getId());
 				break;
 			}
 		} else {
 			switch (source) {
 			case DEFAULT:
 			case WEB:
-				web.readPost(post.getPostType().getServerType(), replySize, page, post.getPdId());
+				web.readPost(post.getPostType().getServerType(), replySize, page, post.getId());
 				break;
 			case LOCAL:
-				local.readPost(post.getPostType().getServerType(), replySize, page, post.getPdId());
+				local.readPost(post.getPostType().getServerType(), replySize, page, post.getId());
 				break;
 			case DUMMY:
-				dummy.readPost(post.getPostType().getServerType(), replySize, page, post.getPdId());
+				dummy.readPost(post.getPostType().getServerType(), replySize, page, post.getId());
 				break;
 			}
 		}
@@ -179,37 +180,83 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 
 	private void overwriteForumList(PostType type, ArrayList<Post> posts){
 
-		// create a JSON representation of the posts
-		ArrayList <JsonPost> jsonposts = new ArrayList<JsonPost> ();
-		if(posts != null){ for(Post post : posts){ jsonposts.add(post.getJsonPost()); } }
+		if(type == PostType.ANNOUNCE || type == PostType.FAQ){
+			// create a JSON representation of the posts
+			ArrayList <JsonAnnounceFAQ> announcements = new ArrayList<JsonAnnounceFAQ> ();
+			ArrayList <JsonVote> polls = new ArrayList<JsonVote> ();
+			if(posts != null){ 
+				for(Post post : posts){ 
+					if(post.getJsonPost() instanceof JsonAnnounceFAQ){
+						announcements.add((JsonAnnounceFAQ) post.getJsonPost());	
+					} else if (post.getJsonPost() instanceof JsonVote){
+						polls.add((JsonVote) post.getJsonPost());
+					}
+				} 
+			}
 
-		// create a JSON representation of the current forum detail page.
-		JsonPostList postList = new JsonPostList(jsonposts);
-		
-		// write to file
-		local.writeToFile(ForumDAOlocal.getPostListFilename(type.getServerType()), 
-				new GsonBuilder().serializeNulls().create().toJson(postList));
+			// create a JSON representation of the current announcements list
+			JsonAnnounceOrgGuideList guidelist = new JsonAnnounceOrgGuideList(announcements);
+			JsonAnnounceList announcelist = new JsonAnnounceList(guidelist, polls);
+			
+			// write to file
+			local.writeToFile(ForumDAOlocal.getPostListFilename(type.getServerType()), 
+					new GsonBuilder().serializeNulls().create().toJson(announcelist));
+
+		} else {
+			// create a JSON representation of the posts
+			ArrayList <JsonPost> jsonposts = new ArrayList<JsonPost> ();
+			if(posts != null){ for(Post post : posts){ jsonposts.add((JsonPost) post.getJsonPost()); } }
+
+			// create a JSON representation of the current post lists page.
+			JsonPostList postList = new JsonPostList(jsonposts);
+			
+			// write to file
+			local.writeToFile(ForumDAOlocal.getPostListFilename(type.getServerType()), 
+					new GsonBuilder().serializeNulls().create().toJson(postList));
+		}
 		
 		Loggen.v(this, "Done writing to file.");
 	} 
 	
-	private int overwritePostForumDetail(Post post, ArrayList<Reply> replies){
+	private int overwritePostDetail(Post post, ArrayList<JsonReply> replies){
+		if(post.getJsonPost() instanceof JsonVote){
+			Loggen.e(this, "Cannot write vote to detail. "); 
+		} else if (post.getJsonPost() instanceof JsonAnnounceFAQ) {
+			overwriteAnnouncement(post);
+		} else if (post.getJsonPost() instanceof JsonPost){
+			return overwritePostForumDetail(post, replies);
+		}
+		
+		return 0;
+	}
+	
+	private void overwriteAnnouncement(Post post) {
+		// create a JSON representation of the current forum detail page.
+		JsonPostAnnounceDetail oldAnnouncement = new JsonPostAnnounceDetail((JsonAnnounceFAQ) post.getJsonPost());
+		
+		// write to file
+		local.writeToFile(ForumDAOlocal.getPostDetailFilename(post.getId(), post.getPostType().getServerType()), 
+				new GsonBuilder().serializeNulls().create().toJson(oldAnnouncement));
+	}
 
+	private int overwritePostForumDetail(Post post, ArrayList<JsonReply> replies){
+
+		
 		// create a JSON representation of the replies
 		ArrayList <JsonReply> jsonreplies = new ArrayList<JsonReply> ();
 		JsonreReply reReply = new JsonreReply();
 		if(replies != null){ 
-			for(Reply reply : replies){
-				if(reply.getRootReplyId() == 0){
+			for(JsonReply reply : replies){
+				if(reply.rootReplyId == 0){
 					// this is a top level reply add it there
-					jsonreplies.add(reply.getJsonReply());
+					jsonreplies.add(reply);
 				} else {
 					// this is a re reply add it there
 					boolean added = false;
 					// try adding it to an existing re reply list
-					for(List<JsonReply> replylist : reReply.getReReplyDetail()){
-						if(replylist.size() > 0 && replylist.get(0).getRootReplyId() == reply.getRootReplyId()){
-							replylist.add(reply.getJsonReply());
+					for(List<JsonReply> replylist : reReply.reReplyDetail){
+						if(replylist.size() > 0 && replylist.get(0).rootReplyId == reply.rootReplyId){
+							replylist.add(reply);
 							added = true;
 						}
 					}
@@ -217,23 +264,22 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 					// if there is no list yet, create a re reply list
 					if(!added){
 						List<JsonReply> newlist = new ArrayList <JsonReply> ();
-						newlist.add(reply.getJsonReply());
-						reReply.getReReplyDetail().add(newlist);
+						newlist.add(reply);
+						reReply.reReplyDetail.add(newlist);
 					}
 				}
 			} 
 		}
 
-		
 		// create a JSON representation of the current forum detail page.
 		JsonPostForumDetail oldDetails = new JsonPostForumDetail(
-				post.getJsonPost(), 
-				post.getPostSponsor().getJsonUser(), 
+				(JsonPost) post.getJsonPost(), 
+				post.getPostSponsor() != null ? post.getPostSponsor().getJsonUser() : new JsonUser(),
 				jsonreplies,
 				reReply);
 		
 		// write to file
-		local.writeToFile(ForumDAOlocal.getPostDetailFilename(post.getPdId(), post.getPostType().getServerType()), 
+		local.writeToFile(ForumDAOlocal.getPostDetailFilename(post.getId(), post.getPostType().getServerType()), 
 				new GsonBuilder().serializeNulls().create().toJson(oldDetails));
 		
 		Loggen.v(this, "Done writing to file.");
@@ -279,12 +325,12 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 				}
 				
 				// Step 4 - get the posts from the JSON
-				if(postList != null && postList.getPostList() != null) {
+				if(postList != null && postList.PostList != null) {
 					// Step 4a - initialize the post array
 					posts = new ArrayList<Post> ();
 					
 					// Step 4a - convert each element in the JSON array to post and add it to the list 
-					for(JsonPost jp : postList.getPostList()){
+					for(JsonPost jp : postList.PostList){
 						posts.add(new Post (jp));
 					}
 				}
@@ -351,7 +397,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		Loggen.v(this, "Got a response onReadPost: " + response.message);
 		
 		// initial results
-		ArrayList<Reply> replies = null;
+		ArrayList<JsonReply> replies = null;
 		Post post = null;
 		Gson gson = new GsonBuilder().serializeNulls().create();
 		
@@ -382,23 +428,23 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 				// TODO: Figure out when to get overlap?
 				
 				// get the post from the data
-				post = new Post(newPost.getPostDetail());
-				post.setPostSponsor(new User(newPost.getPostSponsor()));
-				replies = new ArrayList<Reply> ();
+				post = new Post(newPost.PostDetail);
+				post.setPostSponsor(new User(newPost.PostSponsor));
+				replies = new ArrayList<JsonReply> ();
 
 				
 				// get the replies from the data
-				List<JsonReply> jsonreplies = newPost.getPostReply();
+				List<JsonReply> jsonreplies = newPost.PostReply;
 				for(JsonReply reply : jsonreplies){
-					replies.add(new Reply(reply));
-					Loggen.v(this, "added " + replies.get(replies.size() -1 ).getReplyId());
+					replies.add(new JsonReply(reply));
+					Loggen.v(this, "added " + replies.get(replies.size() -1 ).replyId);
 				}
 				
 				// get the replies to the replies
-				JsonreReply reReply = newPost.getReReply();
+				JsonreReply reReply = newPost.reReply;
 				if(reReply != null){
 					Loggen.v(this, "re reply exists");
-					List <List<JsonReply>> reReplyDetail = reReply.getReReplyDetail();
+					List <List<JsonReply>> reReplyDetail = reReply.reReplyDetail;
 					if(reReplyDetail != null){
 						Loggen.v(this, "re reply details exists");
 						// loop through the list of re replies
@@ -406,17 +452,17 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 							Loggen.v(this, "going through the loop");
 							// pick the first re reply
 							if(rereplies.size() > 0 ){
-								int rootId = rereplies.get(0).getRootReplyId();
+								int rootId = rereplies.get(0).rootReplyId;
 								Loggen.v(this, "rerereply detail is: " + rootId);
 
 								// loop through the list of replies
 								for(int i = 0; i < replies.size(); i++){
 									// once we found the reply that this belongs to, add the replies after it.
-									if(replies.get(i).getReplyId() == rootId){
+									if(replies.get(i).replyId == rootId){
 										for(int j = rereplies.size() - 1; j >= 0; j--){
 											// add the replies to the list
-											replies.add(i + 1, new Reply(rereplies.get(j)));
-											Loggen.v(this, "added " + replies.get(i).getReplyId());											
+											replies.add(i + 1, new JsonReply(rereplies.get(j)));
+											Loggen.v(this, "added " + replies.get(i).replyId);											
 										}
 										break;
 									}
@@ -475,24 +521,24 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 				}
 				
 				// Step 4 - get the announcements from the JSON
-				if(announceList != null && announceList.getAnnounceorguideList() != null
-						&& announceList.getAnnounceorguideList().getContent() != null) {
+				if(announceList != null && announceList.announceorguideList != null
+						&& announceList.announceorguideList.content != null) {
 					// Step 4a - initialize the post array
 					posts = new ArrayList<Post> ();
 					
 					// Step 4a - convert each element in the JSON array to post and add it to the list 
-					for(JsonAnnounceFAQ jp : announceList.getAnnounceorguideList().getContent()){
+					for(JsonAnnounceFAQ jp : announceList.announceorguideList.content){
 						posts.add(new Post (jp));
 					}
 				}
 				
 				// Step 5 - get the votes from the JSON
-				if(announceList != null && announceList.getVote() != null) {
+				if(announceList != null && announceList.vote != null) {
 					// Step 5a - initialize the post array
 					if(posts == null) { posts = new ArrayList<Post> (); }
 					
 					// Step 4a - convert each element in the JSON array to post and add it to the list 
-					for(JsonVote jv : announceList.getVote()){
+					for(JsonVote jv : announceList.vote){
 						posts.add(new Post (jv));
 					}
 				}
@@ -519,17 +565,17 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		if(response.errorStatus == RawResponse.Error.NONE && JsonTools.isValidJSON(response.message)){
 			try{
 				// Step 1 - convert the message into a JSON object
-				JsonElement je = new JsonParser().parse(response.message);
-				JsonObject jobj = je.getAsJsonObject();
+				JsonPostAnnounceDetail announcement = 
+						new Gson().fromJson(response.message, JsonPostAnnounceDetail.class);
+
+				// Step 2 - convert the announcement into a post
+				post = new Post(announcement.PostAnnounceDetail != null ? 
+						announcement.PostAnnounceDetail : new JsonAnnounceFAQ());
 				
-				// Step 2 - convert the JSON object into an announcement
-				JsonElement faq = jobj.get(Urls.jsonPostAnnounceDetail);
-				Gson gson = new Gson();
-				JsonAnnounceFAQ announcement = gson.fromJson(faq,JsonAnnounceFAQ.class);
-				
-				// Step 3 - convert the announcement into a post
-				post = new Post(announcement);
-				
+				// write to file
+				local.writeToFile(ForumDAOlocal.getPostDetailFilename(post.getId(), post.getPostType().getServerType()), 
+						new GsonBuilder().serializeNulls().create().toJson(announcement));
+
 			}catch(Exception e){
 				// If an error occurs while parsing the message, just stop and reply with what we've got.
 				Loggen.e(this, "Error (" + e.toString() + ") while parsing " + response.message);
@@ -540,7 +586,6 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		
 		// send the data back to the listener
 		if (forumlistener.get() != null){ forumlistener.get().onReadAnnounceFAQ(post); }
-
 	}
 
 	@Override
@@ -554,7 +599,7 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		void onCreateReply(boolean success);
 		void onCreateVote(boolean success);
 		void onReadPostList(List <Post> posts);
-		void onReadPost(Post post, List <Reply> replies);
+		void onReadPost(Post post, List <JsonReply> replies);
 		void onReadAnnounceFAQ(Post post);
 		void onSearchPostList(List <Post> posts);
 	}

@@ -314,7 +314,7 @@ public class MyServicesListFragment extends ListFragment
 			for(Integer i : deleteQuery){
 				int serviceSize = services.size();
 				for(int j = 0; j < serviceSize; j++){
-					if(services.get(j).getServiceid() == i){
+					if(services.get(j).getId() == i){
 						services.remove(j);
 						break;
 					}
@@ -370,7 +370,7 @@ public class MyServicesListFragment extends ListFragment
 	        		if(checkedItems.get(i)){
 	        			confirmationText += "\n" + services.get(i).getServicetitle();
 	        			// TODO: put logic to build deletion query (now it just adds the serviceIds)
-	        			deleteQuery.add(services.get(i).getServiceid());
+	        			deleteQuery.add(services.get(i).getId());
 	        		}
 	        	}
 	        	

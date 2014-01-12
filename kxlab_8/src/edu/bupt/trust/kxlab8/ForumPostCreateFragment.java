@@ -5,9 +5,9 @@ import java.util.List;
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ForumDAO;
 import edu.bupt.trust.kxlab.data.ForumDAO.ForumListener;
+import edu.bupt.trust.kxlab.model.JsonReply;
 import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
-import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -33,7 +33,7 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 	
 	private Post mPost;
 	private PostType mPostType;
-	private Reply mReply;
+	private JsonReply mReply;
 	private User mUser;
 	private View mRootView;
 	private EditText mEditTitle;
@@ -143,13 +143,13 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 				String postContent = mPost.getPostTitle() + "\n" + mPost.getPostDetail();
 				// Set the text 
 				((TextView) mRootView.findViewById(android.R.id.text1)).setText(owner.getEmail());
-				((TextView) mRootView.findViewById(android.R.id.text2)).setText(owner.getTimeEnter());
+				((TextView) mRootView.findViewById(android.R.id.text2)).setText(owner.getTimeEnterString());
 				((TextView) mRootView.findViewById(android.R.id.content)).setText(postContent);
 			} else if (mReply != null){
 				// Set the text 
-				((TextView) mRootView.findViewById(android.R.id.text1)).setText(mReply.getrAuthorEmail());
+				((TextView) mRootView.findViewById(android.R.id.text1)).setText(String.valueOf(mReply.rAuthorEmail));
 				((TextView) mRootView.findViewById(android.R.id.text2)).setText(mReply.getrTimeString());
-				((TextView) mRootView.findViewById(android.R.id.content)).setText(mReply.getrContent());
+				((TextView) mRootView.findViewById(android.R.id.content)).setText(String.valueOf(mReply.rContent));
 			}
 		}
 	}
@@ -181,7 +181,7 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 		
 		// Get the content
 		String title = (mPost == null && mReply == null && mEditTitle != null) ? 
-				mEditTitle.getText().toString() : mUser.getUserName();
+				mEditTitle.getText().toString() : mUser.getName();
 		String content = mEditContent.getText().toString();
 
 		// Step 1 - verify that both fields are filled in.
@@ -199,13 +199,15 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 				forumDAO.createPost(mUser.getEmail(), type, title, content);
 			} else if (mReply != null) {
 				// Step 3a - This is a request to reply to a reply
-				forumDAO.createReplyToReply(mUser.getEmail(), mReply.getReplyId(), content);
+				forumDAO.createReplyToReply(mUser.getEmail(), mReply.replyId, content);
 			} else if (mPost != null) {
 				// Step 3a - This is a request to create a new thread
-				forumDAO.createReplyToPost(mUser.getEmail(), type, mPost.getPdId(), content);
+				forumDAO.createReplyToPost(mUser.getEmail(), type, mPost.getId(), content);
 			} else {
 				userMustClickOkay(getString(R.string.forum_error_empty_title), getString(R.string.forum_error_empty_text));
-			}	
+			}
+			
+			showInformation(false);
 		}
 	}
 	
@@ -253,6 +255,7 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 			mListener.performBackPress();	
 		} else {
 			userMustClickOkay(getString(R.string.forum_error_empty_title), getString(R.string.forum_error_empty_text));
+			showInformation(true);
 		}
 	}
 
@@ -265,36 +268,13 @@ public class ForumPostCreateFragment extends BaseDetailFragment implements Forum
 			mListener.performBackPress();	
 		} else {
 			userMustClickOkay(getString(R.string.forum_error_empty_title), getString(R.string.forum_error_empty_text));
+			showInformation(true);
 		}
 	}
 
-	@Override
-	public void onCreateVote(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onReadPostList(List<Post> posts) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onReadPost(Post post, List<Reply> replies) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onReadAnnounceFAQ(Post post) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSearchPostList(List<Post> posts) {
-		// TODO Auto-generated method stub
-		
-	}
+	@Override public void onCreateVote(boolean success) { }
+	@Override public void onReadPostList(List<Post> posts) { }
+	@Override public void onReadPost(Post post, List<JsonReply> replies) { }
+	@Override public void onReadAnnounceFAQ(Post post) { }
+	@Override public void onSearchPostList(List<Post> posts) { }
 }

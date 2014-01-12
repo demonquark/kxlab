@@ -9,10 +9,11 @@ import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ServicesDAO;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesDetailListener;
-import edu.bupt.trust.kxlab.model.ActivityRecord;
-import edu.bupt.trust.kxlab.model.Comment;
+import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListener;
+import edu.bupt.trust.kxlab.model.JsonActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonComment;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
+import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
@@ -51,14 +52,14 @@ import android.widget.TextView;
  *  - EXTRA_USERSNUMBER: The number of users using the service. Loaded from ServicesDAO. <br />
  *  
  */
-public class ServiceDetailViewFragment extends BaseDetailFragment implements ServicesDetailListener, ProfileListener{
+public class ServiceDetailViewFragment extends BaseDetailFragment implements ServicesListener, ProfileListener{
 	
 	private ListView mCommentsList;
 	private CommentsArrayAdapter mListAdapter;
 	private View mRootView;
 	private ServiceFlavor mFlavor;
 	private TrustService mService;
-	private ArrayList<Comment> comments;
+	private ArrayList<JsonComment> comments;
 	private User mOwner;
 	private User mUser;
 	
@@ -169,8 +170,8 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 			// Load the service and the comments 
 			if(comments != null) { showService(); 
 			} else if(getActivity() != null) {
-				ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-				servicesDAO.readService(DaoFactory.Source.DUMMY, mService.getServiceid(), Page.LATEST);
+				ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
+				servicesDAO.readService(DaoFactory.Source.DUMMY, mService.getId(), Page.LATEST);
 			}
 		} else {
 			// give an error message ... 
@@ -206,12 +207,12 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		// load the user information
 		if(mOwner != null && mRootView != null){
 			// Set the image
-			setImageView(mOwner.getPhotoLocation(), (ImageView) mRootView.findViewById(R.id.details_owner_img));
+			setImageView(mOwner.getLocalPhoto(), (ImageView) mRootView.findViewById(R.id.details_owner_img));
 			
 			// Set the user information
-			((TextView) mRootView.findViewById(R.id.details_owner_name)).setText(mOwner.getUserName());
-			((TextView) mRootView.findViewById(R.id.details_owner_time)).setText(mOwner.getTimeEnter());
-			((TextView) mRootView.findViewById(R.id.details_owner_score)).setText(mOwner.getActivityScore());
+			((TextView) mRootView.findViewById(R.id.details_owner_name)).setText(mOwner.getName());
+			((TextView) mRootView.findViewById(R.id.details_owner_time)).setText(mOwner.getTimeEnterString());
+			((TextView) mRootView.findViewById(R.id.details_owner_score)).setText(String.valueOf(mOwner.getActivityScore()));
 		}
 		
 		// hide the progress bar
@@ -222,8 +223,8 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		if(mService != null && mRootView != null){
 
 			//Set the service image
-			Loggen.v(this, getTag() + " - Showing service with image: " + mService.getServicephoto());
-			setImageView(mService.getServicephoto(), (ImageView) mRootView.findViewById(R.id.details_service_img));
+			Loggen.v(this, getTag() + " - Showing service with image: " + mService.getLocalPhoto());
+			setImageView(mService.getLocalPhoto(), (ImageView) mRootView.findViewById(R.id.details_service_img));
 
 			// Get the String values for the screen (number of users and credibility score)
 			// TODO figure out what credibility and service status are...
@@ -263,14 +264,14 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 	
 	private void saveScore(int score){ 
 		mScore = score;
-		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-		servicesDAO.updateServiceScore(DaoFactory.Source.DUMMY, mService.getServiceid(), mUser.getEmail(), score);
+		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
+		servicesDAO.updateServiceScore(DaoFactory.Source.DUMMY, mService.getId(), mUser.getEmail(), score);
 		showInformation(false);
 	}
 	private void saveComment(String commentText) {
 		mCommentText = commentText;
-		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
-		servicesDAO.createServiceComment(DaoFactory.Source.DUMMY, mService.getServiceid(), mUser.getEmail(), commentText);
+		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
+		servicesDAO.createServiceComment(DaoFactory.Source.DUMMY, mService.getId(), mUser.getEmail(), commentText);
 		showInformation(false);
 	}
 
@@ -338,7 +339,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 			saveScore((Integer) o);
 		}
 	}	
-	@Override public void onReadService(TrustService service, int numberOfUsers, List<Comment> comments) { 
+	@Override public void onReadService(TrustService service, int numberOfUsers, List<JsonComment> comments) { 
 		Loggen.i(this, getTag() + " - Returned from onReadservice. ");
 
 		// Inform the user of any failures
@@ -350,7 +351,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		
 		// update the service details
 		this.mService = (service != null) ? service : mService;
-		this.comments = (ArrayList<Comment>) ((comments != null) ? comments : new ArrayList <Comment> ());
+		this.comments = (ArrayList<JsonComment>) ((comments != null) ? comments : new ArrayList <JsonComment> ());
 		this.mNumberOfUsers = numberOfUsers;
 		showService();
 	}
@@ -375,11 +376,11 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 	@Override public void writeServiceComment(boolean success) {
 		Loggen.v(this," Received Comment update from DAO");
 		if(comments != null){
-			Comment myComment = new Comment();
-			myComment.setCommentdetail(mCommentText);
-			myComment.setCommenttime(System.currentTimeMillis());
-			myComment.setUseremail(mUser.getEmail());
-			myComment.setCommentscore(String.valueOf(mScore));
+			JsonComment myComment = new JsonComment();
+			myComment.commentdetail = mCommentText;
+			myComment.commenttime = System.currentTimeMillis();
+			myComment.useremail = mUser.getEmail();
+			myComment.commentscore = String.valueOf(mScore);
 			comments.add(0, myComment);
 		}
 		showService();
@@ -387,12 +388,30 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 
 	@Override public void onReadUserList(List<User> users) {}
 	@Override public void onCreateService(boolean success) { }
-	@Override public void onReadActivityHistory(List<ActivityRecord> records) {}
+	@Override public void onReadActivityHistory(List<JsonActivityRecord> records) {}
 	@Override public void onChangeUser(User newUser, String errorMessage) {}
 	@Override public void onEditService(boolean success) { }
 
 	@Override
 	public void onLogin(boolean success, String errorMessage) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onDeleteService(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onReadServices(List<TrustService> services) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSearchService(List<TrustService> services) {
 		// TODO Auto-generated method stub
 		
 	}

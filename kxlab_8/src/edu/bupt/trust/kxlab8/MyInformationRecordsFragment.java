@@ -10,7 +10,7 @@ import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
-import edu.bupt.trust.kxlab.model.ActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
@@ -31,7 +31,7 @@ import android.widget.TextView;
 public class MyInformationRecordsFragment extends BaseDetailFragment implements ProfileListener, IXListViewListener {
 	
 	private User mUser;
-	private ArrayList<ActivityRecord> mRecords;
+	private ArrayList<JsonActivityRecord> mRecords;
 	private View mRootView;
 	private XListView mListView;
 	
@@ -121,7 +121,7 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 			// load the user information
 			if(mUser != null && showinfo){
 				// Set the image
-				File imgFile = new File(mUser.getPhotoLocation());
+				File imgFile = new File(mUser.getLocalPhoto());
 				ImageView avatar = (ImageView) mRootView.findViewById(R.id.user_img);
 				if(imgFile.exists()){
 					avatar.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
@@ -131,10 +131,10 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 				}
 				
 				// Set the user information
-				((TextView) mRootView.findViewById(R.id.user_name)).setText(mUser.getUserName());
+				((TextView) mRootView.findViewById(R.id.user_name)).setText(mUser.getName());
 				((TextView) mRootView.findViewById(R.id.user_email)).setText(mUser.getEmail());
 				((TextView) mRootView.findViewById(R.id.user_date)).setText(mUser.getTimeEnterString());
-				((TextView) mRootView.findViewById(R.id.user_activitylevel_text)).setText(mUser.getActivityScore());
+				((TextView) mRootView.findViewById(R.id.user_activitylevel_text)).setText(String.valueOf(mUser.getActivityScore()));
 			}
 			
 			// load the activity history
@@ -174,7 +174,7 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 		getData(Source.WEB, Page.PREVIOUS);
 	}
 
-	@Override public void onReadActivityHistory(List <ActivityRecord> records) {
+	@Override public void onReadActivityHistory(List <JsonActivityRecord> records) {
 		Loggen.v(this, "Got a response onReadActivityHistory. records exist? " + (records != null));
 		if(records != null && mRecords != null){
 			// We got a response and are updating an existing list
@@ -183,11 +183,11 @@ public class MyInformationRecordsFragment extends BaseDetailFragment implements 
 		} else if(records == null && mRecords == null){
 			// We got no response and have no existing list
 			userMustClickOkay(getString(R.string.myinfo_no_records_title), getString(R.string.myinfo_no_records_text)); 
-			mRecords = new ArrayList<ActivityRecord> ();
+			mRecords = new ArrayList<JsonActivityRecord> ();
 			getData(Source.LOCAL, Page.CURRENT);
 		} else if (mRecords == null){
 			// We got a response and have no existing list
-			mRecords = (ArrayList<ActivityRecord>) records;			
+			mRecords = (ArrayList<JsonActivityRecord>) records;			
 		}
 		
 		showList(true);		

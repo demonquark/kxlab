@@ -9,7 +9,7 @@ import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
-import edu.bupt.trust.kxlab.model.ActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonActivityRecord;
 import edu.bupt.trust.kxlab.model.SortKey;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
@@ -217,7 +217,7 @@ public class OtherUsersFragment extends BaseDetailFragment implements ProfileLis
 
 	// Not used
 	@Override public void onReadUserInformation(User user) { }
-	@Override public void onReadActivityHistory(List<ActivityRecord> records) { }
+	@Override public void onReadActivityHistory(List<JsonActivityRecord> records) { }
 	@Override public void onChangeUser(User newUser, String errorMessage) { }
 	@Override public void onLogin(boolean success, String errorMessage) { }
 

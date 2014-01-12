@@ -9,8 +9,8 @@ import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
-import edu.bupt.trust.kxlab.model.ActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonUser;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Gegevens;
@@ -183,13 +183,13 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 
 			if(newUser != null){
 				// set the image
-				setProfileImage(newUser.getPhotoLocation());
+				setProfileImage(newUser.getLocalPhoto());
 				
 				// set the text
 				((TextView) mRootView.findViewById(R.id.myinfo_email)).setText(newUser.getEmail());
-				((EditText) mRootView.findViewById(R.id.myinfo_edit_name)).setText(newUser.getUserName());
-				((EditText) mRootView.findViewById(R.id.myinfo_edit_phone)).setText(newUser.getPhoneNumber());
-				((EditText) mRootView.findViewById(R.id.myinfo_edit_source)).setText(String.valueOf(newUser.getSource()));
+				((EditText) mRootView.findViewById(R.id.myinfo_edit_name)).setText(newUser.getName());
+				((EditText) mRootView.findViewById(R.id.myinfo_edit_phone)).setText(newUser.getPhonenumber());
+				((EditText) mRootView.findViewById(R.id.myinfo_edit_source)).setText(String.valueOf(newUser.getType()));
 				((EditText) mRootView.findViewById(R.id.myinfo_edit_password)).setText(newUser.getPassword());
 				((EditText) mRootView.findViewById(R.id.myinfo_edit_confirm_password)).setText(newUser.getPassword());
 				
@@ -324,7 +324,7 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 		    		imgFile.getAbsolutePath(),
 		    		avatar.getLayoutParams().width, 
 		    		avatar.getLayoutParams().height));
-	        newUser.setPhotoLocation(imageLocation);
+	        newUser.setLocalPhoto(imageLocation);
 		} else {
 			// Inform the user that no image was found
 			userMustClickOkay(getString(R.string.myinfo_img_not_found_title), getString(R.string.myinfo_img_not_found_text));
@@ -404,13 +404,13 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 			
 			// Add the fields that were not updated
 			errorTxt += getString(R.string.myinfo_update_failures_text) + ":\n";
-			if(!newUser.getUserName().equals(updatedUser.getUserName())){
+			if(!newUser.getName().equals(updatedUser.getName())){
 				errorTxt +=  "- " + getString(R.string.myinfo_name_title) + "\n";
 			}
-			if(!newUser.getPhoneNumber().equals(updatedUser.getPhoneNumber())){
+			if(!newUser.getPhonenumber().equals(updatedUser.getPhonenumber())){
 				errorTxt +=  "- " + getString(R.string.myinfo_phone_title) + "\n";
 			}
-			if(newUser.getSource() != updatedUser.getSource()){
+			if(newUser.getType() != updatedUser.getType()){
 				errorTxt +=  "- " + getString(R.string.myinfo_source_title) + "\n";
 			}
 			if(!newUser.getPassword().equals(updatedUser.getPassword())){
@@ -431,7 +431,7 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 
 	
 	@Override public void onReadUserInformation(User user) { }
-	@Override public void onReadActivityHistory(List<ActivityRecord> records) { }
+	@Override public void onReadActivityHistory(List<JsonActivityRecord> records) { }
 	@Override public void onReadUserList(List<User> users) { }
 	
 	
@@ -450,16 +450,16 @@ public class MyInformationEditFragment extends BaseDetailFragment implements Pro
 	    public void afterTextChanged(Editable editable) {
 	        switch(viewId){
             case R.id.myinfo_edit_name:
-                newUser.setUserName(editable.toString());
+                newUser.setName(editable.toString());
                 break;
             case R.id.myinfo_edit_phone:
-                newUser.setPhoneNumber(editable.toString());
+                newUser.setPhonenumber(editable.toString());
                 break;
             case R.id.myinfo_edit_source:
             	try{
-            		newUser.setSource(Integer.parseInt(editable.toString()));	
+            		newUser.setType(Integer.parseInt(editable.toString()));	
             	}catch(NumberFormatException e){
-            		newUser.setSource(0);	
+            		newUser.setType(0);	
             	}
                 break;
             case R.id.myinfo_edit_password:

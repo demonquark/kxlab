@@ -15,12 +15,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.RequestParams;
 
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.data.ServicesDAOabstract.OnServicesRawDataReceivedListener;
-import edu.bupt.trust.kxlab.model.Comment;
+import edu.bupt.trust.kxlab.model.JsonComment;
 import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -111,7 +112,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 			params.put(Urls.paramServiceTitle, parameters[1]); // service type
 			params.put(Urls.paramServiceDetial, parameters[2]); // list page
 
-			path = ServicesDAOweb.getPath(true, path, params);
+			path = MyServicesDAO.getPath(true, path, params);
 		}
 		Loggen.i(this, "Got path: " + path);
 
@@ -123,7 +124,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 		String path = Urls.pathMyServiceDelete;
 		RequestParams params = new RequestParams();
 		params.put(Urls.paramServiceId, serviceId + "");
-		path = ServicesDAOweb.getPath(true, path, params);
+		path = MyServicesDAO.getPath(true, path, params);
 
 		web.deleteService(path);
 	}
@@ -145,7 +146,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 			params.put(Urls.paramServiceTitle, parameters[0]); // service type
 			params.put(Urls.paramServiceDetial, parameters[1]); // list page
 			params.put(Urls.paramServicePhoto, parameters[2]); // list size
-			path = ServicesDAOweb.getPath(true, path, params);
+			path = MyServicesDAO.getPath(true, path, params);
 		}
 		Loggen.i(this, "Got path: " + path);
 
@@ -290,7 +291,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 			params.put(Urls.paramServiceListPage, searchListPageNo + ""); // list
 																			// page
 			params.put(Urls.paramServiceListSize, LIST_SIZE); // list size
-			path = ServicesDAOweb.getPath(true, path, params);
+			path = MyServicesDAO.getPath(true, path, params);
 		}
 		web.searchService(path);
 	}
@@ -320,7 +321,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 		params.put(Urls.paramCommentListPage, commentPageNo + ""); // comment
 																	// page no
 		params.put(Urls.paramCommentListSize, LIST_SIZE); // list size
-		path = ServicesDAOweb.getPath(true, path, params);
+		path = MyServicesDAO.getPath(true, path, params);
 
 		Loggen.i(this, "Got path: " + path);
 		// Send the path to the correct DAO (Note: for DAOlocal, we send the
@@ -509,7 +510,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	@Override
 	public void onReadService(RawResponse response) {
 		TrustService service = null;
-		ArrayList<Comment> comments = null;
+		ArrayList<JsonComment> comments = null;
 		if (response.errorStatus == RawResponse.Error.NONE) {
 
 			// first save the data to the cache
@@ -527,7 +528,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 
 			service = gson.fromJson(s, TrustService.class);
 			JsonElement c = jobj.get("CommentDetail");// get comment list
-			java.lang.reflect.Type listType = new TypeToken<ArrayList<Comment>>() {
+			java.lang.reflect.Type listType = new TypeToken<ArrayList<JsonComment>>() {
 			}.getType();
 			comments = gson.fromJson(c, listType);
 
@@ -538,10 +539,10 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 															// comment
 			JsonArray ja = rd.getAsJsonArray();
 			for (JsonElement ele : ja) {
-				Comment rc = gson.fromJson(ele, Comment.class);
-				for (Comment co : comments) {
-					if (co.getCommentid() == rc.getRootcommentid()) {
-						co.getDetailComments().add(rc);
+				JsonComment rc = gson.fromJson(ele, JsonComment.class);
+				for (JsonComment co : comments) {
+					if (co.getId() == rc.getId()) {
+//						co.getDetailComments().add(rc);
 					}
 				}
 			}
@@ -569,7 +570,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	}
 
 	public interface MyServicesDetailListener {
-		public void onReadService(TrustService service, List<Comment> comments);
+		public void onReadService(TrustService service, List<JsonComment> comments);
 	}
 
 	/**
@@ -600,4 +601,17 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 
 	}
 
+    /**
+     * Will encode url, if not disabled, and adds params on the end of it
+     *
+     * @param url             String with URL, should be valid URL without params
+     * @param params          RequestParams to be appended on the end of URL
+     * @param shouldEncodeUrl whether url should be encoded (replaces spaces with %20)
+     * @return encoded url if requested with params appended if any available
+     */
+    public static String getPath(boolean shouldEncodeUrl, String path, RequestParams params) {
+    	return AsyncHttpClient.getUrlWithQueryString(shouldEncodeUrl, path, params);
+    }
+
+	
 }

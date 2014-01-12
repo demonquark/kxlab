@@ -2,7 +2,7 @@ package edu.bupt.trust.kxlab.adapters;
 
 import java.util.List;
 
-import edu.bupt.trust.kxlab.model.ActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonActivityRecord;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 import android.content.Context;
@@ -19,11 +19,11 @@ import android.widget.TextView;
  * @author Krishna
  *
  */
-public class ActivityRecordsArrayAdapter extends ArrayAdapter <ActivityRecord>{
+public class ActivityRecordsArrayAdapter extends ArrayAdapter <JsonActivityRecord>{
 
-	private List <ActivityRecord> items;
+	private List <JsonActivityRecord> items;
 	
-	public ActivityRecordsArrayAdapter(Context context, int resource, int textViewResourceId, List<ActivityRecord> objects) {
+	public ActivityRecordsArrayAdapter(Context context, int resource, int textViewResourceId, List<JsonActivityRecord> objects) {
 		super(context, resource, textViewResourceId, objects);
 		this.items = objects;
 	}
@@ -43,10 +43,10 @@ public class ActivityRecordsArrayAdapter extends ArrayAdapter <ActivityRecord>{
 		if(secondText != null && items != null){
 			try {
 				// Get the TrustService
-				ActivityRecord record = items.get(position);
+				JsonActivityRecord record = items.get(position);
 				String title = record.getDateString();
-				String text1 = record.getWhatDo();
-				String text2 = String.valueOf(record.getScore());
+				String text1 = String.valueOf(record.whatDo);
+				String text2 = String.valueOf(record.score);
 //				Loggen.d(this,  "title: " + title + " | " + "text: " + text1 + " | " + text2 );
 				
 				// Set the text

@@ -15,9 +15,9 @@ import android.content.Context;
 import android.util.Log;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
-import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
-import edu.bupt.trust.kxlab.jsonmodel.JsonUserInformation;
-import edu.bupt.trust.kxlab.model.ActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonUser;
+import edu.bupt.trust.kxlab.model.JsonUserInformation;
 import edu.bupt.trust.kxlab.model.SortKey;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
@@ -153,7 +153,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	
 	/** Reads the activity history of the given user.
 	 *  Note: only the email variable of the user is used to get the history. */
-	public void readActivityHistory(Source source, User user, List<ActivityRecord> records, Page page){
+	public void readActivityHistory(Source source, User user, List<JsonActivityRecord> records, Page page){
 		
 		// save the current page to the cache 
 		if(page != Page.CURRENT || (source == Source.WEB && records != null ) ){ 
@@ -192,31 +192,31 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		Gson gson = new Gson();
 		
 		// save the users to the cache.
-		String oldUserFileName = ProfileDAOlocal.getOldUserFilename(oldUser.getEmail());
-		String newUserFileName = ProfileDAOlocal.getNewUserFilename(newUser.getEmail());
+		String oldUserFileName = ProfileDAOlocal.getOldUserFilename(oldUser.email);
+		String newUserFileName = ProfileDAOlocal.getNewUserFilename(newUser.email);
 		local.writeToFile(oldUserFileName, gson.toJson(oldUser));
 		local.writeToFile(newUserFileName, gson.toJson(newUser));
 		
-		if(newUser.getPhonenumber() != null && !newUser.getPhonenumber().equals(oldUser.getPhonenumber())){
+		if(newUser.phonenumber != null && !newUser.phonenumber.equals(oldUser.phonenumber)){
 			// change the phone number
-			web.changePhonenumber(newUser.getEmail(), newUser.getPhonenumber());
-		} else if(newUser.getType() != oldUser.getType()){
+			web.changePhonenumber(newUser.email, newUser.phonenumber);
+		} else if(newUser.type != oldUser.type){
 			// change the type
-			web.changeSource(newUser.getEmail(), newUser.getType());
-		} else if (newUser.getPhoto() != null && !newUser.getPhoto().equals(oldUser.getPhoto())){
+			web.changeSource(newUser.email, newUser.type);
+		} else if (newUser.localPhoto != null && !newUser.localPhoto.equals(oldUser.localPhoto)){
 			// change the photo
 			// TODO: Fix the photo logic
-			web.changePhoto(newUser.getEmail(), dummy.randomString());
-		} else if (newUser.getPassword() != null && !newUser.getPassword().equals(oldUser.getPassword())){
+			web.changePhoto(newUser.email, dummy.randomString());
+		} else if (newUser.password != null && !newUser.password.equals(oldUser.password)){
 			// change the password
-			web.changePassword(newUser.getEmail(), oldUser.getPassword(), newUser.getPassword());
+			web.changePassword(newUser.email, oldUser.password, newUser.password);
 		} else {
 			// convert the JSON user to user info format
 			JsonUserInformation userinfo = new JsonUserInformation();
-			userinfo.setUserInformation(newUser);
+			userinfo.UserInformation = newUser;
 
 			// save the user information to the cache
-			String userinfoFileName = ProfileDAOlocal.getUserInformationFilename(newUser.getEmail());
+			String userinfoFileName = ProfileDAOlocal.getUserInformationFilename(newUser.email);
 			local.writeToFile(userinfoFileName, gson.toJson(userinfo));
 			
 			// done updating. Call the listener
@@ -226,10 +226,10 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		}
 	}
 	
-	private void overwriteActivityHistory(User user, List<ActivityRecord> records) {
+	private void overwriteActivityHistory(User user, List<JsonActivityRecord> records) {
 		if(user != null && user.getEmail() != null){
 			// create a JSON representation of the records
-			ArrayList <ActivityRecord> jsonRecords = new ArrayList<ActivityRecord> ();
+			ArrayList <JsonActivityRecord> jsonRecords = new ArrayList<JsonActivityRecord> ();
 			if(records != null) { jsonRecords.addAll(records); }
 
 			// write to file
@@ -346,7 +346,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 			// TODO: FIGURE OUT WHAT TO DO WITH IMAGES 
 			for(JsonUser user : jsonUsers){
 
-				String userinfoFileName = ProfileDAOlocal.getUserInformationFilename(user.getEmail());
+				String userinfoFileName = ProfileDAOlocal.getUserInformationFilename(user.email);
 
 				// Step 3 - get the saved user information
 				JsonUserInformation olduser = 
@@ -354,19 +354,19 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 				
 				// Step 4 - Copy the user image to the file
 				String userimage;
-				if(olduser != null && olduser.getUserInformation() != null 
-						&& (userimage = olduser.getUserInformation().getPhoto()) != null 
+				if(olduser != null && olduser.UserInformation!= null 
+						&& (userimage = olduser.UserInformation.localPhoto) != null 
 						&& (userimage.endsWith(Gegevens.FILE_EXT_JPG) 
 						|| userimage.endsWith(Gegevens.FILE_EXT_PNG) 
 						|| userimage.endsWith(Gegevens.FILE_EXT_GIF))){
-					user.setPhoto(userimage);
+					user.localPhoto = userimage;
 				} else {
-					user.setPhoto(dummy.randomPic().getAbsolutePath());
+					user.localPhoto = dummy.randomPic().getAbsolutePath();
 				}
 				
 				// Step 5 - Save the user as json user information
 				JsonUserInformation newUser = new JsonUserInformation();
-				newUser.setUserInformation(user);
+				newUser.UserInformation = user;
 
 				// Step 6 - Write the userinformation to file
 				local.writeToFile(userinfoFileName, gson.toJson(newUser));
@@ -398,7 +398,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 				JsonUserInformation userinfo = new Gson().fromJson(response.message, JsonUserInformation.class);
 				
 				// Step 2 - convert the JSON object into a User
-				if(userinfo != null && userinfo.getUserInformation() != null){
+				if(userinfo != null && userinfo.UserInformation != null){
 					
 					// TODO: FIGURE OUT WHAT TO DO WITH IMAGES 
 					// Step 2 - get the saved user information
@@ -408,18 +408,18 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 					
 					// Step 3 - Copy the user image to the file
 					String userimage;
-					if(olduser != null && olduser.getUserInformation() != null 
-							&& (userimage = olduser.getUserInformation().getPhoto()) != null 
+					if(olduser != null && olduser.UserInformation != null 
+							&& (userimage = olduser.UserInformation.localPhoto) != null 
 							&& (userimage.endsWith(Gegevens.FILE_EXT_JPG) 
 							|| userimage.endsWith(Gegevens.FILE_EXT_PNG) 
 							|| userimage.endsWith(Gegevens.FILE_EXT_GIF))){
-						userinfo.getUserInformation().setPhoto(userimage);
+						userinfo.UserInformation.localPhoto = userimage;
 					} else {
-						userinfo.getUserInformation().setPhoto(dummy.randomPic().getAbsolutePath());
+						userinfo.UserInformation.localPhoto = dummy.randomPic().getAbsolutePath();
 					}
 
 					// Step 4 - do the final conversion
-					user = new User(userinfo.getUserInformation());
+					user = new User(userinfo.UserInformation);
 
 					// Step 5 - save the user information to the cache
 					local.writeToFile(response.path, new Gson().toJson(userinfo));
@@ -437,23 +437,23 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 	}
 	
 	@Override public void onReadActivityHistory(RawResponse response) {
-		List <ActivityRecord> records = null;
+		List <JsonActivityRecord> records = null;
 		Gson gson = new Gson();
 		
 		if (response.errorStatus == RawResponse.Error.NONE
 				&& JsonTools.isValidJSON(response.message)) {
 
 			// Step 1 - convert the message into a JSON object
-			java.lang.reflect.Type listType = new TypeToken<ArrayList<ActivityRecord>>() { }.getType();
+			java.lang.reflect.Type listType = new TypeToken<ArrayList<JsonActivityRecord>>() { }.getType();
 			records = gson.fromJson(response.message, listType);
-			if(records == null) { records = new ArrayList<ActivityRecord> (); } 
+			if(records == null) { records = new ArrayList<JsonActivityRecord> (); } 
 			
 			// Step 2 - update the message with the cache content
 			if(response.page != Page.CURRENT){
 			
 				// Step 2a - read the existing data from cache. 
 				Loggen.i(this, "Start getting old records.");
-				List <ActivityRecord> oldRecords = gson.fromJson(local.readFromFile(response.path), listType);
+				List <JsonActivityRecord> oldRecords = gson.fromJson(local.readFromFile(response.path), listType);
 
 				// Step 2b - read the existing data from cache. 
 				if(oldRecords != null){
@@ -461,13 +461,13 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 					for(int i = oldRecords.size() - 1; i >= 0; i--){
 
 						// get the id and set overlap to false
-						int oldId = oldRecords.get(i).getAhId();
+						int oldId = oldRecords.get(i).ahId;
 						boolean overlap = false;
 
 						// compare each old record to all the new records
-						for(ActivityRecord record : records){
+						for(JsonActivityRecord record : records){
 							// if the old record is also in the new records, the records overlap
-							if( oldId == record.getAhId()){ overlap = true; }
+							if( oldId == record.ahId){ overlap = true; }
 						}
 						
 						// if the records did not overlap, add this record to the list of records
@@ -501,9 +501,9 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 
 		// check if the user has changed
 		if(success(response, Urls.jsonPhotoChangeOrNot)){
-			oldUser.setPhoto(newUser.getPhoto());
+			oldUser.localPhoto = newUser.localPhoto;
 		} else {
-			newUser.setPhoto(oldUser.getPhoto());
+			newUser.localPhoto = oldUser.localPhoto;
 		}
 
 		// let the DAO determine if there are any more user variables that need to be changed
@@ -521,9 +521,9 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 
 		// check if the user has changed
 		if(success(response, Urls.jsonPasswordChangeOrNot)){
-			oldUser.setPassword(newUser.getPassword());
+			oldUser.password = newUser.password;
 		} else {
-			newUser.setPassword(oldUser.getPassword());
+			newUser.password = oldUser.password;
 		}
 		
 		// let the DAO determine if there are any more user variables that need to be changed
@@ -541,9 +541,9 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 
 		// check if the user has changed
 		if(success(response, Urls.jsonPhoneChangeOrNot)){
-			oldUser.setPhonenumber(newUser.getPhonenumber());
+			oldUser.phonenumber = newUser.phonenumber;
 		} else {
-			newUser.setPhonenumber(oldUser.getPhonenumber());
+			newUser.phonenumber = oldUser.phonenumber;
 		}
 		
 		// let the DAO determine if there are any more user variables that need to be changed
@@ -562,9 +562,9 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 
 		// check if the user has changed
 		if(success(response, Urls.jsonSourceChangeOrNot)){
-			oldUser.setType(newUser.getType());
+			oldUser.type = newUser.type;
 		} else {
-			newUser.setType(oldUser.getType());
+			newUser.type = oldUser.type;
 		}
 		
 		// let the DAO determine if there are any more user variables that need to be changed
@@ -575,7 +575,7 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		public void onLogin(boolean success, String errorMessage);
 		public void onReadUserList(List <User> users);
 		public void onReadUserInformation(User user);
-		public void onReadActivityHistory(List<ActivityRecord> records);
+		public void onReadActivityHistory(List<JsonActivityRecord> records);
 		public void onChangeUser(User newUser, String errorMessage);
 	}
 }

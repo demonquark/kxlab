@@ -7,7 +7,7 @@ import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.model.ActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonActivityRecord;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -127,7 +127,7 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
     private void recoveryUserInfo() {
     	editAccount.setText(user.getEmail());
     	boxRemember.setChecked(isRemmber);
-    	File avatar = new File(user.getPhotoLocation());
+    	File avatar = new File(user.getLocalPhoto());
     	
     	// try to load the image from file
     	if(avatar.exists()){ 
@@ -251,7 +251,7 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
 
 		@Override public void onReadUserList(List<User> users) {}
 		@Override public void onReadUserInformation(User user) { }
-		@Override public void onReadActivityHistory(List<ActivityRecord> records) { }
+		@Override public void onReadActivityHistory(List<JsonActivityRecord> records) { }
 		@Override public void onChangeUser(User newUser, String errorMessage) { }
 		
 }

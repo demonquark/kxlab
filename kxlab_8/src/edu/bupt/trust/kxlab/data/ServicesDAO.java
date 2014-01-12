@@ -8,7 +8,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -20,9 +19,8 @@ import com.loopj.android.http.RequestParams;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.data.ServicesDAOabstract.OnServicesRawDataReceivedListener;
-import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
-import edu.bupt.trust.kxlab.jsonmodel.JsonUserInformation;
-import edu.bupt.trust.kxlab.model.Comment;
+import edu.bupt.trust.kxlab.model.JsonComment;
+import edu.bupt.trust.kxlab.model.JsonTrustService;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
@@ -32,10 +30,8 @@ import edu.bupt.trust.kxlab.utils.JsonTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 public class ServicesDAO implements OnServicesRawDataReceivedListener {
+	
 	private static final String LIST_SIZE = "6";
-	private static int communityServicePageNo = 0;
-	private static int recommendedServiceListPageNo = 0;
-	private static int applyServiceListPageNo = 0;
 	private static int commentPageNo = 0;
 	private static int searchListPageNo = 0;
 	
@@ -43,16 +39,11 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	private ServicesDAOlocal local;
 	private ServicesDAOweb web;
 	private ServicesDAOdummy dummy;
-	private WeakReference <ServicesListListener> listlistener;
-	private WeakReference <ServicesDetailListener> detaillistener;
+	private WeakReference <ServicesListener> listener;
 
 	// Outward facing methods (used by the class requesting the data)
-	public void setServicesListListener(ServicesListListener listener) {
-		this.listlistener = new WeakReference<ServicesListListener> (listener);
-	}
-
-	public void setServicesDetailListener(ServicesDetailListener listener) {
-		this.detaillistener = new WeakReference<ServicesDetailListener> (listener);
+	public void setServicesListener(ServicesListener listener) {
+		this.listener = new WeakReference<ServicesListener> (listener);
 	}
 
 	public void setCacheDir(Context c) {
@@ -61,18 +52,11 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 
 	// Inward facing methods (used to communicate with the class providing the
 	// data)
-	protected ServicesDAO(Context c, ServicesListListener listener) {
+	protected ServicesDAO(Context c, ServicesListener listener) {
 		local = new ServicesDAOlocal(this, c);
 		web = new ServicesDAOweb(this);
 		dummy = new ServicesDAOdummy(this);
-		this.listlistener = new WeakReference<ServicesListListener>(listener);
-	}
-
-	protected ServicesDAO(Context c, ServicesDetailListener listener) {
-		local = new ServicesDAOlocal(this, c);
-		web = new ServicesDAOweb(this);
-		dummy = new ServicesDAOdummy(this);
-		this.detaillistener = new WeakReference<ServicesDetailListener> (listener);
+		this.listener = new WeakReference<ServicesListener>(listener);
 	}
 
 	/**
@@ -105,7 +89,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			params.put(Urls.paramServiceTitle, parameters[1]); // service type
 			params.put(Urls.paramServiceDetial, parameters[2]); // list page
 
-			path = ServicesDAOweb.getPath(true, path, params);
+//			path = ServicesDAOweb.getPath(true, path, params);
 		}
 		Loggen.i(this, "Got path: " + path);
 
@@ -128,7 +112,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		String path = Urls.pathMyServiceDelete;
 		RequestParams params = new RequestParams();
 		params.put(Urls.paramServiceId, serviceId + "");
-		path = ServicesDAOweb.getPath(true, path, params);
+//		path = ServicesDAOweb.getPath(true, path, params);
 
 		web.deleteService(path);
 	}
@@ -150,7 +134,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			params.put(Urls.paramServiceTitle, parameters[0]); // service type
 			params.put(Urls.paramServiceDetial, parameters[1]); // list page
 			params.put(Urls.paramServicePhoto, parameters[2]); // list size
-			path = ServicesDAOweb.getPath(true, path, params);
+//			path = ServicesDAOweb.getPath(true, path, params);
 		}
 		Loggen.i(this, "Got path: " + path);
 
@@ -208,9 +192,14 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 
 	private void overwriteServicesList(ServiceType type, ServiceFlavor flavor, List<TrustService> services) {
 		if(services != null){
+			
+			// copy the JSON representation of the services
+			List<JsonTrustService> jsonServices = new ArrayList<JsonTrustService>();
+			for(TrustService service : services) { jsonServices.add(service.getJsonService()); }
+			
 			// write to file
 			String cachefilename = ServicesDAOlocal.getServicesListFilename(type.getFragName(), flavor.toString());
-			local.writeToFile(cachefilename, new Gson().toJson(services));
+			local.writeToFile(cachefilename, new Gson().toJson(jsonServices));
 			Loggen.v(this, "saved content to file.");
 
 		}
@@ -256,7 +245,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			params.put(Urls.paramServiceListPage, searchListPageNo + ""); // list
 																			// page
 			params.put(Urls.paramServiceListSize, LIST_SIZE); // list size
-			path = ServicesDAOweb.getPath(true, path, params);
+//			path = ServicesDAOweb.getPath(true, path, params);
 		}
 		web.searchService(path);
 	}
@@ -286,7 +275,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		params.put(Urls.paramCommentListPage, commentPageNo + ""); // comment
 																	// page no
 		params.put(Urls.paramCommentListSize, LIST_SIZE); // list size
-		path = ServicesDAOweb.getPath(true, path, params);
+//		path = ServicesDAOweb.getPath(true, path, params);
 
 		Loggen.i(this, "Got path: " + path);
 		// Send the path to the correct DAO (Note: for DAOlocal, we send the
@@ -319,7 +308,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		params.put(Urls.paramUserEmail, userMail);
 		params.put(Urls.paramServiceId, serviceId + "");
 		params.put(Urls.paramCommentListPage, commentPageNo + "");
-		path = ServicesDAOweb.getPath(true, path, params);
+//		path = ServicesDAOweb.getPath(true, path, params);
 
 		Loggen.i(this, "Got path: " + path);
 
@@ -334,7 +323,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		params.put(Urls.paramUserEmail, userMail);
 		params.put(Urls.paramServiceId, serviceId + "");
 		params.put(Urls.paramServiceComment, comment);
-		path = ServicesDAOweb.getPath(true, path, params);
+//		path = ServicesDAOweb.getPath(true, path, params);
 
 		Loggen.i(this, "Got path: " + path);
 
@@ -378,8 +367,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (detaillistener.get() != null) {
-			detaillistener.get().onCreateService(success);
+		if (listener.get() != null) {
+			listener.get().onCreateService(success);
 		}
 
 	}
@@ -412,8 +401,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (listlistener.get() != null) {
-			listlistener.get().onDeleteService(success);
+		if (listener.get() != null) {
+			listener.get().onDeleteService(success);
 		}
 
 	}
@@ -446,8 +435,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (detaillistener.get() != null) {
-			detaillistener.get().onEditService(success);
+		if (listener.get() != null) {
+			listener.get().onEditService(success);
 		}
 	}
 
@@ -461,73 +450,68 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 				&& JsonTools.isValidJSON(response.message)) {
 
 			// Step 1 - convert the message into a JSON object
-			java.lang.reflect.Type listType = new TypeToken<ArrayList<TrustService>>() { }.getType();
-			services = gson.fromJson(response.message, listType);
-			if(services == null) { services = new ArrayList<TrustService> (); } 
+			java.lang.reflect.Type listType = new TypeToken<ArrayList<JsonTrustService>>() { }.getType();
+			List <JsonTrustService> jsonServices = gson.fromJson(response.message, listType);
+			if(jsonServices == null) { jsonServices = new ArrayList<JsonTrustService> (); } 
 			
 			// Step 2 - update the message with the cache content
 			if(response.page != Page.CURRENT){
 			
 				// Step 2a - read the existing data from cache. 
 				Loggen.v(this, "Start getting old services.");
-				List <TrustService> oldRecords = gson.fromJson(local.readFromFile(response.path), listType);
-
-				// Step 2b - read the existing data from cache. 
-				if(oldRecords != null){
-					// loop through all the old users
-					for(int i = oldRecords.size() - 1; i >= 0; i--){
-
-						// get the id and set overlap to false
-						int oldId = oldRecords.get(i).getServiceid();
-						boolean overlap = false;
-
-						// compare each old record to all the new records
-						for(TrustService service : services){
-							// if the old record is also in the new records, the records overlap
-							if( oldId == service.getServiceid()){ overlap = true; }
-						}
-						
-						// if the records did not overlap, add this record to the list of records
-						if(!overlap)
-							services.add(0,oldRecords.get(i));
-					}
-				}
+				List <JsonTrustService> oldRecords = gson.fromJson(local.readFromFile(response.path), listType);
+				
+				// Step 3 - update the old records with the new records
+				JsonTools.replaceListOverlap(oldRecords, jsonServices);
+				
+				// Step 4 - add the old records to the new records
+				if(response.page == Page.PREVIOUS) { 
+					jsonServices.addAll(0, oldRecords); 
+				} else {
+					jsonServices.addAll(oldRecords);
+				} 
 			}
 			
 			// TODO: FIGURE OUT WHAT TO DO WITH IMAGES 
-			for(TrustService service : services){
+			for(JsonTrustService jsonservice : jsonServices){
 
-				String serviceFileName = ServicesDAOlocal.getServiceFilename(service.getServiceid());
+				String serviceFileName = ServicesDAOlocal.getServiceFilename(jsonservice.getId());
 
 				// Step 3 - get the saved user information
-				TrustService oldService = gson.fromJson(local.readFromFile(serviceFileName), TrustService.class);
+				JsonTrustService oldService = gson.fromJson(local.readFromFile(serviceFileName), JsonTrustService.class);
 				
 				// Step 4 - Copy the image to the file
 				String image;
-				if(oldService != null && (image = oldService.getServicephoto()) != null 
+				if(oldService != null && (image = oldService.localPhoto) != null 
 						&& (image.endsWith(Gegevens.FILE_EXT_JPG) 
 						|| image.endsWith(Gegevens.FILE_EXT_PNG) 
 						|| image.endsWith(Gegevens.FILE_EXT_GIF))){
-					service.setServicephoto(image);
+					jsonservice.localPhoto = image;
 				} else {
-					service.setServicephoto(dummy.randomPic().getAbsolutePath());
+					jsonservice.localPhoto = dummy.randomPic().getAbsolutePath();
 				}
 				
 				// Step 6 - Write the service to file
-				local.writeToFile(serviceFileName, gson.toJson(service));
+				local.writeToFile(serviceFileName, gson.toJson(jsonservice));
 			}
 			
 			// Step 7 - save the date to the cache
 			if (response.path != null) {
-				local.writeToFile(response.path, gson.toJson(services));
+				local.writeToFile(response.path, gson.toJson(jsonServices));
+			}
+			
+			// Step 8 - convert it to no normal services
+			services = new ArrayList<TrustService> ();
+			for(JsonTrustService jsonservice : jsonServices) { 
+				services.add(new TrustService(null, jsonservice, new User(jsonservice.useremail))); 
 			}
 			
 		} else {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 		
-		if (listlistener.get() != null) {
-			listlistener.get().onReadServices(services);
+		if (listener.get() != null) {
+			listener.get().onReadServices(services);
 		}
 	}
 
@@ -556,8 +540,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (listlistener.get() != null) {
-			listlistener.get().onSearchService(services);
+		if (listener.get() != null) {
+			listener.get().onSearchService(services);
 		}
 	}
 
@@ -565,7 +549,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		
 		// default return values
 		TrustService service = null;
-		ArrayList<Comment> comments = null;
+		ArrayList<JsonComment> comments = null;
 		int numberOfUsers = -1;
 		
 		if (response.errorStatus == RawResponse.Error.NONE) {
@@ -592,8 +576,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 				
 				// Step 4 - convert the comment details to a list of Comment instances
 				JsonElement c = jobj.get(Urls.jsonCommentDetail); // get comment list
-				java.lang.reflect.Type listType = new TypeToken<ArrayList<Comment>>() {}.getType();
-				if(c != null) { comments = gson.fromJson(c, listType); } else { comments = new ArrayList<Comment> ();}
+				java.lang.reflect.Type listType = new TypeToken<ArrayList<JsonComment>>() {}.getType();
+				if(c != null) { comments = gson.fromJson(c, listType); } else { comments = new ArrayList<JsonComment> ();}
 				
 				// Step 5 - get the replies to each comment
 				JsonElement rd = jobj.get(Urls.jsonReplyCommentDetail);
@@ -602,12 +586,12 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 					JsonArray ja = rd.getAsJsonArray();
 					for(JsonElement ele : ja) {
 						// Step 5b - read each element in the array as an instance of Comment
-						Comment rc = gson.fromJson(ele, Comment.class);
-						for(Comment co : comments) {
+						JsonComment rc = gson.fromJson(ele, JsonComment.class);
+						for(JsonComment co : comments) {
 							// Step 5c - Add each comment to its corresponding comment
-							if(co.getCommentid() == rc.getRootcommentid()) {
-								co.getDetailComments().add(rc);
-							}
+//							if(co.getCommentid() == rc.getRootcommentid()) {
+//								co.getDetailComments().add(rc);
+//							}
 						}
 					}
 				}
@@ -619,8 +603,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Loggen.e(this, "Error (" + response.errorStatus + ") while parsing " + response.message); 
 		}
 
-		if (detaillistener.get() != null) {
-			detaillistener.get().onReadService(service, numberOfUsers, comments);
+		if (listener.get() != null) {
+			listener.get().onReadService(service, numberOfUsers, comments);
 		}
 	}
 
@@ -653,8 +637,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (detaillistener.get() != null) {
-			detaillistener.get().writeServiceScore(success);
+		if (listener.get() != null) {
+			listener.get().writeServiceScore(success);
 		}
 	}
 
@@ -687,35 +671,25 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
 
-		if (detaillistener.get() != null) {
-			detaillistener.get().writeServiceComment(success);
+		if (listener.get() != null) {
+			listener.get().writeServiceComment(success);
 		}
 	}
 
-	public interface ServicesListListener {
-		public void onDeleteService(boolean success);
-
-		public void onReadServices(List<TrustService> services);
-
-		public void onSearchService(List<TrustService> services);
-
-	}
-
-	public interface ServicesDetailListener {
+	public interface ServicesListener {
 		/** Callback from the readService() method. 
 		 * @param service The service read from the data source. Null if no service was found or data request failed.
 		 * @param numberOfUsers The number of users that have used this service. -1 if data request failed.
 		 * @param comments A list of comments. Null if data request failed. 
 		 */
-		public void onReadService(TrustService service, int numberOfUsers, List<Comment> comments);
-
+		public void onReadService(TrustService service, int numberOfUsers, List<JsonComment> comments);
 		public void writeServiceScore(boolean success);
-
 		public void writeServiceComment(boolean success);
-
 		public void onEditService(boolean success);
-
 		public void onCreateService(boolean success);
+		public void onDeleteService(boolean success);
+		public void onReadServices(List<TrustService> services);
+		public void onSearchService(List<TrustService> services);
 	}
 	
 	/**

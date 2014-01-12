@@ -48,12 +48,12 @@ public class UserArrayAdapter extends ArrayAdapter <User>{
 				
 				// Set the text
 				((TextView) v.findViewById(android.R.id.text1)).setText(user.getTimeEnterString());
-				((TextView) v.findViewById(android.R.id.text2)).setText(user.getActivityScore());
-				((TextView) v.findViewById(android.R.id.title)).setText(user.getUserName());
+				((TextView) v.findViewById(android.R.id.text2)).setText(String.valueOf(user.getActivityScore()));
+				((TextView) v.findViewById(android.R.id.title)).setText(user.getName());
 				((TextView) v.findViewById(android.R.id.content)).setText(user.getEmail());
 
 				//Set the image
-				File imgFile = new File(user.getPhotoLocation() != null ? user.getPhotoLocation() : "");
+				File imgFile = new File(user.getLocalPhoto() != null ? user.getLocalPhoto() : "");
 				ImageView thumb = (ImageView) v.findViewById(android.R.id.icon1);
 				if(imgFile.exists()){
 				    thumb.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(

@@ -3,94 +3,143 @@ package edu.bupt.trust.kxlab.model;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import edu.bupt.trust.kxlab.jsonmodel.JsonAnnounceFAQ;
-import edu.bupt.trust.kxlab.jsonmodel.JsonPost;
-import edu.bupt.trust.kxlab.jsonmodel.JsonVote;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Post implements Parcelable {
 	
-	private int pdId;
+	private JsonItem jsonPost;
 	private PostType postType;
-	private String postTitle;
-	private String postDetail;
-	private int pdReplyCount;
-	private long pdPublishTime;
-	private long pdLastEditTime;
-	private long pdLastReplyTime;
 	private User postSponsor;
 	private boolean poll;
 	
 	public Post() {
-		pdId 			= -1;
+		jsonPost		= new JsonPost();
 		postType 		= PostType.FORUM;
-		postTitle 		= "";
-		postDetail 		= "";
-		pdReplyCount 	= 0;
-		pdPublishTime 	= 0;
-		pdLastEditTime 	= 0;
-		pdLastReplyTime = 0;
 		postSponsor 	= new User();
 		poll 			= false;
 	}
 	
-	public Post(JsonPost post){
-		pdId 			= post.getPdId();
-		postTitle 		= post.getPostTitle();
-		postDetail 		= post.getPostDetail();
-		pdReplyCount 	= post.getPdReplyCount();
-		pdPublishTime 	= post.getPdPublishTime();
-		pdLastEditTime 	= post.getPdLastEditTime();
-		pdLastReplyTime = post.getPdLastReplyTime();
-		postSponsor 	= new User(post.getEmail());
-		postType 		= PostType.fromServerType(post.getPostType());
-		poll			= false;
+	public Post(Post post){
+		this();
+		setFromPost(post, false);
 	}
 
-	public Post(Post otherPost){
-		setFromOtherPost(otherPost);
+	public Post(JsonItem post){
+		this();
+		setJsonPost(post, null, false);
+		setPostSponsor(new User(this.getEmail()));
+	}
+	
+	public Post(JsonItem post, User user){
+		this();
+		setJsonPost(post, null, false);
+		setPostSponsor(user);
+	}
+	
+	public boolean isPoll() {
+		return poll;
 	}
 
+	public void setFromPost(Post that, boolean allowNull) {
+		postSponsor 	= allowNull ? that.postSponsor : new User(that.postSponsor);
+		setJsonPost(that.jsonPost, that.postType, allowNull);
+	}
+	
+	public void setPostSponsor(User postSponsor) {
+		// TODO: tie this in with the jsonPost email 
+		if(postSponsor != null) { this.postSponsor = postSponsor; }
+	}
+
+	public boolean setJsonPost(JsonItem aThat, PostType type, boolean allowNull) {
+		
+		boolean isPost = true;
+		
+		if(aThat instanceof JsonPost){
+			// convert this to a JSON post
+			setFromJsonPost((JsonPost) aThat, allowNull);
+			
+			// determine the post type
+			PostType thatType = PostType.fromServerType(((JsonPost) aThat).postType);
+			if (type == PostType.FORUM || type == PostType.SUGGESTION){
+				postType = type;	
+			} else if(thatType == PostType.FORUM || thatType == PostType.SUGGESTION) {
+				postType = thatType;
+			} else {
+				postType = PostType.FORUM;
+			}
+
+			// assign the post type and poll 
+			((JsonPost) jsonPost).postType = postType.getServerType();
+			poll = false;
+			
+		} else if(aThat instanceof JsonAnnounceFAQ){
+			// convert this to a JSON post
+			setFromJsonAnnounceFAQ((JsonAnnounceFAQ) aThat, allowNull);
+			// determine the post type
+			PostType thatType = PostType.fromServerType(((JsonAnnounceFAQ) aThat).agType);
+			if (type == PostType.ANNOUNCE || type == PostType.FAQ){
+				postType = type;	
+			} else if(thatType == PostType.ANNOUNCE || thatType == PostType.FAQ) {
+				postType = thatType;
+			} else {
+				postType = PostType.ANNOUNCE;
+			}
+
+			// assign the post type and poll 
+			((JsonAnnounceFAQ) jsonPost).agType = postType.getServerType();
+			poll = false;
+			
+		} else if(aThat instanceof JsonVote){
+			setFromJsonVote((JsonVote) aThat, allowNull);
+			postType = PostType.ANNOUNCE;
+			poll = true;
+		} else {
+			// Something went horribly wrong.
+			poll = false;
+			isPost = false;
+		}
+		
+		return isPost;
+	}
+	
+	private void setFromJsonPost(JsonPost that, boolean allowNull){
+		jsonPost = allowNull ? that : new JsonPost(that);
+	}
+	
+	private void setFromJsonAnnounceFAQ(JsonAnnounceFAQ that, boolean allowNull){
+		jsonPost = allowNull ? that : new JsonAnnounceFAQ(that);
+	}
+	
+	private void setFromJsonVote(JsonVote that, boolean allowNull){
+		jsonPost = allowNull ? that : new JsonVote(that);
+	}
+
+	public int getId() {
+		return (jsonPost != null)  ? jsonPost.getId() : -1;
+	}
+	
+	public String getPublishTimeString(){
+		long date = 0; 
+		
+    	if(jsonPost instanceof JsonPost){
+        	date = ((JsonPost) jsonPost).pdPublishTime;
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+        	date = ((JsonAnnounceFAQ) jsonPost).agPublishTime;
+    	} else if (jsonPost instanceof JsonVote){
+        	date = ((JsonVote) jsonPost).endTime;
+    	} 
+    	
+		return new SimpleDateFormat("yyyy-mm-dd HH:mm:ss", Locale.US).format(date);
+	}
+	
     private Post(Parcel in) {
     	// Note: you need to read the items in the same order that you wrote them
-		pdId 			= in.readInt();
-		postType 		= PostType.fromIndex(in.readInt());
-		postTitle 		= in.readString();
-		postDetail 		= in.readString();
-		pdReplyCount 	= in.readInt();
-		pdPublishTime 	= in.readLong();
-		pdLastEditTime 	= in.readLong();
-		pdLastReplyTime = in.readLong();
+		jsonPost		= in.readParcelable(getClass().getClassLoader());
+    	postType 		= PostType.fromIndex(in.readInt());
 		postSponsor 	= in.readParcelable(getClass().getClassLoader());
 		poll			= (in.readByte() != 0);
     }
-
-    public Post(JsonAnnounceFAQ jp) {
-		pdId 			= Integer.valueOf(jp.getAgId());
-		postType 		= PostType.fromServerType(jp.getAgType());
-		postTitle 		= jp.getAgTitle();
-		postDetail 		= jp.getAgContent();
-		pdReplyCount 	= 0;
-		pdPublishTime 	= jp.getAgPublishTime();
-		pdLastEditTime 	= jp.getAgLastEditTime();
-		pdLastReplyTime = 0;
-		postSponsor 	= new User(jp.getAgPublishAuthor());
-		poll			= false;
-	}
-
-	public Post(JsonVote jv) {
-		pdId 			= Integer.valueOf(jv.getVoteId());
-		postType 		= PostType.ANNOUNCE;
-		postTitle 		= jv.getVoteUserEmail();
-		postDetail 		= jv.getVoteLastRate();
-		pdReplyCount 	= 0;
-		pdPublishTime 	= 0;
-		pdLastEditTime 	= 0;
-		pdLastReplyTime = 0;
-		postSponsor 	= new User(jv.getVoteUserEmail());
-		poll			= true;
-	}
 
 	// this is used to regenerate your object.
     public static final Parcelable.Creator<Post> CREATOR = new Parcelable.Creator<Post>() {
@@ -103,158 +152,23 @@ public class Post implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
     	// Note: you need to write the items in the same order that you intend to read them
-    	dest.writeInt(pdId);
+    	
+    	if(jsonPost instanceof JsonPost){
+        	dest.writeParcelable((JsonPost) jsonPost, 0);
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+        	dest.writeParcelable((JsonAnnounceFAQ) jsonPost, 0);
+    	} else if (jsonPost instanceof JsonVote){
+        	dest.writeParcelable((JsonVote) jsonPost, 0);
+    	} else {
+        	dest.writeParcelable(new JsonPost(), 0);
+    	}
+    	
     	dest.writeInt(postType.getIndex());
-		dest.writeString(postTitle);
-		dest.writeString(postDetail);
-    	dest.writeInt(pdReplyCount);
-    	dest.writeLong(pdPublishTime);
-    	dest.writeLong(pdLastEditTime);
-    	dest.writeLong(pdLastReplyTime);
     	dest.writeParcelable(postSponsor, 0);
     	dest.writeByte((byte) (poll ? 1 : 0));
     }
 	
-	public boolean isPoll() {
-		return poll;
-	}
-
-	public void setPoll(boolean poll) {
-		this.poll = poll;
-	}
-
-	public int getPdId() {
-		return pdId;
-	}
-
-	public void setPdId(int pdId) {
-		this.pdId = pdId;
-	}
-
-	public PostType getPostType() {
-		return postType;
-	}
-
-	public void setPostType(PostType postType) {
-		if(postType != null) { this.postType = postType; }
-	}
-
-	public String getPostTitle() {
-		return postTitle;
-	}
-
-	public void setPostTitle(String postTitle) {
-		if(postTitle != null) { this.postTitle = postTitle; }
-	}
-
-	public String getPostDetail() {
-		return postDetail;
-	}
-
-	public void setPostDetail(String postDetail) {
-		if(postDetail != null) { this.postDetail = postDetail; }
-	}
-
-	public int getPdReplyCount() {
-		return pdReplyCount;
-	}
-
-	public void setPdReplyCount(int pdReplyCount) {
-		this.pdReplyCount = pdReplyCount;
-	}
-
-	public long getPdPublishTime() {
-		return pdPublishTime;
-	}
-
-	public void setPdPublishTime(long pdPublishTime) {
-		this.pdPublishTime = pdPublishTime;
-	}
-
-	public long getPdLastEditTime() {
-		return pdLastEditTime;
-	}
-
-	public void setPdLastEditTime(long pdLastEditTime) {
-		this.pdLastEditTime = pdLastEditTime;
-	}
-
-	public long getPdLastReplyTime() {
-		return pdLastReplyTime;
-	}
-
-	public void setPdLastReplyTime(long pdLastReplyTime) {
-		this.pdLastReplyTime = pdLastReplyTime;
-	}
-
-	public User getPostSponsor() {
-		return postSponsor;
-	}
-
-	public void setPostSponsor(User postSponsor) {
-		if(postSponsor != null) { this.postSponsor = postSponsor; }
-	}
-	
-	public String getShortTitle(int max){
-		return cutString(postTitle, max);
-	}
-
-	public String getShortDetail(int max){
-		return cutString(postDetail, max);
-	}
-	
-	private String cutString(String longString, int max){
-		String shortString = "";
-		int len = longString.length();
-		if(max >= len || max < 0){
-			shortString = longString; 
-		} else if(max < 5){
-			shortString = longString.substring(0, max);
-		} else {
-			shortString = longString.substring(0, max -3) + "...";
-		}
-		
-		return shortString;
-	}
-	
-	public void setFromOtherPost(Post otherPost){
-		pdId 			= otherPost.getPdId();
-		postType 		= otherPost.getPostType();
-		postTitle 		= otherPost.getPostTitle();
-		postDetail 		= otherPost.getPostDetail();
-		pdReplyCount 	= otherPost.getPdReplyCount();
-		pdPublishTime 	= otherPost.getPdPublishTime();
-		pdLastEditTime 	= otherPost.getPdLastEditTime();
-		pdLastReplyTime = otherPost.getPdLastReplyTime();
-		postSponsor 	= otherPost.getPostSponsor();
-		poll			= otherPost.isPoll();
-	}
-	
-	public JsonPost getJsonPost(){
-
-		JsonPost post = new JsonPost();
-
-		post.setPdId(pdId);
-		post.setPostType(getPostType().getServerType());
-		post.setPostTitle(this.getPostTitle());
-		post.setPostDetail(this.getPostDetail());
-		post.setPdLastEditTime(this.getPdLastEditTime());
-		post.setPdLastReplyTime(this.getPdLastReplyTime());
-		post.setPdReplyCount(this.getPdReplyCount());
-		post.setPdPublishTime(this.getPdPublishTime());
-		post.setEmail(this.postSponsor.getEmail());
-		
-		return post;
-	}
-	
-	public String getPublishTimeString(){
-		return new SimpleDateFormat("yyyy-mm-dd HH:mm:ss", Locale.US).format(pdPublishTime);
-	}
-	
-
-	
-	@Override 
-	public boolean equals(Object aThat) {
+	@Override public boolean equals(Object aThat) {
 		if ( this == aThat ) return true;
 
 	    //use instanceof instead of getClass here for two reasons
@@ -262,17 +176,174 @@ public class Post implements Parcelable {
 
 	    //cast to native object is now safe
 	    Post that = (Post) aThat;
-
+		
 	    //now a proper field-by-field evaluation can be made
-	    return
-	    	(this.pdId == that.pdId) &&
-	    	(this.pdReplyCount == that.pdReplyCount) &&
-	    	(this.pdPublishTime == that.pdPublishTime) &&
-	    	(this.pdLastEditTime == that.pdLastEditTime) &&
-	    	(this.pdLastReplyTime == that.pdLastReplyTime) &&
+	    return ((jsonPost == null && that.jsonPost == null) ||
+				(jsonPost instanceof JsonPost && that.jsonPost instanceof JsonPost 
+							&& ((JsonPost) jsonPost).equals(that.jsonPost)) || 
+				(jsonPost instanceof JsonAnnounceFAQ && that.jsonPost instanceof JsonAnnounceFAQ 
+    						&& ((JsonAnnounceFAQ) jsonPost).equals(that.jsonPost)) || 
+				(jsonPost instanceof JsonVote && that.jsonPost instanceof JsonVote 
+    						&& ((JsonVote) jsonPost).equals(that.jsonPost))) &&
 	    	((this.postType != null) ? this.postType == that.postType : that.postType == null) &&
-	    	((this.postTitle != null) ? this.postTitle.equals(that.postTitle) : that.postTitle == null) &&
-	    	((this.postDetail != null) ? this.postDetail.equals(that.postDetail) : that.postDetail == null) &&
 	    	((this.postSponsor != null) ? this.postSponsor.equals(that.postSponsor) : that.postSponsor == null);
+	}
+
+	public JsonItem getJsonPost() {
+		return jsonPost;
+	}
+
+	public PostType getPostType() {
+		return postType;
+	}
+
+	public User getPostSponsor() {
+		return postSponsor;
+	}
+	
+	public String getPostTitle() {
+    	if(jsonPost instanceof JsonPost){
+    		return ((JsonPost) jsonPost).postTitle;
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+    		return ((JsonAnnounceFAQ) jsonPost).agTitle;
+    	} else if (jsonPost instanceof JsonVote){
+    		return ((JsonVote) jsonPost).voteUserEmail;
+    	} else {
+        	return "";
+    	}
+	}
+
+	public String getPostDetail() {
+    	if(jsonPost instanceof JsonPost){
+    		return ((JsonPost) jsonPost).postDetail;
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+    		return ((JsonAnnounceFAQ) jsonPost).agContent;
+    	} else if (jsonPost instanceof JsonVote){
+    		return ((JsonVote) jsonPost).voteLastRate;
+    	} else {
+        	return "";
+    	}
+	}
+
+	public long getPdPublishTime() {
+    	if(jsonPost instanceof JsonPost){
+    		return ((JsonPost) jsonPost).pdPublishTime;
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+    		return ((JsonAnnounceFAQ) jsonPost).agPublishTime;
+    	} else if (jsonPost instanceof JsonVote){
+    		return ((JsonVote) jsonPost).endTime;
+    	} else {
+        	return 0;
+    	}
+	}
+
+	public long getPdLastEditTime() {
+    	if(jsonPost instanceof JsonPost){
+    		return ((JsonPost) jsonPost).pdLastEditTime;
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+    		return ((JsonAnnounceFAQ) jsonPost).agLastEditTime;
+    	} else {
+        	return 0;
+    	}
+	}
+
+	public int getPdReplyCount() {
+    	if(jsonPost instanceof JsonPost){
+    		return ((JsonPost) jsonPost).pdReplyCount;
+    	} else {
+        	return 0;
+    	}
+	}
+
+	public long getPdLastReplyTime() {
+    	if(jsonPost instanceof JsonPost){
+    		return ((JsonPost) jsonPost).pdLastReplyTime;
+    	} else {
+        	return 0;
+    	}
+	}
+
+	public String getEmail() {
+    	if(jsonPost instanceof JsonPost){
+    		return ((JsonPost) jsonPost).email;
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+    		return ((JsonAnnounceFAQ) jsonPost).agPublishAuthor;
+    	} else if (jsonPost instanceof JsonVote){
+    		return ((JsonVote) jsonPost).voteUserEmail;
+    	} else {
+        	return "";
+    	}
+	}
+	
+	public void setId(int id) {
+    	if(jsonPost instanceof JsonPost){
+    		((JsonPost) jsonPost).pdId = id;
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+    		((JsonAnnounceFAQ) jsonPost).agId = String.valueOf(id);
+    	} else if (jsonPost instanceof JsonVote){
+    		((JsonVote) jsonPost).voteId = String.valueOf(id);
+    	} 
+	}
+
+	public void setPostTitle(String postTitle) {
+		if(postTitle != null){
+	    	if(jsonPost instanceof JsonPost){
+	    		((JsonPost) jsonPost).postTitle = postTitle;
+	    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+	    		((JsonAnnounceFAQ) jsonPost).agTitle = postTitle;
+	    	} 
+		}
+	}
+
+	public void setPostDetail(String postDetail) {
+		if(postDetail != null){
+	    	if(jsonPost instanceof JsonPost){
+	    		((JsonPost) jsonPost).postDetail = postDetail;
+	    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+	    		((JsonAnnounceFAQ) jsonPost).agContent = postDetail;
+	    	} 
+		}
+	}
+
+	public void setPdPublishTime(long pdPublishTime) {
+    	if(jsonPost instanceof JsonPost){
+    		((JsonPost) jsonPost).pdPublishTime = pdPublishTime;
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+    		((JsonAnnounceFAQ) jsonPost).agPublishTime = pdPublishTime;
+    	} else if (jsonPost instanceof JsonVote){
+    		((JsonVote) jsonPost).endTime = pdPublishTime;
+    	} 
+	}
+
+	public void setPdLastEditTime(long pdLastEditTime) {
+    	if(jsonPost instanceof JsonPost){
+    		((JsonPost) jsonPost).pdLastEditTime = pdLastEditTime;
+    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+    		((JsonAnnounceFAQ) jsonPost).agLastEditTime = pdLastEditTime;
+    	} 
+	}
+
+	public void setPdReplyCount(int pdReplyCount) {
+    	if(jsonPost instanceof JsonPost){
+    		((JsonPost) jsonPost).pdReplyCount = pdReplyCount;
+    	} 
+	}
+
+	public void setPdLastReplyTime(long pdLastReplyTime) {
+    	if(jsonPost instanceof JsonPost){
+    		((JsonPost) jsonPost).pdLastReplyTime = pdLastReplyTime;
+    	} 
+	}
+
+	public void setEmail(String email) {
+		if(email != null){
+	    	if(jsonPost instanceof JsonPost){
+	    		((JsonPost) jsonPost).email = email;
+	    	} else if (jsonPost instanceof JsonAnnounceFAQ) {
+	    		((JsonAnnounceFAQ) jsonPost).agPublishAuthor = email;
+	    	} else if (jsonPost instanceof JsonVote){
+	    		((JsonVote) jsonPost).voteUserEmail = email;
+	    	} 
+		}
 	}
 }

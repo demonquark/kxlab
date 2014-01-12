@@ -5,173 +5,103 @@ import android.os.Parcelable;
 
 public class TrustService implements Parcelable  {
 
-	private int serviceid;
-	private int servicetype;
-	private String servicetitle;
-	private String servicedetail;
-	private long servicecreatetime;
-	private long servicelastedittime;
-	private String credibilityScore;
-	private String servicephoto;
-	private String useremail;
-	private int servicestatus;
+	private ServiceType type;
+	private ServiceFlavor flavor;
+	private JsonTrustService jsonService;
+	private User owner;
 	
-    private TrustService(Parcel in) {
-    	// Note: you need to read the items in the same order that you wrote them
-    	serviceid = in.readInt();
-    	servicetype = in.readInt();
-		servicetitle = in.readString();
-		servicedetail = in.readString();
-		servicecreatetime = in.readLong();
-		servicelastedittime = in.readLong();
-		credibilityScore = in.readString();
-		servicephoto = in.readString();
-		useremail = in.readString();
-		servicestatus = in.readInt();
-    }
-
     public TrustService() {
-		serviceid = -1;
-		servicetype = -1;
-		servicetitle = "";
-		servicedetail = "";
-		servicecreatetime = -1;
-		servicelastedittime = -1;
-		credibilityScore = "";
-		servicephoto = "";
-		useremail = "";
-		servicestatus = -1;
+    	type = ServiceType.COMMUNITY;
+    	flavor = ServiceFlavor.MYSERVICE;
+    	jsonService = new JsonTrustService();
+    	owner = new User();
     }
 	
     public TrustService(TrustService otherService) {
-    	setFromTrustService(otherService);
+    	this();
+    	setFromService(otherService);
     }
+    
+    public TrustService(ServiceFlavor flavor, JsonTrustService service, User owner){
+    	this.flavor = flavor;
+    	setJsonService(service);
+    	setOwner(owner);
+    }
+
+    public void setFromService(TrustService that) {
+    	flavor	= that.flavor != null ? that.flavor : ServiceFlavor.SERVICE; 
+    	owner 	= that.owner != null ? new User(that.owner) : new User();
+		setJsonService(that.jsonService);
+	}
+
+	public int getId() {
+		return (jsonService != null) ? jsonService.getId() : -1;
+	}
 	
+    public ServiceType getType() {
+		return type;
+	}
+
+	public ServiceFlavor getFlavor() {
+		return flavor;
+	}
+
+	public JsonTrustService getJsonService() {
+		return jsonService;
+	}
+
+	public User getOwner() {
+		return owner;
+	}
+
+    public void setType(ServiceType type) {
+		if(type != null) { 
+			this.type = type;
+			this.jsonService.servicetype = type.getServerType();
+		}
+	}
+	
+	public void setFlavor(ServiceFlavor flavor) {
+		this.flavor = flavor;
+	}
+
+	public void setJsonService(JsonTrustService jsonService) {
+		if(jsonService != null){
+			this.type = ServiceType.fromServerType(jsonService.servicetype);
+			this.jsonService = jsonService;
+		}
+	}
+
+	public void setOwner(User owner) {
+		if(owner != null) { this.owner = owner; }
+	}
+
+	private TrustService(Parcel in) {
+    	// Note: you need to read the items in the same order that you wrote them
+    	type 			= ServiceType.fromIndex(in.readInt());
+    	flavor 			= ServiceFlavor.fromIndex(in.readInt());
+    	jsonService		= in.readParcelable(getClass().getClassLoader());
+    	owner			= in.readParcelable(getClass().getClassLoader());
+    }
+
     // this is used to regenerate your object.
     public static final Parcelable.Creator<TrustService> CREATOR = new Parcelable.Creator<TrustService>() {
         public TrustService createFromParcel(Parcel in) { return new TrustService(in); }
         public TrustService[] newArray(int size) { return new TrustService[size]; }
     };
-
-    @Override public int describeContents() { return 0; }
+	
+	@Override public int describeContents() { return 0; }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
     	// Note: you need to write the items in the same order that you intend to read them
-    	dest.writeInt(serviceid);
-    	dest.writeInt(servicetype);
-    	dest.writeString(servicetitle);
-    	dest.writeString(servicedetail);
-    	dest.writeLong(servicecreatetime);
-    	dest.writeLong(servicelastedittime);
-    	dest.writeString(credibilityScore);
-    	dest.writeString(servicephoto);
-    	dest.writeString(useremail);
-    	dest.writeInt(servicestatus);
-    	
+    	dest.writeInt(type.getIndex());
+    	dest.writeInt(flavor.getIndex());
+    	dest.writeParcelable(jsonService, 0);
+    	dest.writeParcelable(owner, 0);    	
     }
 
-	public int getServiceid() {
-		return serviceid;
-	}
-
-	public void setServiceid(int serviceid) {
-		this.serviceid = serviceid;
-	}
-
-	public int getServicetype() {
-		return servicetype;
-	}
-
-	public void setServicetype(int servicetype) {
-		this.servicetype = servicetype;
-	}
-
-	public String getServicetitle() {
-		return servicetitle;
-	}
-
-	public void setServicetitle(String servicetitle) {
-		this.servicetitle = servicetitle;
-	}
-
-	public String getServicedetail() {
-		return servicedetail;
-	}
-
-	public void setServicedetail(String servicedetail) {
-		this.servicedetail = servicedetail;
-	}
-
-	public long getServicecreatetime() {
-		return servicecreatetime;
-	}
-
-	public void setServicecreatetime(long servicecreatetime) {
-		this.servicecreatetime = servicecreatetime;
-	}
-
-	public long getServicelastedittime() {
-		return servicelastedittime;
-	}
-
-	public void setServicelastedittime(long servicelastedittime) {
-		this.servicelastedittime = servicelastedittime;
-	}
-
-	public String getCredibilityScore() {
-		return credibilityScore;
-	}
-
-	public void setCredibilityScore(String credibilityScore) {
-		this.credibilityScore = credibilityScore;
-	}
-
-	public String getServicephoto() {
-		return servicephoto;
-	}
-
-	public void setServicephoto(String servicephoto) {
-		this.servicephoto = servicephoto;
-		
-	}
-
-	public String getUseremail() {
-		return useremail;
-	}
-
-	public void setUseremail(String useremail) {
-		this.useremail = useremail;
-	}
-
-	public int getServicestatus() {
-		return servicestatus;
-	}
-
-	public void setServicestatus(int servicestatus) {
-		this.servicestatus = servicestatus;
-	}
-
-	public static Parcelable.Creator<TrustService> getCreator() {
-		return CREATOR;
-	}
-	
-	public void setFromTrustService(TrustService otherService){
-		serviceid = otherService.getServiceid();
-		servicetype = otherService.getServicetype();
-		servicetitle = otherService.getServicetitle();
-		servicedetail = otherService.getServicedetail();
-		servicecreatetime = otherService.getServicecreatetime();
-		servicelastedittime = otherService.getServicelastedittime();
-		credibilityScore = otherService.getCredibilityScore();
-		servicephoto = otherService.getServicephoto();
-		useremail = otherService.getUseremail();
-		servicestatus = otherService.getServicestatus();
-	}
-	
-
-	
-	@Override 
+    @Override 
 	public boolean equals(Object aThat) {
 		if ( this == aThat ) return true;
 
@@ -183,14 +113,79 @@ public class TrustService implements Parcelable  {
 
 	    //now a proper field-by-field evaluation can be made
 	    return
-	    	(this.serviceid == that.serviceid) &&
-	    	(this.servicetype == that.servicetype) &&
-	    	(this.servicecreatetime == that.servicecreatetime) &&
-	    	(this.servicelastedittime == that.servicelastedittime) &&
-	    	((this.servicetitle != null) ? this.servicetitle.equals(that.servicetitle) : that.servicetitle == null) &&
-	    	((this.servicedetail != null) ? this.servicedetail.equals(that.servicedetail) : that.servicedetail == null) &&
-	    	((this.credibilityScore != null) ? this.credibilityScore.equals(that.credibilityScore) : that.credibilityScore == null) &&
-	    	((this.servicephoto != null) ? this.servicephoto.equals(that.servicephoto) : that.servicephoto == null) &&
-	    	((this.useremail != null) ? this.useremail.equals(that.useremail) : that.useremail == null);
+	    	(this.type == that.type) &&
+	    	(this.flavor == that.flavor) &&
+	    	((this.jsonService != null) ? this.jsonService.equals(that.jsonService) : that.jsonService == null) &&
+	    	((this.owner != null) ? this.owner.equals(that.owner) : that.owner == null);
+	}
+    
+	public String getServicetitle() {
+		return jsonService.servicetitle;
+	}
+
+	public String getServicedetail() {
+		return jsonService.servicedetail;
+	}
+
+	public long getServicecreatetime() {
+		return jsonService.servicecreatetime;
+	}
+
+	public long getServicelastedittime() {
+		return jsonService.servicelastedittime;
+	}
+
+	public String getCredibilityScore() {
+		return jsonService.credibilityScore;
+	}
+
+	public String getUseremail() {
+		return jsonService.useremail;
+	}
+
+	public int getServicestatus() {
+		return jsonService.servicestatus;
+	}
+
+	public String getLocalPhoto() {
+		return jsonService.localPhoto;
+	}
+
+	public void setId(int serviceid) {
+		this.jsonService.serviceid = serviceid;
+	}
+
+	public void setServicetitle(String servicetitle) {
+		this.jsonService.servicetitle = servicetitle;
+	}
+
+	public void setServicedetail(String servicedetail) {
+		this.jsonService.servicedetail = servicedetail;
+	}
+
+	public void setServicecreatetime(long servicecreatetime) {
+		this.jsonService.servicecreatetime = servicecreatetime;
+	}
+
+	public void setServicelastedittime(long servicelastedittime) {
+		this.jsonService.servicelastedittime = servicelastedittime;
+	}
+
+	public void setCredibilityScore(String credibilityScore) {
+		this.jsonService.credibilityScore = credibilityScore;
+	}
+
+	public void setUseremail(String useremail) {
+		// TODO: Tie this in with user email ???
+		this.jsonService.useremail = useremail;
+	}
+
+	public void setServicestatus(int servicestatus) {
+		this.jsonService.servicestatus = servicestatus;
+	}
+
+	public void setLocalPhoto(String localPhoto) {
+		// TODO: Tie this in with jsonService photo ???
+		this.jsonService.localPhoto = localPhoto;
 	}
 }

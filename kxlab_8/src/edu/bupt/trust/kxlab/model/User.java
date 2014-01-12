@@ -3,90 +3,46 @@ package edu.bupt.trust.kxlab.model;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-// TODO: FIX USER TO MATCH JSON
 public class User implements Parcelable {
-	private String email;
-	private String userName;
-	private String password;
-	private String photoLocation;
-	private String gender;
-	private String timeEnter;
-	private String activityScore;
-	private int Source;
-	private String lastLoginTime;
-	private String phoneNumber;
-	private String webPhoto;
+	
+	private JsonUser jsonUser;
 	private boolean isLogin;
-	public int id;
-	private int roleId;
 	
 	public User() {
-		email = "";
-		userName = "";
-		password = "";
-		photoLocation = "";
-		gender = "";
-		timeEnter = "";
-		activityScore = "";
-		Source = 1;
-		phoneNumber = "";
-		isLogin=false;
-		roleId= 1;
+		jsonUser		= new JsonUser();
+		isLogin			= false;
 	}
 	
-	public User(String email) {
-		this.email = email;
-		userName = "";
-		password = "";
-		photoLocation = "";
-		gender = "";
-		timeEnter = "";
-		activityScore = "";
-		Source = 1;
-		phoneNumber = "";
-		isLogin=false;
-		roleId = 1;
-	}
-	
-	public User(JsonUser userinfo){
-		this();
-		if(userinfo != null){
-			id = userinfo.getId();
-			email = userinfo.getEmail();
-			userName = userinfo.getName();
-			password = userinfo.getPassword();
-			photoLocation = userinfo.getPhoto();
-			gender = userinfo.getSex();
-			timeEnter = userinfo.getJointime();
-			activityScore = String.valueOf(userinfo.getActivityScore());
-			Source = userinfo.getType();
-			phoneNumber = userinfo.getPhonenumber();
-			isLogin = false;
-			roleId = userinfo.getRoleId();
-		}
-	}
-
 	public User(User newUser){
+		this();
 		setFromUser(newUser);
 	}
 
+	public User(JsonUser user){
+		this();
+		this.setJsonUser(user);
+	}
+	
+	public User (String email){
+		this(new JsonUser(email));
+	}
+	
+	public void setFromUser(User that){
+		if(that != null) { jsonUser		= that.jsonUser; }
+		isLogin			= that.isLogin;
+	}
+
+	public String getTimeEnterString(){
+		long date = (jsonUser != null) ? jsonUser.jointime : 0;
+		return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(date);
+	}
+	
     private User(Parcel in) {
     	// Note: you need to read the items in the same order that you wrote them
-    	email = in.readString();
-		userName = in.readString();
-		password = in.readString();
-		photoLocation = in.readString();
-		gender = in.readString();
-		timeEnter = in.readString();
-		activityScore = in.readString();
-		Source = in.readInt();
-		phoneNumber = in.readString();
-		isLogin = (in.readInt() != 0);
-		roleId = in.readInt();
+    	jsonUser		= in.readParcelable(getClass().getClassLoader());
+		isLogin 		= (in.readByte() != 0);
     }
 
     // this is used to regenerate your object.
@@ -100,150 +56,9 @@ public class User implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
     	// Note: you need to write the items in the same order that you intend to read them
-    	dest.writeString(email);
-    	dest.writeString(userName);
-    	dest.writeString(password);
-    	dest.writeString(photoLocation);
-    	dest.writeString(gender);
-    	dest.writeString(timeEnter);
-    	dest.writeString(activityScore);
-    	dest.writeInt(Source);
-    	dest.writeString(phoneNumber);
-    	dest.writeInt(isLogin ? 1 : 0);
-    	dest.writeInt(roleId);
+    	dest.writeParcelable(jsonUser, 0);
+    	dest.writeByte((byte) (isLogin ? 1 : 0));
     }
-
-	
-	/**
-	 * Getter and Setters
-	 * @return
-	 */
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-	
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public String getPhotoLocation() {
-		return photoLocation;
-	}
-
-	public void setPhotoLocation(String photoLocation) {
-		this.photoLocation = photoLocation;
-	}
-
-	public String getGender() {
-		return gender;
-	}
-
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
-
-	public String getTimeEnter() {
-		return timeEnter;
-	}
-
-	public void setTimeEnter(String timeEnter) {
-		this.timeEnter = timeEnter;
-	}
-
-	public String getActivityScore() {
-		return activityScore;
-	}
-
-	public void setActivityScore(String activityScore) {
-		this.activityScore = activityScore;
-	}
-
-	public int getSource() {
-		return Source;
-	}
-
-	public void setSource(int source) {
-		Source = source;
-	}
-	
-	public String getPhoneNumber(){
-		return this.phoneNumber;
-	}
-	
-	public void setPhoneNumber(String phoneNumber){
-		if(phoneNumber != null) { this.phoneNumber = phoneNumber; }
-	}
-	
-	public boolean isLogin() {
-		return isLogin;
-	}
-	
-	public void setLogin(boolean isLogin) {
-		this.isLogin = isLogin;
-	}
-	
-	public void setFromUser(User otherUser){
-		email = otherUser.getEmail();
-		userName = otherUser.getUserName();
-		password = otherUser.getPassword();
-		photoLocation = otherUser.getPhotoLocation();
-		gender = otherUser.getGender();
-		timeEnter = otherUser.getTimeEnter();
-		activityScore = otherUser.getActivityScore();
-		Source = otherUser.getSource();
-		phoneNumber = otherUser.getPhoneNumber();
-		isLogin= otherUser.isLogin;
-		roleId= otherUser.roleId;
-	}
-	
-	
-	public JsonUser getJsonUser(){
-
-		JsonUser userinfo = new JsonUser();
-		userinfo.setEmail(email);
-		userinfo.setName(userName);
-		userinfo.setPassword(password);
-		userinfo.setSex(gender);
-		userinfo.setPhoto(webPhoto);
-		userinfo.setPhonenumber(phoneNumber);
-		userinfo.setJointime(timeEnter);
-		userinfo.setLastLoginTime(lastLoginTime);
-		userinfo.setPhoto(photoLocation);
-		try{ userinfo.setActivityScore(Integer.parseInt(activityScore));
-		}catch(NumberFormatException e){ userinfo.setActivityScore(0); }
-		userinfo.setRoleId(roleId);
-		userinfo.setType(Source);
-		userinfo.setId(id);
-		
-		return userinfo;
-	}
-
-	public String getTimeEnterString(){
-
-		long date = 0;
-		try{
-			date = Long.parseLong(timeEnter);
-		} catch(Exception e){ }
-		
-		return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(date);
-	}
-	
 	
 	@Override 
 	public boolean equals(Object aThat) {
@@ -257,17 +72,121 @@ public class User implements Parcelable {
 	    
 	    //now a proper field-by-field evaluation can be made
 	    return
-	    	((this.email != null) ? this.email.equals(that.email) : that.email == null) &&
-	    	((this.userName != null) ? this.userName.equals(that.userName) : that.userName == null) &&
-	    	((this.password != null) ? this.password.equals(that.password) : that.password == null) &&
-	    	((this.photoLocation != null) ? this.photoLocation.equals(that.photoLocation) : that.photoLocation == null) &&
-	    	((this.gender != null) ? this.gender.equals(that.gender) : that.gender == null) &&
-	    	((this.timeEnter != null) ? this.timeEnter.equals(that.timeEnter) : that.timeEnter == null) &&
-	    	((this.activityScore != null) ? this.activityScore.equals(that.activityScore) : that.activityScore == null) &&
-	    	(this.Source == that.Source) &&
-	    	((this.phoneNumber != null) ? this.phoneNumber.equals(that.phoneNumber) : that.phoneNumber == null) &&
+	    	((this.jsonUser != null) ? this.jsonUser.equals(that.jsonUser) : that.jsonUser == null) &&
 	    	(this.isLogin == that.isLogin);
 	}
 
+	public boolean isLogin() {
+		return isLogin;
+	}
+	
+	public void setLogin(boolean isLogin) {
+		this.isLogin = isLogin;
+	}
+
+	public JsonUser getJsonUser() {
+		return jsonUser;
+	}
+
+	public String getLocalPhoto() {
+		return jsonUser.localPhoto;
+	}
+
+	public void setJsonUser(JsonUser jsonUser) {
+		if(jsonUser != null) { this.jsonUser = jsonUser; }
+	}
+
+	public void setLocalPhoto(String localPhoto) {
+		// TODO: Tie this in with jsonUser photo ???
+		if(localPhoto != null) { this.jsonUser.localPhoto = localPhoto; }
+	}
+	
+	public int getId() {
+		return jsonUser.id;
+	}
+
+	public String getName() {
+		return jsonUser.name;
+	}
+
+	public String getPassword() {
+		return jsonUser.password;
+	}
+
+	public int getType() {
+		return jsonUser.type;
+	}
+
+	public String getSex() {
+		return jsonUser.sex;
+	}
+
+	public String getEmail() {
+		return jsonUser.email;
+	}
+
+	public String getPhonenumber() {
+		return jsonUser.phonenumber;
+	}
+
+	public long getJointime() {
+		return jsonUser.jointime;
+	}
+
+	public long getLastLoginTime() {
+		return jsonUser.lastLoginTime;
+	}
+
+	public int getActivityScore() {
+		return jsonUser.activityScore;
+	}
+
+	public int getRoleId() {
+		return jsonUser.roleId;
+	}
+
+	public void setId(int id) {
+		this.jsonUser.id = id;
+	}
+
+	public void setName(String name) {
+		this.jsonUser.name = name;
+	}
+
+	public void setPassword(String password) {
+		this.jsonUser.password = password;
+	}
+
+	public void setType(int type) {
+		this.jsonUser.type = type;
+	}
+
+	public void setSex(String sex) {
+		this.jsonUser.sex = sex;
+	}
+
+	public void setEmail(String email) {
+		this.jsonUser.email = email;
+	}
+
+	public void setPhonenumber(String phonenumber) {
+		this.jsonUser.phonenumber = phonenumber;
+	}
+
+	public void setJointime(long jointime) {
+		this.jsonUser.jointime = jointime;
+	}
+
+	public void setLastLoginTime(long lastLoginTime) {
+		this.jsonUser.lastLoginTime = lastLoginTime;
+	}
+
+	public void setActivityScore(int activityScore) {
+		this.jsonUser.activityScore = activityScore;
+	}
+
+	public void setRoleId(int roleId) {
+		this.jsonUser.roleId = roleId;
+	}
 
 }

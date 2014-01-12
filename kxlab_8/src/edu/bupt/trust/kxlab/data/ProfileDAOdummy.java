@@ -11,8 +11,8 @@ import com.google.gson.Gson;
 import android.os.AsyncTask;
 import android.os.Environment;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
-import edu.bupt.trust.kxlab.jsonmodel.JsonUser;
-import edu.bupt.trust.kxlab.model.ActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonUser;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -95,7 +95,7 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 				String response = "{\"id\":9,\"name\":\"wang\",\"password\":\"wss\",\"type\":0," 
 						+ "\"sex\":\"ÄÐ\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
 						+ "\"email\":\"1@qq.com\",\"phonenumber\":\"15810531590\","
-						+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
+						+ "\"jointime\":1385538570000,\"lastLoginTime\":1385538570000,"
 						+ "\"activityScore\":10,\"roleId\":1}";
 				
 				if(counter(10) == 0){
@@ -123,7 +123,7 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 		String response = "{\"id\":9,\"name\":\"wang\",\"password\":\"wss\",\"type\":0," 
 				+ "\"sex\":\"ÄÐ\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
 				+ "\"email\":\"1@qq.com\",\"phonenumber\":\"15810531590\","
-				+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
+				+ "\"jointime\":1385538570000,\"lastLoginTime\":1385538570000,"
 				+ "\"activityScore\":10,\"roleId\":1}";
 		
 		int index = counter(3);
@@ -132,13 +132,13 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 			response = "{\"id\":9,\"name\":\"George Soros\",\"password\":\"wss\",\"type\":0," 
 					+ "\"sex\":\"ÄÐ\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
 					+ "\"email\":\"1@qq.com\",\"phonenumber\":\"15810531590\","
-					+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
+					+ "\"jointime\":1385538570000,\"lastLoginTime\":1385538570000,"
 					+ "\"activityScore\":10,\"roleId\":1}";
 		case 1:
 			response = "{\"id\":9,\"name\":\"Felix the Cat\",\"password\":\"wss\",\"type\":0," 
 					+ "\"sex\":\"Å®\",\"photo\":\""+ randomPic().getAbsolutePath() +"\","
 					+ "\"email\":\"1@qq.com\",\"phonenumber\":\"15810531590\","
-					+ "\"jointime\":\"2013-10-14\",\"lastLoginTime\":\"2013-10-14\","
+					+ "\"jointime\":1385538570000,\"lastLoginTime\":1385538570000,"
 					+ "\"activityScore\":10,\"roleId\":1}";
 		}
 		return response;
@@ -149,7 +149,7 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 		// create a new person using random user info and picture
 		JsonUser userinfo = new Gson().fromJson(randomUserInformation(), JsonUser.class);
 		User user = new User(userinfo);
-		user.setPhotoLocation(randomPic().getAbsolutePath());
+		user.setLocalPhoto(randomPic().getAbsolutePath());
 		user.setPassword("xxxxx");
 		return user;
 	}
@@ -167,13 +167,13 @@ class ProfileDAOdummy extends ProfileDAOabstract{
 	@Override protected void readActivityHistory(String email, int size, Page page) {
 		
 		// Generate a bunch of records
-		List <ActivityRecord> newrecords = new ArrayList<ActivityRecord> ();
+		List <JsonActivityRecord> newrecords = new ArrayList<JsonActivityRecord> ();
 		for (int i = 0; i < 5; i++){
 			Calendar x = Calendar.getInstance();
 			x.set(2000 + i, i % 12, (i * 2 ) % 28);
-			ActivityRecord r = new ActivityRecord(x.getTimeInMillis(), "a string for " + i, email, (i % 3) - (i % 4));
-			r.setAhId(counter(20));
-			r.setWhatDo("a string for " + r.getAhId());
+			JsonActivityRecord r = new JsonActivityRecord();
+			r.ahId = counter(20);
+			r.whatDo = "a string for " + r.ahId;
 			newrecords.add(r);
 		}
 		

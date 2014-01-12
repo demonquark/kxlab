@@ -44,8 +44,8 @@ public class PostArrayAdapter extends ArrayAdapter <Post>{
 				Post post = items.get(position);
 				
 				// Set the text
-				((TextView) v.findViewById(android.R.id.text1)).setText(post.getPostTitle());
-				((TextView) v.findViewById(android.R.id.text2)).setText(post.getPostDetail());
+				((TextView) v.findViewById(android.R.id.text1)).setText(String.valueOf(post.getPostTitle()));
+				((TextView) v.findViewById(android.R.id.text2)).setText(String.valueOf(post.getPostDetail()));
 
 //				Loggen.d(this, "text: " + text1 + " | " + text2 );
 				

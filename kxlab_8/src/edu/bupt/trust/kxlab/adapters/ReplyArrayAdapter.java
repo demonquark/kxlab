@@ -2,7 +2,7 @@ package edu.bupt.trust.kxlab.adapters;
 
 import java.util.List;
 
-import edu.bupt.trust.kxlab.model.Reply;
+import edu.bupt.trust.kxlab.model.JsonReply;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 import android.content.Context;
@@ -21,13 +21,13 @@ import android.widget.TextView;
  * @author Krishna
  *
  */
-public class ReplyArrayAdapter extends ArrayAdapter <Reply>{
+public class ReplyArrayAdapter extends ArrayAdapter <JsonReply>{
 
-	private List <Reply> items;
+	private List <JsonReply> items;
 	private int replyPadding;
 	private OnClickListener mListener;
 	
-	public ReplyArrayAdapter(Context context, int resource, int textViewResourceId, List<Reply> objects) {
+	public ReplyArrayAdapter(Context context, int resource, int textViewResourceId, List<JsonReply> objects) {
 		super(context, resource, textViewResourceId, objects);
 		this.items = objects;
 		replyPadding = (int) (context.getResources().getDimension(android.R.dimen.app_icon_size) * 3 / 4);
@@ -45,22 +45,22 @@ public class ReplyArrayAdapter extends ArrayAdapter <Reply>{
 		if(items != null){
 			try {
 				// Get the User
-				Reply reply = items.get(position);
+				JsonReply reply = items.get(position);
 				
 				// Set the text
-				((TextView) v.findViewById(android.R.id.text1)).setText(reply.getrAuthorEmail());
+				((TextView) v.findViewById(android.R.id.text1)).setText(String.valueOf(reply.rAuthorEmail));
 				((TextView) v.findViewById(android.R.id.text2)).setText(reply.getrTimeString());
-				((TextView) v.findViewById(android.R.id.content)).setText(reply.getrContent());
+				((TextView) v.findViewById(android.R.id.content)).setText(String.valueOf(reply.rContent));
 
 				// hide the reply button and add some padding to re-replies
 				View button = v.findViewById(android.R.id.button1); 
-				if(reply.getRootReplyId() != 0 && button != null){
+				if(reply.rootReplyId != 0 && button != null){
 					((View) button.getParent()).setPadding(replyPadding,0,0,0);
 					button.setVisibility(View.GONE);
 				} else if(button != null) {
 					((View) button.getParent()).setPadding(0,0,0,0);
 					button.setVisibility(View.VISIBLE);
-					button.setTag(reply.getReplyId());
+					button.setTag(reply.replyId);
 					button.setOnClickListener(mListener);
 				}
 				

@@ -7,7 +7,7 @@ import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.model.ActivityRecord;
+import edu.bupt.trust.kxlab.model.JsonActivityRecord;
 import edu.bupt.trust.kxlab.model.Settings;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
@@ -55,7 +55,11 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
     	int itemId = item.getItemId();
         switch (itemId) {
         	case R.id.action_edit:
-        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOEDIT, mUser); }
+        		if(BaseActivity.isNetworkAvailable(getActivity())){
+        			if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOEDIT, mUser); }
+		        } else{
+    				userMustClickOkay(getString(R.string.no_network_title), getString(R.string.no_network_text));
+		        }
             break;
             default:
             	return super.onOptionsItemSelected(item);
@@ -139,7 +143,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 			// load the user information
 			if(mUser != null && showinfo){
 				// Set the image
-				File imgFile = new File(mUser.getPhotoLocation() != null ? mUser.getPhotoLocation() : "");
+				File imgFile = new File(mUser.getLocalPhoto() != null ? mUser.getLocalPhoto() : "");
 				ImageView avatar = (ImageView) mRootView.findViewById(R.id.myinfo_img);
 				if(imgFile.exists()){
 					
@@ -150,12 +154,12 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 				}
 				
 				// Set the user information
-				((TextView) mRootView.findViewById(R.id.myinfo_name)).setText(mUser.getUserName());
+				((TextView) mRootView.findViewById(R.id.myinfo_name)).setText(mUser.getName());
 				((TextView) mRootView.findViewById(R.id.myinfo_email)).setText(mUser.getEmail());
 				((TextView) mRootView.findViewById(R.id.myinfo_joindate)).setText(mUser.getTimeEnterString());
-				((TextView) mRootView.findViewById(R.id.myinfo_activitylevel)).setText(mUser.getActivityScore());
-				((TextView) mRootView.findViewById(R.id.myinfo_phone)).setText(mUser.getPhoneNumber());
-				((TextView) mRootView.findViewById(R.id.myinfo_source)).setText(String.valueOf(mUser.getSource()));
+				((TextView) mRootView.findViewById(R.id.myinfo_activitylevel)).setText(String.valueOf(mUser.getActivityScore()));
+				((TextView) mRootView.findViewById(R.id.myinfo_phone)).setText(mUser.getPhonenumber());
+				((TextView) mRootView.findViewById(R.id.myinfo_source)).setText(String.valueOf(mUser.getType()));
 			}
 		}
 	}
@@ -209,5 +213,5 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 	@Override public void onReadUserList(List<User> users) { }
 	@Override public void onChangeUser(User newUser, String errorMessage) { }
 	@Override public void onLogin(boolean success, String errorMessage) { }
-	@Override public void onReadActivityHistory(List<ActivityRecord> records) { }
+	@Override public void onReadActivityHistory(List<JsonActivityRecord> records) { }
 }

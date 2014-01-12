@@ -1,8 +1,8 @@
 package edu.bupt.trust.kxlab8;
 
+import edu.bupt.trust.kxlab.model.JsonReply;
 import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
-import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import android.os.Bundle;
@@ -86,10 +86,10 @@ public class ForumPostActivity extends BaseDetailActivity {
 			// create a bundle and add the provided post or post type to it 
 			Bundle arguments = new Bundle();
 			if(o instanceof Post) { arguments.putParcelable(Gegevens.EXTRA_POST, (Post) o); } 
-			if(o instanceof Reply) { arguments.putParcelable(Gegevens.EXTRA_REPLY, (Reply) o); } 
+			if(o instanceof JsonReply) { arguments.putParcelable(Gegevens.EXTRA_REPLY, (JsonReply) o); } 
 			if(o instanceof PostType) { arguments.putSerializable(Gegevens.EXTRA_POSTTYPE, (PostType) o); } 
 			
-			if((Gegevens.FRAG_POSTLIST.equals(from) && (o instanceof Post || o instanceof Reply))
+			if((Gegevens.FRAG_POSTLIST.equals(from) && (o instanceof Post || o instanceof JsonReply))
 					|| o instanceof PostType) { 
 
 				// launch the edit fragment

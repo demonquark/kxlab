@@ -7,11 +7,14 @@ import edu.bupt.trust.kxlab.widgets.BottomBar;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic.BasicDialogListener;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -100,6 +103,13 @@ public class BaseActivity extends ActionBarActivity  implements BasicDialogListe
 		}
 	}
     
+	/** Check if we have network connectivity. No point in trying anything online if we have no connection. */
+	protected static boolean isNetworkAvailable(Context c) {
+	    ConnectivityManager connectivityManager = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+	}
+	
 	/** Tests to see if the uri is available. Use this method to check if an another app link works. */
 	public boolean isUriAvailable(String uri) {
 	    Intent test = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));

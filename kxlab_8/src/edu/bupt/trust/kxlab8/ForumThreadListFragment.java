@@ -9,9 +9,9 @@ import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ForumDAO;
 import edu.bupt.trust.kxlab.data.ForumDAO.ForumListener;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
+import edu.bupt.trust.kxlab.model.JsonReply;
 import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
-import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentScore;
@@ -72,7 +72,10 @@ public class ForumThreadListFragment extends BaseListFragment
     	int itemId = item.getItemId();
         switch (itemId) {
         	case R.id.action_create:
-        		startPostActivity(null);
+        		if(BaseActivity.isNetworkAvailable(getActivity()))
+        			startPostActivity(null);
+        		else 
+        			userMustClickOkay(getString(R.string.no_network_title), getString(R.string.no_network_text));
             break;
             default:
             	return super.onOptionsItemSelected(item);
@@ -212,7 +215,9 @@ public class ForumThreadListFragment extends BaseListFragment
 			
 			
 			if(post != null) {
-				post.setPostType(mPostType);
+				if(post.getPostType() != mPostType){
+					Loggen.e(this, "Got a different post type!!!! Please fix.");
+				}
 				b.putParcelable(Gegevens.EXTRA_POST, post);
 			} else { 
 				b.putSerializable(Gegevens.EXTRA_POSTTYPE, mPostType); 
@@ -294,7 +299,7 @@ public class ForumThreadListFragment extends BaseListFragment
 	@Override public void onCreatePost(boolean success) {	}
 	@Override public void onCreateReply(boolean success) { }
 	@Override public void onCreateVote(boolean success) { }
-	@Override public void onReadPost(Post post, List <Reply> replies) { }
+	@Override public void onReadPost(Post post, List <JsonReply> replies) { }
 	@Override public void onReadAnnounceFAQ(Post post) { }
 	@Override public void onSearchPostList(List<Post> posts) { }
 

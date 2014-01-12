@@ -4,7 +4,6 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
-import edu.bupt.trust.kxlab.data.MyServicesDAOweb.ServicesResponseHandler;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
@@ -17,10 +16,6 @@ import android.util.Log;
 
 /**
  * <p>The ServicesDAOweb attempts to get the services from the web.</p>
- * 
- * TODO: Figure out who should check for Internet connection. Currently that is the Activity's responsibility. 
- * Which kind of makes sense, because we need context to determine connectivity...
- * 
  * @author Krishna
  *
  */
@@ -170,26 +165,6 @@ class ServicesDAOweb extends ServicesDAOabstract{
 					listener.writeServiceComment(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
 		});
 	}
-	
-	/** Check if we have network connectivity. No point in trying anything if we have no connection. */
-	protected static boolean isNetworkAvailable(Context c) {
-	    ConnectivityManager connectivityManager = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
-	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-	    return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
-	}
-	
-    /**
-     * Will encode url, if not disabled, and adds params on the end of it
-     *
-     * @param url             String with URL, should be valid URL without params
-     * @param params          RequestParams to be appended on the end of URL
-     * @param shouldEncodeUrl whether url should be encoded (replaces spaces with %20)
-     * @return encoded url if requested with params appended if any available
-     */
-    public static String getPath(boolean shouldEncodeUrl, String path, RequestParams params) {
-    	return AsyncHttpClient.getUrlWithQueryString(shouldEncodeUrl, path, params);
-    }
-
 	
 	/**
 	 * Handler for the HTTP response from the server.

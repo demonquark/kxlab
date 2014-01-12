@@ -9,9 +9,9 @@ import edu.bupt.trust.kxlab.data.ForumDAO;
 import edu.bupt.trust.kxlab.data.ForumDAO.ForumListener;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
+import edu.bupt.trust.kxlab.model.JsonReply;
 import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.PostType;
-import edu.bupt.trust.kxlab.model.Reply;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
@@ -46,7 +46,7 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 	private ReplyArrayAdapter mListAdapter;
 	private View mRootView;
 	private Post mPost;
-	private ArrayList<Reply> replies;
+	private ArrayList<JsonReply> replies;
 	private User mUser;
 	
 	public ForumPostListFragment (){
@@ -78,7 +78,10 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
         switch (itemId) {
         	case R.id.action_create:
 				if(mListener != null && mUser.isLogin()) { 
-					mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, mPost); 
+					if(BaseActivity.isNetworkAvailable(getActivity()))
+						mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, mPost);
+					else
+						userMustClickOkay(getString(R.string.no_network_title), getString(R.string.no_network_text));
 				} else {
 					userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
 				}
@@ -217,13 +220,13 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 			if(mPost.getPostType() != PostType.ANNOUNCE && mPost.getPostType() != PostType.FAQ){
 				
 				//Set the service image
-				Loggen.v(this, getTag() + " - Showing post sponsor with image: " + owner.getPhotoLocation());
-				setImageView(owner.getPhotoLocation(), (ImageView) mRootView.findViewById(R.id.user_img));
+				Loggen.v(this, getTag() + " - Showing post sponsor with image: " + owner.getLocalPhoto());
+				setImageView(owner.getLocalPhoto(), (ImageView) mRootView.findViewById(R.id.user_img));
 				
 				// Set the text 
-				((TextView) mRootView.findViewById(R.id.user_name)).setText(owner.getUserName());
+				((TextView) mRootView.findViewById(R.id.user_name)).setText(String.valueOf(owner.getName()));
 				((TextView) mRootView.findViewById(R.id.user_date)).setText(owner.getTimeEnterString());
-				((TextView) mRootView.findViewById(R.id.user_activitylevel_text)).setText(owner.getActivityScore());
+				((TextView) mRootView.findViewById(R.id.user_activitylevel_text)).setText(String.valueOf(owner.getActivityScore()));
 			}
 		}
 
@@ -261,12 +264,15 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		switch(id){
 			case android.R.id.button1:
 				int replyId = Integer.parseInt(String.valueOf(v.getTag()));
-				Reply reply = null;
-				for(Reply r : replies){ if(replyId == r.getReplyId()){ reply = r; break; }}
+				JsonReply reply = null;
+				for(JsonReply r : replies){ if(replyId == r.replyId){ reply = r; break; }}
 				
 				if(mListener != null && reply != null) { 
 					if(mUser.isLogin()){
-						mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, reply); 	
+						if(BaseActivity.isNetworkAvailable(getActivity()))
+							mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, reply);
+						else 
+							userMustClickOkay(getString(R.string.no_network_title), getString(R.string.no_network_text));
 					} else {
 						userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
 					}
@@ -289,24 +295,23 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		getData(Source.WEB, Page.PREVIOUS);
 	}
 
-	@Override public void onReadPost(Post post, List <Reply> replies) {
+	@Override public void onReadPost(Post post, List <JsonReply> replies) {
 		
 		// make sure the replies are not empty
 		 if(replies == null && this.replies == null){
 			userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
-			this.replies = new ArrayList <Reply> ();
+			this.replies = new ArrayList <JsonReply> ();
 			getData(Source.LOCAL, Page.CURRENT);
 		}
 		
 		// update the post
 		if(post != null){
-			post.setPostType(mPost.getPostType());
-			this.mPost.setFromOtherPost(post); 
+			this.mPost.setFromPost(post, false); 
 		}
 
 		// add the replies
 		if(replies != null){
-			if(this.replies == null){ this.replies = new ArrayList<Reply> (); }
+			if(this.replies == null){ this.replies = new ArrayList<JsonReply> (); }
 			this.replies.clear();
 			this.replies.addAll(replies);
 		}
@@ -343,8 +348,10 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 	@Override public void onReadAnnounceFAQ(Post post) {
 		// update the post
 		if(post != null){
-			post.setPostType(mPost.getPostType());
-			this.mPost.setFromOtherPost(post); 
+			if(post.getPostType() != mPost.getPostType()){
+				Loggen.e(this, "Got a different post type!!!!");
+			}
+			this.mPost.setFromPost(post, false); 
 		}
 		showPost();
 		showInformation(true);

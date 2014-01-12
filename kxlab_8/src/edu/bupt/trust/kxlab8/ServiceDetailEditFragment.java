@@ -4,8 +4,9 @@ import java.util.List;
 
 import edu.bupt.trust.kxlab.data.DaoFactory;
 import edu.bupt.trust.kxlab.data.ServicesDAO;
-import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesDetailListener;
-import edu.bupt.trust.kxlab.model.Comment;
+import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListener;
+import edu.bupt.trust.kxlab.model.JsonComment;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
 import edu.bupt.trust.kxlab.model.User;
@@ -46,7 +47,7 @@ import android.widget.TextView;
  *  The fragment supplements those arguments with the following items (added to saved state): <br />
  *  - EXTRA_SERVICE2: A temporary holder for changes made to the EXTRA_SERVICE object. <br />
  */
-public class ServiceDetailEditFragment extends BaseDetailFragment implements ServicesDetailListener {
+public class ServiceDetailEditFragment extends BaseDetailFragment implements ServicesListener {
 	
 	private TrustService oldService;
 	private TrustService newService;
@@ -140,7 +141,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 					mUser = ((BaseActivity) getActivity()).mSettings.getUser(); 
 				}
 
-				if(type != null){ newService.setServicetype(type.getServerType()); }
+				if(type != null){ newService.setType(type); }
 				if(mUser != null){ newService.setUseremail(mUser.getEmail()); }
 			}
 		}
@@ -204,7 +205,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 
 			if(newService != null){
 				// set the image
-				setServiceImage(newService.getServicephoto());
+				setServiceImage(newService.getLocalPhoto());
 				
 				// set the text
 				((TextView) mRootView.findViewById(R.id.details_user_email)).setText(newService.getUseremail());
@@ -234,7 +235,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 				}
 				
 				// set the selection to the selected service type
-				int position = ServiceType.fromServerType(newService.getServicetype()).getIndex(); 
+				int position = newService.getType().getIndex(); 
 				typeSpinner.setSelection(position);
 			}
 		}
@@ -264,13 +265,13 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 	private void saveService(){
 		
 		if (getActivity() != null) { 
-			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this);
+			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, ServiceFlavor.MYSERVICE);
 
 			// get the new service information
 			String title = newService.getServicetitle();
 			String detail = newService.getServicedetail();
-			String photo = newService.getServicephoto();
-			ServiceType type = ServiceType.fromServerType(newService.getServicetype());
+			String photo = newService.getLocalPhoto();
+			ServiceType type = newService.getType();
 			
 			if(oldService == null){
 				// create a service
@@ -281,10 +282,10 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 				String [] parameters = new String [3];
 				parameters[0] = (!oldService.getServicetitle().equals(title)) ? title : null;  
 				parameters[1] = (!oldService.getServicedetail().equals(detail)) ? detail : null;  
-				parameters[2] = (!oldService.getServicephoto().equals(photo)) ? photo : null;  
+				parameters[2] = (!oldService.getLocalPhoto().equals(photo)) ? photo : null;  
 				
 				// update the service
-				servicesDAO.editService(DaoFactory.Source.DUMMY, newService.getServiceid(), parameters);
+				servicesDAO.editService(DaoFactory.Source.DUMMY, newService.getId(), parameters);
 			}
 			
 			// hide the user information until we get a response
@@ -327,7 +328,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 		// Set the image
 		if(setImageView(imageLocation, (ImageView) mRootView.findViewById(R.id.details_img))){
 			// the image was successfully changed
-			newService.setServicephoto(imageLocation);
+			newService.setLocalPhoto(imageLocation);
 		} else if (oldService != null){
 			userMustClickOkay(getString(R.string.details_img_not_found_title), 
 					getString(R.string.details_img_not_found_text));
@@ -373,7 +374,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 	}
 	
 
-	@Override public void onReadService(TrustService service, int numberOfUsers, List<Comment> comments) { }
+	@Override public void onReadService(TrustService service, int numberOfUsers, List<JsonComment> comments) { }
 	@Override public void writeServiceScore(boolean success) { }
 	@Override public void writeServiceComment(boolean success) { }
 
@@ -382,8 +383,8 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 		
 		if(success){
 			oldService = new TrustService(newService);
-			oldService.setServicephoto("");
-			if(newService.getServicephoto() == null || newService.getServicephoto().equals("")){
+			oldService.setLocalPhoto("");
+			if(newService.getLocalPhoto() == null || newService.getLocalPhoto().equals("")){
 				mListener.performBackPress();
 			} else {
 				saveService();
@@ -404,7 +405,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 		
 		if(success){
 			if(oldService == null) { new TrustService(newService); }
-			oldService.setFromTrustService(newService);
+			oldService.setFromService(newService);
 			mListener.performBackPress();
 		} else {
 			// the update failed. Inform the user.
@@ -438,9 +439,27 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 	    
 		@Override public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long arg3) { 
 			if(viewId == R.id.details_spin_type){
-				newService.setServicetype(ServiceType.fromIndex(position).getServerType());
+				newService.setType(ServiceType.fromIndex(position));
 			}
 		}
 		@Override public void onNothingSelected(AdapterView<?> arg0) { }
+	}
+
+	@Override
+	public void onDeleteService(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onReadServices(List<TrustService> services) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSearchService(List<TrustService> services) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -6,9 +6,10 @@ import android.content.Context;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesDetailListener;
 import edu.bupt.trust.kxlab.data.MyServicesDAO.MyServicesListListener;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
-import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesDetailListener;
-import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListListener;
+import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListener;
 import edu.bupt.trust.kxlab.model.PostType;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
+import edu.bupt.trust.kxlab.model.ServiceType;
 
 public class DaoFactory {
 	
@@ -16,14 +17,19 @@ public class DaoFactory {
 	
 	private static DaoFactory mInstance = null;
  
-	private ServicesDAO servicesDAO;
 	private HashMap <MyServicesDAO.Type, MyServicesDAO> myServicesDAOMap;
 	private HashMap <PostType, ForumDAO> forumDAOMap;
+	private HashMap <ServiceFlavor, HashMap<ServiceType, ServicesDAO>> servicesDAOmap;
 	private ProfileDAO	profileDAO;
  
 	private DaoFactory(){ 
 		myServicesDAOMap = new HashMap <MyServicesDAO.Type, MyServicesDAO>();
-		forumDAOMap = new HashMap <PostType, ForumDAO>();		
+		forumDAOMap = new HashMap <PostType, ForumDAO>();
+		servicesDAOmap = new HashMap <ServiceFlavor, HashMap<ServiceType, ServicesDAO>>();
+		for(ServiceFlavor flavor : ServiceFlavor.values()){
+			servicesDAOmap.put(flavor, new HashMap<ServiceType, ServicesDAO> ());
+		}
+		
 	}
  
 	public static DaoFactory getInstance(){
@@ -31,22 +37,14 @@ public class DaoFactory {
 		return mInstance;
 	}
  
-	public ServicesDAO setServicesDAO(Context c, ServicesListListener listener){
-		if(servicesDAO == null) { 
-			servicesDAO = new ServicesDAO(null, listener); 
+	public ServicesDAO setServicesDAO(Context c, ServicesListener listener, ServiceType type, ServiceFlavor flavor){
+		ServicesDAO servicesDAO;
+		if(servicesDAOmap.get(flavor).get(type) == null) {
+			servicesDAO = new ServicesDAO(c, listener);
+			servicesDAOmap.get(flavor).put(type, servicesDAO);
 		} else {
-			servicesDAO.setServicesListListener(listener);
-			servicesDAO.setServicesDetailListener(null);
-		}
-		return servicesDAO;
-	}
-
-	public ServicesDAO setServicesDAO(Context c, ServicesDetailListener listener){
-		if(servicesDAO == null) { 
-			servicesDAO = new ServicesDAO(null, listener); 
-		} else {
-			servicesDAO.setServicesListListener(null);
-			servicesDAO.setServicesDetailListener(listener);
+			servicesDAO = servicesDAOmap.get(flavor).get(type);
+			servicesDAO.setServicesListener(listener);
 		}
 		return servicesDAO;
 	}
@@ -96,5 +94,5 @@ public class DaoFactory {
 			forumDAO.setForumListener(listener);
 		}
 		return forumDAO;
-	}	
+	}
 }
