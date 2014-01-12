@@ -1,8 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:kxlab="http://schemas.android.com/apk/res-auto" >
 
-    <item android:id="@+id/action_edit"
-        android:title="@string/action_edit"
+    <item android:id="@+id/action_reply"
+        android:title="@string/action_reply"
         kxlab:showAsAction="always"
-        android:icon="@drawable/ic_action_edit" />
+        android:icon="@drawable/ic_action_reply" />
+    <item android:id="@+id/action_rate"
+        android:title="@string/action_rate"
+        kxlab:showAsAction="always"
+        android:icon="@drawable/ic_action_half_important" />
 </menu>

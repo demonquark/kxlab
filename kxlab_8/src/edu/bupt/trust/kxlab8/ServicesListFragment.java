@@ -420,34 +420,13 @@ public class ServicesListFragment extends BaseListFragment
 
 	}
 
-	@Override
-	public void onReadService(TrustService service, int numberOfUsers,
-			List<JsonComment> comments) {
-		// TODO Auto-generated method stub
-		
-	}
+	@Override public void onReadService(TrustService service, List<JsonComment> comments) { }
 
-	@Override
-	public void writeServiceScore(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
+	@Override public void writeServiceScore(boolean success) { }
 
-	@Override
-	public void writeServiceComment(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
+	@Override public void writeServiceComment(boolean success) { }
 
-	@Override
-	public void onEditService(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
+	@Override public void onEditService(boolean success) { }
 
-	@Override
-	public void onCreateService(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
+	@Override public void onCreateService(boolean success) { }
 }

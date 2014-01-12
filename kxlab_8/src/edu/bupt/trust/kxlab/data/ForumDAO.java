@@ -241,7 +241,6 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 
 	private int overwritePostForumDetail(Post post, ArrayList<JsonReply> replies){
 
-		
 		// create a JSON representation of the replies
 		ArrayList <JsonReply> jsonreplies = new ArrayList<JsonReply> ();
 		JsonreReply reReply = new JsonreReply();
@@ -471,7 +470,6 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 						}
 					}
 				}
-				
 				
 			}catch(Exception e){
 				// If an error occurs while parsing the message, just stop and reply with what we've got.

@@ -54,8 +54,9 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 		
 	}
 
-	@Override protected void readService(String path) {
-
+	@Override protected void readService(int id, int size, Page page) {
+		String path = "";
+		
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
 				try { Thread.sleep(300); } catch (InterruptedException e) { e.printStackTrace(); }

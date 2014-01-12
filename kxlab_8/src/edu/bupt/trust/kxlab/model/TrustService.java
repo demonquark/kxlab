@@ -1,5 +1,8 @@
 package edu.bupt.trust.kxlab.model;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -9,12 +12,14 @@ public class TrustService implements Parcelable  {
 	private ServiceFlavor flavor;
 	private JsonTrustService jsonService;
 	private User owner;
+	private int ServiceUserNumber;
 	
     public TrustService() {
     	type = ServiceType.COMMUNITY;
     	flavor = ServiceFlavor.MYSERVICE;
     	jsonService = new JsonTrustService();
     	owner = new User();
+    	ServiceUserNumber = 0;
     }
 	
     public TrustService(TrustService otherService) {
@@ -26,6 +31,7 @@ public class TrustService implements Parcelable  {
     	this.flavor = flavor;
     	setJsonService(service);
     	setOwner(owner);
+    	ServiceUserNumber = 0;
     }
 
     public void setFromService(TrustService that) {
@@ -82,6 +88,7 @@ public class TrustService implements Parcelable  {
     	flavor 			= ServiceFlavor.fromIndex(in.readInt());
     	jsonService		= in.readParcelable(getClass().getClassLoader());
     	owner			= in.readParcelable(getClass().getClassLoader());
+    	ServiceUserNumber = in.readInt();
     }
 
     // this is used to regenerate your object.
@@ -98,7 +105,8 @@ public class TrustService implements Parcelable  {
     	dest.writeInt(type.getIndex());
     	dest.writeInt(flavor.getIndex());
     	dest.writeParcelable(jsonService, 0);
-    	dest.writeParcelable(owner, 0);    	
+    	dest.writeParcelable(owner, 0);
+    	dest.writeInt(ServiceUserNumber);
     }
 
     @Override 
@@ -116,7 +124,8 @@ public class TrustService implements Parcelable  {
 	    	(this.type == that.type) &&
 	    	(this.flavor == that.flavor) &&
 	    	((this.jsonService != null) ? this.jsonService.equals(that.jsonService) : that.jsonService == null) &&
-	    	((this.owner != null) ? this.owner.equals(that.owner) : that.owner == null);
+	    	((this.owner != null) ? this.owner.equals(that.owner) : that.owner == null) &&
+	    	(this.ServiceUserNumber == that.ServiceUserNumber);
 	}
     
 	public String getServicetitle() {
@@ -133,6 +142,16 @@ public class TrustService implements Parcelable  {
 
 	public long getServicelastedittime() {
 		return jsonService.servicelastedittime;
+	}
+
+	public String getServicecreatetimeString() {
+		long date = (jsonService != null) ? jsonService.servicecreatetime : 0;
+		return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(date);
+	}
+
+	public String getServicelastedittimeString() {
+		long date = (jsonService != null) ? jsonService.servicelastedittime : 0;
+		return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(date);
 	}
 
 	public String getCredibilityScore() {
@@ -187,5 +206,13 @@ public class TrustService implements Parcelable  {
 	public void setLocalPhoto(String localPhoto) {
 		// TODO: Tie this in with jsonService photo ???
 		this.jsonService.localPhoto = localPhoto;
+	}
+
+	public int getServiceUserNumber() {
+		return ServiceUserNumber;
+	}
+
+	public void setServiceUserNumber(int serviceUserNumber) {
+		ServiceUserNumber = serviceUserNumber;
 	}
 }

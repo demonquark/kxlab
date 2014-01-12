@@ -5,6 +5,7 @@ import java.util.List;
 
 import edu.bupt.trust.kxlab.adapters.CommentsArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
+import edu.bupt.trust.kxlab.data.ForumDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ServicesDAO;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
@@ -12,6 +13,8 @@ import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListener;
 import edu.bupt.trust.kxlab.model.JsonActivityRecord;
 import edu.bupt.trust.kxlab.model.JsonComment;
+import edu.bupt.trust.kxlab.model.JsonReply;
+import edu.bupt.trust.kxlab.model.PostType;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
@@ -21,6 +24,8 @@ import edu.bupt.trust.kxlab.utils.Loggen;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentEditText;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentScore;
+import edu.bupt.trust.kxlab.widgets.XListView;
+import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 
 import android.os.Bundle;
@@ -38,6 +43,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 /**
@@ -52,10 +58,10 @@ import android.widget.TextView;
  *  - EXTRA_USERSNUMBER: The number of users using the service. Loaded from ServicesDAO. <br />
  *  
  */
-public class ServiceDetailViewFragment extends BaseDetailFragment implements ServicesListener, ProfileListener{
+public class ServiceDetailViewFragment extends BaseDetailFragment implements 
+										ServicesListener, ProfileListener, IXListViewListener{
 	
-	private ListView mCommentsList;
-	private CommentsArrayAdapter mListAdapter;
+	private XListView mListView;
 	private View mRootView;
 	private ServiceFlavor mFlavor;
 	private TrustService mService;
@@ -64,8 +70,6 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 	private User mUser;
 	
 	// temporary variables until I think of something better
-	int mNumberOfUsers;
-	int mScore;
 	String mCommentText;
 	
 	public ServiceDetailViewFragment (){
@@ -87,14 +91,25 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 	
 		// add the services menu
 		if(mFlavor == ServiceFlavor.MYSERVICE)
+			inflater.inflate(R.menu.myservice_detail_view, menu);
+		else {
 			inflater.inflate(R.menu.service_detail_view, menu);
+		}
 	}
 	
     @Override public boolean onOptionsItemSelected(MenuItem item) {
     	int itemId = item.getItemId();
         switch (itemId) {
         	case R.id.action_edit:
-        		if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOEDIT, mService); }
+				if(BaseActivity.isNetworkAvailable(getActivity())){
+					if(mListener != null) { mListener.onActionSelected(getTag(), Gegevens.FRAG_INFOEDIT, mService); }
+				} else {
+					userMustClickOkay(getString(R.string.no_network_title), getString(R.string.no_network_text));
+				}
+            break;
+        	case R.id.action_reply:
+        	case R.id.action_rate:
+        		giveFeedback(itemId);
             break;
             default:
             	return super.onOptionsItemSelected(item);
@@ -134,22 +149,26 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		// load the service owner. (Note: owner remains null if it is neither in the saved state nor the arguments)
 		mOwner = savedstate.getParcelable(Gegevens.EXTRA_USER2); 							
 		if(mOwner == null){ mOwner = arguments.getParcelable(Gegevens.EXTRA_USER2); } 
-		
-		// load the number of users that the service has. Kind of an ugly way to keep track of this.
-		mNumberOfUsers = savedstate.getInt(Gegevens.EXTRA_USERSNUMBER, -1); 							
-		if(mNumberOfUsers == -1){ mNumberOfUsers = arguments.getInt(Gegevens.EXTRA_USERSNUMBER, -1); } 
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Loggen.v(this, getTag() + " - Creating the ServiceDetailView view. ");
 
 		// Inflate the root view and save references to useful views as class variables
-		mRootView = inflater.inflate(R.layout.frag_service_detail_view, container, false);
-		mCommentsList = (ListView) mRootView.findViewById(android.R.id.list);
-		mCommentsList.addHeaderView(
+		mRootView = inflater.inflate(R.layout.frag_generic_xlist, container, false);
+
+		// Set the list view
+		mListView = (XListView) mRootView.findViewById(android.R.id.list);
+
+		// add the header
+		View header = inflater.inflate(R.layout.list_header_forum_post_title, container, false);
+		((LinearLayout) mRootView.findViewById(R.id.fixed_header_holder)).addView(header);
+		mListView.addHeaderView(
 				LayoutInflater.from(getActivity()).inflate(R.layout.list_header_service_details, null));
-		((ImageButton) mRootView.findViewById(R.id.details_service_btn_comment)).setOnClickListener(this);
-		((Button) mRootView.findViewById(R.id.details_service_btn_score)).setOnClickListener(this);		
+
+		// enable the XList
+		mListView.setPullLoadEnable(true);
+		mListView.setXListViewListener(this);
 		
 		return mRootView;
 	}
@@ -160,18 +179,20 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 
 		// Note: Without a service, we can't do anything. (Server requests require a service id) 
 		if(mService != null){
+			
 			// Load the service author's information
-			if(mOwner != null) { showOwner(); 
+			if(mOwner != null) { 
+				showOwner(); 
 			} else if(getActivity() != null) {
 				ProfileDAO profileDAO = DaoFactory.getInstance().setProfileDAO(getActivity(), this);
-				profileDAO.readUserInformation(Source.DUMMY, mService.getUseremail());
+				profileDAO.readUserInformation(Source.WEB, mService.getUseremail());
 			}
 			
 			// Load the service and the comments 
-			if(comments != null) { showService(); 
+			if(comments != null) { 
+				showService(); 
 			} else if(getActivity() != null) {
-				ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
-				servicesDAO.readService(DaoFactory.Source.DUMMY, mService.getId(), Page.LATEST);
+				getData(Source.WEB, Page.CURRENT);
 			}
 		} else {
 			// give an error message ... 
@@ -188,16 +209,24 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		outState.putParcelableArrayList(Gegevens.EXTRA_COMMENTS, comments);
 		if(mUser != null){ outState.putParcelable(Gegevens.EXTRA_USER, mUser); }
 		outState.putParcelable(Gegevens.EXTRA_USER2, mOwner);
-		outState.putInt(Gegevens.EXTRA_USERSNUMBER, mNumberOfUsers);
 	}
 
 	private void showInformation(boolean showinfo) {
+		
+		if(mListView != null){ 
+			if(mListView.isPullLoading()){
+				mListView.stopLoadMore();
+			}
+			if(mListView.isPullRefreshing()){
+				mListView.stopRefresh(); 
+				mListView.updateHeaderTime();
+			}
+		}
+
 		if(mRootView != null){
 			// show or hide the progress bar
 			((ProgressBar) mRootView.findViewById(R.id.progress_bar)).setVisibility((showinfo) ? View.GONE : View.VISIBLE);
-			((LinearLayout) mRootView.findViewById(R.id.list_holder)).setVisibility((showinfo) ? View.VISIBLE : View.GONE);
-			((TextView) mRootView.findViewById(android.R.id.empty))
-				.setVisibility( (comments != null && comments.size() > 0) ? View.GONE : View.VISIBLE);
+			((RelativeLayout) mRootView.findViewById(R.id.list_holder)).setVisibility((showinfo) ? View.VISIBLE : View.GONE);
 		} else {
 			userMustClickOkay(getString(R.string.details_error_title), getString(R.string.details_error_text));
 		}
@@ -207,12 +236,14 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		// load the user information
 		if(mOwner != null && mRootView != null){
 			// Set the image
-			setImageView(mOwner.getLocalPhoto(), (ImageView) mRootView.findViewById(R.id.details_owner_img));
+			setImageView(mOwner.getLocalPhoto(), (ImageView) mRootView.findViewById(R.id.user_img));
 			
-			// Set the user information
-			((TextView) mRootView.findViewById(R.id.details_owner_name)).setText(mOwner.getName());
-			((TextView) mRootView.findViewById(R.id.details_owner_time)).setText(mOwner.getTimeEnterString());
-			((TextView) mRootView.findViewById(R.id.details_owner_score)).setText(String.valueOf(mOwner.getActivityScore()));
+			// Set the text 
+			((TextView) mRootView.findViewById(R.id.user_email)).setText(mOwner.getEmail());
+			((TextView) mRootView.findViewById(R.id.user_name)).setText(String.valueOf(mOwner.getName()));
+			((TextView) mRootView.findViewById(R.id.user_date)).setText(mOwner.getTimeEnterString());
+			((TextView) mRootView.findViewById(R.id.user_activitylevel_text))
+											.setText(String.valueOf(mOwner.getActivityScore()));
 		}
 		
 		// hide the progress bar
@@ -226,34 +257,34 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 			Loggen.v(this, getTag() + " - Showing service with image: " + mService.getLocalPhoto());
 			setImageView(mService.getLocalPhoto(), (ImageView) mRootView.findViewById(R.id.details_service_img));
 
-			// Get the String values for the screen (number of users and credibility score)
-			// TODO figure out what credibility and service status are...
-			String numberOfUsers = getString(R.string.details_service_number) + ": ";
-			numberOfUsers += (mNumberOfUsers >= 0) ? String.valueOf(mNumberOfUsers) : getString(R.string.unknown); 
-			String credibility = getString(R.string.details_service_score) + ": " 
-								+ String.valueOf(mService.getServicestatus());
-			
 			// Set the text 
-			((TextView) mRootView.findViewById(R.id.details_service_title)).setText(mService.getServicetitle());
-			((TextView) mRootView.findViewById(R.id.details_service_description)).setText(mService.getServicedetail());
-			((TextView) mRootView.findViewById(R.id.details_service_score)).setText(credibility);
-			((TextView) mRootView.findViewById(R.id.details_service_number)).setText(numberOfUsers);
+			((TextView) mRootView.findViewById(R.id.forum_post_title)).setText(mService.getServicetitle());			
+			((TextView) mRootView.findViewById(R.id.details_service_lastedit_text))
+												.setText(mService.getServicelastedittimeString());
+			((TextView) mRootView.findViewById(R.id.details_service_createtime_text))
+												.setText(mService.getServicecreatetimeString());
+			((TextView) mRootView.findViewById(R.id.details_service_number_text))
+												.setText(String.valueOf(mService.getServiceUserNumber()));
+			((TextView) mRootView.findViewById(R.id.details_service_score_text))
+												.setText(String.valueOf(mService.getCredibilityScore()));
+			((TextView) mRootView.findViewById(R.id.details_service_description))
+												.setText(String.valueOf(mService.getServicedetail()));
 		}
 
 		// show the comments list 
-		if(comments != null && mCommentsList != null){
+		if(comments != null && mListView != null){
 			Loggen.v(this, getTag() + " - Loading the adapter with " + comments.size() + " items.");
 			
-			if(mCommentsList.getAdapter() == null ){ 
+			if(mListView.getAdapter() == null ){ 
 				// The comments have not been loaded to the list view. Do that now
 				if(getActivity() != null){
-					mListAdapter = new CommentsArrayAdapter(getActivity(), 
-							R.layout.list_item_comment, android.R.id.text1, comments);
-					mCommentsList.setAdapter(mListAdapter);
+					CommentsArrayAdapter a = new CommentsArrayAdapter(getActivity(), 
+							R.layout.list_item_reply, android.R.id.text1, comments);
+					mListView.setAdapter(a);
 				}
 			} else {
 				// The comments are already loaded to the list view.
-				((BaseAdapter)((HeaderViewListAdapter)mCommentsList.getAdapter())
+				((BaseAdapter)((HeaderViewListAdapter)mListView.getAdapter())
 						.getWrappedAdapter()).notifyDataSetChanged();
 			}
 		}
@@ -262,18 +293,54 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		showInformation(comments != null);
 	}
 	
+	/**	Callback for the feedback action bar buttons 
+	 * There are two buttons worth considering: <br />
+	 *  - R.id.action_reply: The user wants to comment on the service
+	 *  - R.id.action_rate: The user wants to score the service
+	 */
+	private void giveFeedback(int id) {
+		if(!mUser.isLogin()){
+			userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
+		} else if(BaseActivity.isNetworkAvailable(getActivity())){
+			switch(id){
+				case R.id.action_reply:
+				case R.id.action_rate:
+					// create a are you sure confirm dialog 
+					DialogFragmentBasic.newInstance(true)
+						.setTitle(getString(R.string.details_dialog_confirm_user_title))
+						.setMessage(getString(R.string.details_dialog_confirm_user_text))
+						.setPositiveButtonText(getString(R.string.yes))
+						.setNegativeButtonText(getString(R.string.no))
+						.setObject(Integer.valueOf(id))
+						.show(getFragmentManager(), Gegevens.FRAG_CONFIRM);
+				break;
+			}
+		} else {
+			userMustClickOkay(getString(R.string.no_network_title), getString(R.string.no_network_text));
+		}
+	}
+
+
+	
 	private void saveScore(int score){ 
-		mScore = score;
 		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
 		servicesDAO.updateServiceScore(DaoFactory.Source.DUMMY, mService.getId(), mUser.getEmail(), score);
 		showInformation(false);
 	}
+	
 	private void saveComment(String commentText) {
 		mCommentText = commentText;
 		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
 		servicesDAO.createServiceComment(DaoFactory.Source.DUMMY, mService.getId(), mUser.getEmail(), commentText);
 		showInformation(false);
 	}
+	
+	private void getData(Source source, Page page){
+		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
+		servicesDAO.readService(source, mService, comments, page);
+	}
+	
+	
 
 	/**	Callback for all button click events  
 	 * There are two buttons worth considering: <br />
@@ -281,23 +348,29 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 	 *  - R.id.details_service_btn_score: The user wants to score the service
 	 *  - TODO: Button click even for the comment replies.
 	 */
-	@Override public void onClick(View view) {
-		int id = view.getId();
-		
+	@Override public void onClick(View v) {
+		int id = v.getId();
 		switch(id){
-			case R.id.details_service_btn_comment:
-			case R.id.details_service_btn_score:
-				// create a are you sure confirm dialog 
-				DialogFragmentBasic.newInstance(true)
-					.setTitle(getString(R.string.details_dialog_confirm_user_title))
-					.setMessage(getString(R.string.details_dialog_confirm_user_text))
-					.setPositiveButtonText(getString(R.string.yes))
-					.setNegativeButtonText(getString(R.string.no))
-					.setObject(Integer.valueOf(id))
-					.show(getFragmentManager(), Gegevens.FRAG_CONFIRM);
+			case android.R.id.button1:
+				int commentId = Integer.parseInt(String.valueOf(v.getTag()));
+				JsonComment comment = null;
+				for(JsonComment c : comments){ if(commentId == c.getId()){ comment = c; break; }}
+				
+				if(mListener != null && comment != null) { 
+					if(mUser.isLogin()){
+						if(BaseActivity.isNetworkAvailable(getActivity()))
+							giveFeedback(R.id.action_reply);
+						else 
+							userMustClickOkay(getString(R.string.no_network_title), getString(R.string.no_network_text));
+					} else {
+						userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
+					}
+				}
+			break;
+			default:
+				super.onClick(v);
 			break;
 		}
-		
 	}
 
 	/**	Default callback from all dialog fragments.  
@@ -312,7 +385,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		if (Gegevens.FRAG_CONFIRM.equals(tag) && o instanceof Integer){ 
 			int id = (Integer) o;
 			switch(id){
-				case R.id.details_service_btn_comment:
+				case R.id.action_reply:
 					// call the dialog fragment that allows you to leave a comment
 					DialogFragmentEditText.newInstance(true, this, R.layout.dialog_comment)
 						.setTitle(getString(R.string.details_dialog_comment_title))
@@ -322,7 +395,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 						.setCancelableAndReturnSelf(false)
 						.show(getFragmentManager(), Gegevens.FRAG_COMMENT);
 				break;
-				case R.id.details_service_btn_score:
+				case R.id.action_rate:
 					// call the dialog fragment that allows you to score
 					DialogFragmentScore.newInstance(true)
 						.setTitle(getString(R.string.details_dialog_rate_title))
@@ -339,20 +412,44 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 			saveScore((Integer) o);
 		}
 	}	
-	@Override public void onReadService(TrustService service, int numberOfUsers, List<JsonComment> comments) { 
+	
+	@Override public void onRefresh() {
+		Loggen.v(this, " caled onRefresh.");
+		getData(Source.WEB, Page.LATEST);
+	}
+	
+	@Override
+	public void onLoadMore() {
+		Loggen.v(this, " called onLoadMore.");
+		getData(Source.WEB, Page.PREVIOUS);
+	}
+
+	@Override public void onReadService(TrustService service, List<JsonComment> comments) { 
 		Loggen.i(this, getTag() + " - Returned from onReadservice. ");
 
 		// Inform the user of any failures
 		if(service == null){
 			userMustClickOkay(getString(R.string.details_no_service_title), getString(R.string.details_no_service_text));
-		} else if(comments == null){
-			userMustClickOkay(getString(R.string.details_no_comments_title), getString(R.string.details_no_comments_text));
+		} 
+		
+		// make sure the replies are not empty
+		 if(comments == null && this.comments == null){
+			userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
+			this.comments = new ArrayList <JsonComment> ();
+			getData(Source.LOCAL, Page.CURRENT);
 		}
 		
-		// update the service details
-		this.mService = (service != null) ? service : mService;
-		this.comments = (ArrayList<JsonComment>) ((comments != null) ? comments : new ArrayList <JsonComment> ());
-		this.mNumberOfUsers = numberOfUsers;
+		// update the post
+		if(service != null){
+			this.mService.setFromService(service); 
+		}
+
+		// add the replies
+		if(comments != null){
+			if(this.comments == null){ this.comments = new ArrayList<JsonComment> (); }
+			this.comments.clear();
+			this.comments.addAll(comments);
+		}
 		showService();
 	}
 	
@@ -375,14 +472,14 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 	
 	@Override public void writeServiceComment(boolean success) {
 		Loggen.v(this," Received Comment update from DAO");
-		if(comments != null){
-			JsonComment myComment = new JsonComment();
-			myComment.commentdetail = mCommentText;
-			myComment.commenttime = System.currentTimeMillis();
-			myComment.useremail = mUser.getEmail();
-			myComment.commentscore = String.valueOf(mScore);
-			comments.add(0, myComment);
-		}
+//		if(comments != null){
+//			JsonComment myComment = new JsonComment();
+//			myComment.commentdetail = mCommentText;
+//			myComment.commenttime = System.currentTimeMillis();
+//			myComment.useremail = mUser.getEmail();
+//			myComment.commentscore = String.valueOf(mScore);
+//			comments.add(0, myComment);
+//		}
 		showService();
 	}
 
@@ -415,5 +512,4 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements Ser
 		// TODO Auto-generated method stub
 		
 	}
-
 }

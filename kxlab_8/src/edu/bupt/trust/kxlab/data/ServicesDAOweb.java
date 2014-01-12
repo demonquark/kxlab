@@ -9,11 +9,6 @@ import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.util.Log;
-
 /**
  * <p>The ServicesDAOweb attempts to get the services from the web.</p>
  * @author Krishna
@@ -39,7 +34,7 @@ class ServicesDAOweb extends ServicesDAOabstract{
 	@Override
 	protected void createService(String path) {
 		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		Loggen.v(this, "Sending request: " + Urls.build(urlBase, path));
 		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
@@ -53,7 +48,7 @@ class ServicesDAOweb extends ServicesDAOabstract{
 	@Override
 	protected void deleteService(String path) {
 		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		Loggen.v(this, "Sending request: " + Urls.build(urlBase, path));
 		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
@@ -66,7 +61,7 @@ class ServicesDAOweb extends ServicesDAOabstract{
 	
 	public void editService(String path) {
 		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		Loggen.v(this, "Sending request: " + Urls.build(urlBase, path));
 		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
@@ -79,7 +74,6 @@ class ServicesDAOweb extends ServicesDAOabstract{
 
 	@Override 
 	protected void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, final Page page) {
-		Loggen.v(this, "Info: " + email + " | " + flavor + " | " + type + " | " + size + " | " + page + " | " + determinePage(size,page));
 
 		// build the query
 		String path = Urls.build(Urls.urlBASE, 
@@ -112,7 +106,7 @@ class ServicesDAOweb extends ServicesDAOabstract{
 	@Override
 	protected void searchService(String path) {
 		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		Loggen.v(this, "Sending request: " + Urls.build(urlBase, path));
 		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
@@ -123,25 +117,38 @@ class ServicesDAOweb extends ServicesDAOabstract{
 		});
 	}
 
-	@Override protected void readService(String path) {
-		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
-		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+	@Override protected void readService(int id, int size, final Page page) {
+
+		// build the query
+		String path = Urls.build(Urls.urlBASE, Urls.pathServiceDetail);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramServiceId, String.valueOf(id));
+		params.put(Urls.paramCommentListSize, String.valueOf(listSize));
+		params.put(Urls.paramCommentListPage, String.valueOf(determinePage(size, page))); 
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
+		
+		// determine the cache file name
+		final String cachefilename = ServicesDAOlocal.getServicesDetailFilename(id);
+		
+		Loggen.v(this, "Sending request: " + path);
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
-					listener.onReadService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+					RawResponse rawResponse = new RawResponse(response, cachefilename);
+					rawResponse.page = page;
+					listener.onReadService(rawResponse); } }
 			@Override public void onFailure(Throwable error, String content) {
 				if(listener != null){
-					listener.onReadService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
-		});
-	}
-
-	
+					RawResponse rawResponse = new RawResponse(error, content, cachefilename);
+					rawResponse.page = page;
+					listener.onReadService(rawResponse); } }
+		});	
+	}	
 	
 	@Override
 	public void updateServiceScore(String path) {
 		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		Loggen.v(this, "Sending request: " + Urls.build(urlBase, path));
 		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
@@ -155,7 +162,7 @@ class ServicesDAOweb extends ServicesDAOabstract{
 	@Override
 	protected void createServiceComment(String path) {
 		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+		Loggen.v(this, "Sending request: " + Urls.build(urlBase, path));
 		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
@@ -172,10 +179,10 @@ class ServicesDAOweb extends ServicesDAOabstract{
 	 * @author Krishna
 	 */
 	private class ServicesResponseHandler extends AsyncHttpResponseHandler {
-		@Override public void onStart() { Log.v("DAOweb" , "onStart: not implemented."); }
-		@Override public void onSuccess(String response) { Log.v("DAOweb" , "onSuccess: not implemented."); }
-		@Override public void onFailure(Throwable error, String content) { Log.e("DAOweb" , "onFailure: not implemented."); }
-		@Override public void onFinish() { Log.v("DAOweb" , "onFinish: not implemented."); }		
+		@Override public void onStart() { Loggen.v(this , "onStart: not implemented."); }
+		@Override public void onSuccess(String response) { Loggen.v(this , "onSuccess: not implemented."); }
+		@Override public void onFailure(Throwable error, String content) { Loggen.v(this, "onFailure: not implemented."); }
+		@Override public void onFinish() {Loggen.v(this , "onFinish: not implemented."); }		
 
 	}
 }

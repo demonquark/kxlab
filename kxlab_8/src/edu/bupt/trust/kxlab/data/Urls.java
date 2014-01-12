@@ -39,8 +39,8 @@ final class Urls {
 	protected static final String paramUserEmail = "useremail";
 	protected static final String paramEmail = "email";
 	protected static final String paramServiceId = "serviceid";
-	protected static final String paramCommentListPage = "servicecommentlistpage";
-	protected static final String paramCommentListSize = "servicecommentlistsize";
+	protected static final String paramCommentListPage = "serviceCommentListPage";
+	protected static final String paramCommentListSize = "serviceCommentListSize";
 	protected static final String paramCommentScore = "commentscore";
 	protected static final String paramServiceComment = "servicecomment";
 	protected static final String paramProfilePassword = "password";	
@@ -96,6 +96,7 @@ final class Urls {
 	protected static final String fileUserList = "profile_userlist_";
 	protected static final String fileServiceList = "services_list_";
 	protected static final String fileService = "service_";
+	protected static final String fileServiceDetail = "service_detail_";
 	
 	
 	protected static final String build(String... parts){

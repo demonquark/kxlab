@@ -108,7 +108,9 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 		});
 	}
 
-	@Override protected void readService(String path) {
+	@Override protected void readService(int id, int size, Page page) {
+		String path = "";
+		
 		// TODO Auto-generated method stub
 		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
 		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){

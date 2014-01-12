@@ -30,6 +30,10 @@ public class JsonComment extends JsonItem implements Parcelable  {
     	rootcommentid 	= -1;
     }
     
+    public JsonComment(JsonComment item) {
+		this();
+		setFromJsonItem(item, false);
+	}
 
 	@Override public JsonItem getJsonItem() {
 		JsonComment newInstance = new JsonComment();
@@ -77,7 +81,7 @@ public class JsonComment extends JsonItem implements Parcelable  {
 		rootcommentid = in.readInt();
     }
     
-    // this is used to regenerate your object.
+	// this is used to regenerate your object.
     public static final Parcelable.Creator<JsonComment> CREATOR = new Parcelable.Creator<JsonComment>() {
         public JsonComment createFromParcel(Parcel in) { return new JsonComment(in); }
         public JsonComment[] newArray(int size) { return new JsonComment[size]; }

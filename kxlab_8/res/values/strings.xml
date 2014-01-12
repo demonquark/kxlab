@@ -66,6 +66,8 @@
 	<string name="action_accept">accept</string>
 	<string name="action_search">search</string>
 	<string name="action_create">create</string>
+	<string name="action_reply">reply</string>
+	<string name="action_rate">rate</string>
 	<string name="action_delete">delete</string>
 	<string name="action_sort">sort</string>
 	<string name="action_edit">edit</string>
@@ -103,7 +105,7 @@
 	<string name="details_service_img">Owner</string>
 	<string name="details_service_name">Title of this service:</string>
 	<string name="details_service_btn_score">score</string>
-	<string name="details_service_score">Credibility Score</string>
+	<string name="details_service_score">Credibility Score:</string>
 	<string name="details_service_number">Number of users:</string>
 	<string name="details_service_description">这里是详情页面  this the details of this service</string>
 	<string name="details_empty_list">No comments</string>
@@ -142,6 +144,9 @@
 	<string name="details_img_not_found_text">Could not find the service image.</string>
 	<string name="details_update_fail_title">Incomplete save</string>
 	<string name="details_update_fail_text">We could not save the service. Please try again.</string>
+	<string name="details_lastedit_title">Last edited:</string>
+	<string name="details_createtime_title">Created:</string>
+		
 						
 	<!-- comments list item -->
 	<string name="comment_owner_img">Commenter</string>

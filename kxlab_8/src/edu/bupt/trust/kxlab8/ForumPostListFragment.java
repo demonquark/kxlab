@@ -76,7 +76,7 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
     @Override public boolean onOptionsItemSelected(MenuItem item) {
     	int itemId = item.getItemId();
         switch (itemId) {
-        	case R.id.action_create:
+        	case R.id.action_reply:
 				if(mListener != null && mUser.isLogin()) { 
 					if(BaseActivity.isNetworkAvailable(getActivity()))
 						mListener.onActionSelected(getTag(), Gegevens.FRAG_POSTEDIT, mPost);
@@ -148,7 +148,7 @@ public class ForumPostListFragment extends BaseDetailFragment implements ForumLi
 		super.onViewStateRestored(savedInstanceState);
 		Loggen.v(this, getTag() + " - Restoring ForumPostListFragment instance state.");
 
-		// Note: Without a service, we can't do anything. (Server requests require a service id) 
+		// Note: Without a post, we can't do anything. (Server requests require a service id) 
 		if(mPost != null){
 			
 			// Hack to handle newly created replies.

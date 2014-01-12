@@ -54,8 +54,9 @@ class MyServicesDAOlocal extends ServicesDAOabstract {
 		
 	}
 
-	@Override
-	protected void readService(String filename) {
+	@Override protected void readService(int id, int size, Page page) {
+		String path = "";
+		
 		// TODO Auto-generated method stub
 		
 	}

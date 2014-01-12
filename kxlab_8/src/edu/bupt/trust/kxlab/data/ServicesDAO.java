@@ -8,6 +8,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -20,7 +21,15 @@ import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.data.ServicesDAOabstract.OnServicesRawDataReceivedListener;
 import edu.bupt.trust.kxlab.model.JsonComment;
+import edu.bupt.trust.kxlab.model.JsonPost;
+import edu.bupt.trust.kxlab.model.JsonPostForumDetail;
+import edu.bupt.trust.kxlab.model.JsonReply;
+import edu.bupt.trust.kxlab.model.JsonReplyComment;
+import edu.bupt.trust.kxlab.model.JsonServiceDetail;
 import edu.bupt.trust.kxlab.model.JsonTrustService;
+import edu.bupt.trust.kxlab.model.JsonUser;
+import edu.bupt.trust.kxlab.model.JsonreReply;
+import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
@@ -187,8 +196,76 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		}
 	}
 	
+	public void readService(Source source, TrustService service, ArrayList<JsonComment> comments, Page page) {
+		
+		int size = 0;
+		
+		// save the current page to the cache 
+		if(page != Page.CURRENT || (source == Source.WEB && comments != null ) ){ 
+			Loggen.v(this, "saved content to file.");
+			size = overwriteService(service, comments); 
+		}
+		
+		// let the correct source handle the request
+		switch (source) {
+		case DEFAULT:
+		case WEB:
+			web.readService(service.getId(), size, page);
+			break;
+		case LOCAL:
+			local.readService(service.getId(), size, page);;
+			break;
+		case DUMMY:
+			dummy.readService(service.getId(), size, page);;
+			break;
+		}
+	}	
 	
-	
+	private int overwriteService(TrustService service, ArrayList<JsonComment> comments) {
+		// create a JSON representation of the comments
+		ArrayList <JsonComment> jsoncomments = new ArrayList<JsonComment> ();
+		JsonReplyComment replyComment = new JsonReplyComment();
+		if(comments != null){ 
+			for(JsonComment comment : comments){
+				if(comment.rootcommentid == 0){
+					// this is a top level reply add it there
+					jsoncomments.add(comment);
+				} else {
+					// this is a re reply add it there
+					boolean added = false;
+					// try adding it to an existing re reply list
+					for(List<JsonComment> replylist : replyComment.ReplyCommentDetail){
+						if(replylist.size() > 0 && replylist.get(0).rootcommentid == comment.rootcommentid){
+							replylist.add(comment);
+							added = true;
+						}
+					}
+					
+					// if there is no list yet, create a re reply list
+					if(!added){
+						List<JsonComment> newlist = new ArrayList <JsonComment> ();
+						newlist.add(comment);
+						replyComment.ReplyCommentDetail.add(newlist);
+					}
+				}
+			} 
+		}
+
+		// create a JSON representation of the current forum detail page.
+		JsonServiceDetail oldDetails = new JsonServiceDetail(
+				(JsonTrustService) service.getJsonService(), 
+				service.getServiceUserNumber(),
+				jsoncomments,
+				replyComment);
+		
+		// write to file
+		local.writeToFile(ServicesDAOlocal.getServiceFilename(service.getId()), 
+				new GsonBuilder().serializeNulls().create().toJson(oldDetails));
+		
+		Loggen.v(this, "Done writing to file.");
+		
+		return jsoncomments.size();
+	}
 
 	private void overwriteServicesList(ServiceType type, ServiceFlavor flavor, List<TrustService> services) {
 		if(services != null){
@@ -249,57 +326,8 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		}
 		web.searchService(path);
 	}
+	
 
-	/**
-	 * 
-	 * @param serviceId
-	 * @param p
-	 *            tell to show latest comments or show previous comments.
-	 */
-	public void readService(Source source, int serviceId, Page p) {
-		switch (p) {
-		case PREVIOUS:
-			commentPageNo++;
-			break;
-		case LATEST:
-			if (commentPageNo > 0)
-				commentPageNo--;
-			break;
-		}
-
-		// Get the path of the read services page
-		String path = Urls.pathMyServiceDetail;
-
-		RequestParams params = new RequestParams();
-		params.put(Urls.paramServiceId, serviceId + ""); // service id
-		params.put(Urls.paramCommentListPage, commentPageNo + ""); // comment
-																	// page no
-		params.put(Urls.paramCommentListSize, LIST_SIZE); // list size
-//		path = ServicesDAOweb.getPath(true, path, params);
-
-		Loggen.i(this, "Got path: " + path);
-		// Send the path to the correct DAO (Note: for DAOlocal, we send the
-		// file name instead of the path)
-		switch (source) {
-		case DEFAULT:
-			if (local.fileExists(ServicesDAOlocal.pathToFileName(path))) {
-//				local.readServices(ServicesDAOlocal.pathToFileName(path));
-			} else {
-				web.readService(path);
-			}
-			break;
-		case WEB:
-			web.readService(path);
-			break;
-		case LOCAL:
-			local.readService(ServicesDAOlocal.pathToFileName(path));
-			break;
-		case DUMMY:
-			dummy.readService(ServicesDAOlocal.pathToFileName(path));
-			break;
-
-		}
-	}
 
 	public void updateServiceScore(int serviceId, String userMail, int score) {
 		String path = Urls.pathServiceScore;
@@ -546,52 +574,83 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	}
 
 	@Override public void onReadService(RawResponse response) {
+		Loggen.v(this, "Got a response onReadService: " + response.message);
 		
 		// default return values
 		TrustService service = null;
 		ArrayList<JsonComment> comments = null;
-		int numberOfUsers = -1;
+		Gson gson = new GsonBuilder().serializeNulls().create();
 		
-		if (response.errorStatus == RawResponse.Error.NONE) {
+		// convert the provided JSON string to a JSON object
+		if(response.errorStatus == RawResponse.Error.NONE){
 			try{
-				// first save the data to the cache
-				if (response.path != null && response.message != null) {
-					local.writeToFile(response.path, response.message);
+				JsonServiceDetail newService = null;
+				if(JsonTools.isValidJSON(response.message)){
+					newService = gson.fromJson(response.message,JsonServiceDetail.class);
+				} else {
+					newService = gson.fromJson(local.readFromFile(response.path), JsonServiceDetail.class);
 				}
 				
-				// Generic Gson instance used for conversion
-				Gson gson = new Gson();
+				// update the local file with the content we have now.
+				if(response.page != Page.CURRENT){
+				
+					// read and update the existing post from cache. 
+					JsonServiceDetail oldService = 
+							gson.fromJson(local.readFromFile(response.path), JsonServiceDetail.class);
 
-				// Step 1 - convert the message into a JSON object
-				JsonElement je = new JsonParser().parse(response.message);
-				JsonObject jobj = je.getAsJsonObject();
+					oldService.updateWithNew(newService, response.page == Page.PREVIOUS);
+					newService = oldService;
+				}
+
+				// save the values to file
+				local.writeToFile(response.path, gson.toJson(newService));
 				
-				// Step 2 - convert the service details to a TrustService instance
-				JsonElement s = jobj.get(Urls.jsonServiceDetail); // get service detail
-				if(s != null ) { service = gson.fromJson(s, TrustService.class); }
+				// TODO: Figure out when to get overlap?
 				
-				// Step 3 - get the number of service users 
-				JsonElement sn = jobj.get(Urls.jsonServiceUserNumber); // ?
-				if(sn != null) { numberOfUsers = sn.getAsInt(); }
+				// get the post from the data
+				service = new TrustService(ServiceFlavor.SERVICE, newService.ServiceDetail, 
+							new User(newService.ServiceDetail.useremail));
+				service.setServiceUserNumber(newService.ServiceUserNumber);
+
 				
-				// Step 4 - convert the comment details to a list of Comment instances
-				JsonElement c = jobj.get(Urls.jsonCommentDetail); // get comment list
-				java.lang.reflect.Type listType = new TypeToken<ArrayList<JsonComment>>() {}.getType();
-				if(c != null) { comments = gson.fromJson(c, listType); } else { comments = new ArrayList<JsonComment> ();}
+				comments = new ArrayList<JsonComment> ();
+
 				
-				// Step 5 - get the replies to each comment
-				JsonElement rd = jobj.get(Urls.jsonReplyCommentDetail);
-				if(rd != null){
-					// Step 5a - read the replies into an array
-					JsonArray ja = rd.getAsJsonArray();
-					for(JsonElement ele : ja) {
-						// Step 5b - read each element in the array as an instance of Comment
-						JsonComment rc = gson.fromJson(ele, JsonComment.class);
-						for(JsonComment co : comments) {
-							// Step 5c - Add each comment to its corresponding comment
-//							if(co.getCommentid() == rc.getRootcommentid()) {
-//								co.getDetailComments().add(rc);
-//							}
+				// get the replies from the data
+				List<JsonComment> jsonreplies = newService.CommentDetail;
+				for(JsonComment reply : jsonreplies){
+					comments.add(new JsonComment(reply));
+					Loggen.v(this, "added " + comments.get(comments.size() -1 ).commentid);
+				}
+				
+				// get the replies to the replies
+				JsonReplyComment reReply = newService.ReplyComment;
+				if(reReply != null){
+					Loggen.v(this, "re reply exists");
+					List <List<JsonComment>> reReplyDetail = reReply.ReplyCommentDetail;
+					if(reReplyDetail != null){
+						Loggen.v(this, "re reply details exists");
+						// loop through the list of re replies
+						for(List<JsonComment> rereplies : reReplyDetail){
+							Loggen.v(this, "going through the loop");
+							// pick the first re reply
+							if(rereplies.size() > 0 ){
+								int rootId = rereplies.get(0).rootcommentid;
+								Loggen.v(this, "rerereply detail is: " + rootId);
+
+								// loop through the list of replies
+								for(int i = 0; i < comments.size(); i++){
+									// once we found the reply that this belongs to, add the replies after it.
+									if(comments.get(i).rootcommentid == rootId){
+										for(int j = rereplies.size() - 1; j >= 0; j--){
+											// add the replies to the list
+											comments.add(i + 1, new JsonComment(rereplies.get(j)));
+											Loggen.v(this, "added " + comments.get(i).commentid);											
+										}
+										break;
+									}
+								}
+							}
 						}
 					}
 				}
@@ -599,12 +658,13 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 				// If an error occurs while parsing the message, just stop and reply with what we've got.
 				Loggen.e(this, "Error (" + e.toString() + ") while parsing " + response.message);
 			}
+	
 		} else {
 			Loggen.e(this, "Error (" + response.errorStatus + ") while parsing " + response.message); 
 		}
 
 		if (listener.get() != null) {
-			listener.get().onReadService(service, numberOfUsers, comments);
+			listener.get().onReadService(service, comments);
 		}
 	}
 
@@ -682,7 +742,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		 * @param numberOfUsers The number of users that have used this service. -1 if data request failed.
 		 * @param comments A list of comments. Null if data request failed. 
 		 */
-		public void onReadService(TrustService service, int numberOfUsers, List<JsonComment> comments);
+		public void onReadService(TrustService service, List<JsonComment> comments);
 		public void writeServiceScore(boolean success);
 		public void writeServiceComment(boolean success);
 		public void onEditService(boolean success);

@@ -4,103 +4,80 @@
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:orientation="vertical"
-	android:layout_marginLeft="@dimen/list_item_horizontal_padding"
-	android:layout_marginRight="@dimen/list_item_horizontal_padding"
-	android:background="@drawable/login_back" >
-
-	<RelativeLayout android:id="@+id/details_owner_holder"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_marginBottom="@dimen/list_item_vertical_margin"
-		android:background="@drawable/setbar_bg" >
-
-		<ImageView android:id="@+id/details_owner_img"
-			android:layout_width="@dimen/list_person_img_width"
-			android:layout_height="@dimen/list_person_img_height"
-			android:layout_marginLeft="@dimen/list_item_horizontal_margin"
-			android:layout_marginRight="@dimen/list_item_horizontal_margin"
-			android:contentDescription="@string/details_owner_img"
-			android:layout_alignParentLeft="true"
-			android:src="@drawable/ic_launcher" />
-
-		<TextView android:id="@+id/details_owner_name" 
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textSize="@dimen/list_person_text" android:text="@string/details_owner_name"
-			android:paddingTop="@dimen/list_item_vertical_padding"
-            android:layout_alignParentTop="true" android:layout_toRightOf="@id/details_owner_img" />
-
-		<TextView android:id="@+id/details_owner_score"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:textSize="@dimen/list_person_text" android:text="@string/details_owner_score" 
-			android:paddingBottom="@dimen/list_item_vertical_padding"
-			android:layout_toRightOf="@id/details_owner_img" android:layout_alignBottom="@id/details_owner_img" />
-		
-		<TextView android:id="@+id/details_owner_time"
-			android:paddingBottom="@dimen/list_item_vertical_padding"
-		    android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:textSize="@dimen/list_person_text" android:text="@string/details_owner_time"
-			android:layout_marginLeft="@dimen/list_person_horizontal_padding" 
-			android:layout_marginRight="@dimen/list_person_horizontal_padding" 
-			android:layout_alignParentRight="true" android:gravity="right"
-			android:layout_toRightOf="@id/details_owner_score" android:layout_alignBottom="@id/details_owner_img"/>
-	</RelativeLayout>
-        
+	android:padding="@dimen/list_item_vertical_padding" >
+	
 	<RelativeLayout android:id="@+id/details_service_holder"
 		android:layout_width="match_parent" android:layout_height="wrap_content"
-		android:paddingLeft="@dimen/list_item_horizontal_padding" android:paddingRight="@dimen/list_item_horizontal_padding"
 		android:layout_marginBottom="@dimen/list_item_vertical_margin" >
 	
 		<ImageView android:id="@+id/details_service_img"
             android:layout_width="@dimen/list_header_img_width" android:layout_height="@dimen/list_header_img_height"
-			android:layout_marginLeft="@dimen/list_item_horizontal_margin"
             android:src="@drawable/avatar_01" android:contentDescription="@string/niets" />
-         
-		<TextView android:id="@+id/details_service_title" 
+		
+		<TextView android:id="@+id/details_service_lastedit_title"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:textSize="@dimen/list_header_text_large" android:text="@string/details_service_name"
+			android:textSize="@dimen/list_header_text_small" android:text="@string/details_lastedit_title" 
+			android:layout_marginLeft="@dimen/list_item_vertical_margin" 
+			android:layout_marginBottom="@dimen/list_item_vertical_padding"
+			android:layout_toRightOf="@id/details_service_img" android:layout_alignBottom="@id/details_service_img" />
+		
+		<TextView android:id="@+id/details_service_lastedit_text"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_header_text_small" android:text="@string/ellipsis" 
+			android:layout_marginLeft="@dimen/list_text_spacing" 
+			android:layout_toRightOf="@+id/details_service_lastedit_title"
+			android:layout_alignBottom="@id/details_service_lastedit_title" />
+		
+		<TextView android:id="@+id/details_service_createtime_title"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_header_text_small" android:text="@string/details_createtime_title" 
+			android:layout_marginLeft="@dimen/list_item_vertical_margin" 
+			android:layout_marginBottom="@dimen/list_item_vertical_padding"
 			android:layout_toRightOf="@id/details_service_img"
-            android:layout_alignTop="@id/details_service_img"
-            android:layout_marginTop="@dimen/list_item_vertical_margin" />
-         
-         <TextView android:id="@+id/details_service_score"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_above="@id/details_service_lastedit_title" />
+		
+		<TextView android:id="@+id/details_service_createtime_text"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_header_text_small" android:text="@string/ellipsis" 
+			android:layout_marginLeft="@dimen/list_text_spacing" 
+			android:layout_toRightOf="@+id/details_service_createtime_title"
+			android:layout_alignBottom="@id/details_service_createtime_title" />
+		
+		<TextView android:id="@+id/details_service_number_title"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_header_text_small" android:text="@string/details_service_number" 
+			android:layout_marginLeft="@dimen/list_item_vertical_margin" 
+			android:layout_marginBottom="@dimen/list_item_vertical_padding"
 			android:layout_toRightOf="@id/details_service_img"
-            android:layout_below="@id/details_service_title"
-            android:layout_marginTop="@dimen/list_item_vertical_margin"
-            android:text="@string/details_service_score"
-            android:textSize="@dimen/list_header_text_small" />
-         
-         <TextView android:id="@+id/details_service_number"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_above="@id/details_service_createtime_title" />
+		
+		<TextView android:id="@+id/details_service_number_text"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_header_text_small" android:text="@string/ellipsis" 
+			android:layout_marginLeft="@dimen/list_text_spacing" 
+			android:layout_toRightOf="@+id/details_service_number_title"
+			android:layout_alignBottom="@id/details_service_number_title" />
+		
+		<TextView android:id="@+id/details_service_score_title"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_header_text_small" android:text="@string/details_service_score" 
+			android:layout_marginLeft="@dimen/list_item_vertical_margin" 
+			android:layout_marginBottom="@dimen/list_item_vertical_padding"
 			android:layout_toRightOf="@id/details_service_img"
-            android:layout_below="@id/details_service_score"
-            android:layout_marginTop="@dimen/list_item_vertical_margin"
-            android:text="@string/details_service_number"
-            android:textSize="@dimen/list_header_text_small" />
-
-        <Button android:id="@+id/details_service_btn_score"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_below="@id/details_service_number"
-            android:layout_alignParentRight="true"
-            android:text="@string/details_service_btn_score"
-            android:textSize="@dimen/list_header_text_small" />
-
-        <ImageButton android:id="@+id/details_service_btn_comment"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/details_service_btn_score"
-            android:layout_alignTop="@id/details_service_btn_score"
-            android:layout_alignBottom="@id/details_service_btn_score"
-            android:src="@drawable/detail_comment_normal" android:contentDescription="@string/niets" />
-         
-         <TextView android:id="@+id/details_service_description"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/details_service_img"
-            android:layout_below="@id/details_service_btn_score"
-            android:gravity="center_vertical"
-            android:layout_marginTop="@dimen/list_item_vertical_margin"
-            android:text="@string/details_service_description"
-            android:textSize="@dimen/list_header_text_large" />
-
+			android:layout_above="@id/details_service_number_title" />
+		
+		<TextView android:id="@+id/details_service_score_text"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textSize="@dimen/list_header_text_small" android:text="@string/ellipsis" 
+			android:layout_marginLeft="@dimen/list_text_spacing" 
+			android:layout_toRightOf="@+id/details_service_score_title"
+			android:layout_alignBottom="@id/details_service_score_title" />
 	</RelativeLayout>
+
+	<TextView android:id="@+id/details_service_description"
+	   android:layout_width="match_parent" android:layout_height="wrap_content"
+	   android:text="@string/details_service_description"
+	   android:gravity="center_horizontal"
+	   android:textAppearance="?android:attr/textAppearanceMedium"  />
+
 </LinearLayout>

@@ -55,7 +55,7 @@ public class ServicesDAOdummy extends ServicesDAOabstract {
 		
 	}
 
-	@Override protected void readService(String path) {
+	@Override protected void readService(int id, int size, Page page) {
 
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {

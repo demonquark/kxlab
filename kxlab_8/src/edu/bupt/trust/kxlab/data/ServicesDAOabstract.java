@@ -26,7 +26,7 @@ abstract class ServicesDAOabstract extends DAOabstract  {
 	protected abstract void editService(String path);			// method for  "/service/editservice"
 	protected abstract void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, Page page);			// method for "/service/serviceList"
 	protected abstract void searchService(String path);			// method for "/service/searchMyServiceList"
-	protected abstract void readService(String path); 			// method for  "/service/serviceDetail"
+	protected abstract void readService(int id, int size, Page page); 			// method for  "/service/serviceDetail"
 	protected abstract void updateServiceScore(String path); 	// method for "/service/importServiceScore"
 	protected abstract void createServiceComment(String path);	// method for "/service/importServiceCommend"
 	

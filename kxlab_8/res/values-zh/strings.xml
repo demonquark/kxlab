@@ -63,6 +63,8 @@
 	<string name="action_accept">accept</string>
 	<string name="action_search">search</string>
 	<string name="action_create">create</string>
+	<string name="action_reply">reply</string>
+	<string name="action_rate">rate</string>
 	<string name="action_delete">delete</string>
 	<string name="action_sort">sort</string>
 	<string name="action_edit">edit</string>

@@ -331,17 +331,17 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 			if (local.fileExists(ServicesDAOlocal.pathToFileName(path))) {
 //				local.readServices(ServicesDAOlocal.pathToFileName(path));
 			} else {
-				web.readService(path);
+//				web.readService(path);
 			}
 			break;
 		case WEB:
-			web.readService(path);
+//			web.readService(path);
 			break;
 		case LOCAL:
-			local.readService(ServicesDAOlocal.pathToFileName(path));
+//			local.readService(ServicesDAOlocal.pathToFileName(path));
 			break;
 		case DUMMY:
-			local.readService(ServicesDAOlocal.pathToFileName(path));
+//			local.readService(ServicesDAOlocal.pathToFileName(path));
 			break;
 
 		}

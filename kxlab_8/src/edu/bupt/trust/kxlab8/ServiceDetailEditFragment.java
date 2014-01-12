@@ -374,7 +374,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 	}
 	
 
-	@Override public void onReadService(TrustService service, int numberOfUsers, List<JsonComment> comments) { }
+	@Override public void onReadService(TrustService service, List<JsonComment> comments) { }
 	@Override public void writeServiceScore(boolean success) { }
 	@Override public void writeServiceComment(boolean success) { }
 

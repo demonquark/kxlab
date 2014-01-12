@@ -1,20 +1,12 @@
 package edu.bupt.trust.kxlab.data;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.utils.FileManager;
 import edu.bupt.trust.kxlab.utils.Gegevens;
-import edu.bupt.trust.kxlab.utils.Loggen;
 
 import android.content.Context;
 import android.os.Environment;
@@ -61,10 +53,20 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 		listener.onReadServices(rawResponse);
 	}
 
-	@Override
-	protected void readService(String filename) {
-		// TODO Auto-generated method stub
+	@Override protected void readService(int id, int size, Page page) {
+		// determine the cache file name
+		final String cachefilename = ServicesDAOlocal.getServicesDetailFilename(id);
 		
+		// read from the file
+		String response = readFromFile(cachefilename);
+		
+		// create a response
+		RawResponse rawResponse = new RawResponse(response, cachefilename);
+		if(response == null){ rawResponse.errorStatus = RawResponse.Error.FILE_NOT_FOUND; }
+		rawResponse.page = page;
+		
+		// send back the response
+		listener.onReadService(rawResponse);
 	}
 
 	@Override
@@ -152,6 +154,10 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 	}
 
 
+	public static String getServicesDetailFilename(int id) {
+		return Urls.fileServiceDetail + "_" + id   + Gegevens.FILE_EXT_DAT;
+	}
+
 	public static String getServicesListFilename(String type, String flavor) {
 		return Urls.fileServiceList + flavor + "_" + type   + Gegevens.FILE_EXT_DAT;
 	}
@@ -159,6 +165,8 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 	public static String getServiceFilename(int id) {
 		return Urls.fileService + id + Gegevens.FILE_EXT_DAT;
 	}
+
+
 	
 //	public static String readString(File file) throws IOException {
 //		InputStream in = new FileInputStream(file);
