@@ -197,18 +197,23 @@ public class ProfileDAO implements ProfileDAOabstract.OnProfileRawDataReceivedLi
 		local.writeToFile(oldUserFileName, gson.toJson(oldUser));
 		local.writeToFile(newUserFileName, gson.toJson(newUser));
 		
+		Loggen.v(this, "Request to change user");
 		if(newUser.phonenumber != null && !newUser.phonenumber.equals(oldUser.phonenumber)){
 			// change the phone number
+			Loggen.v(this, "Request to change phone number");
 			web.changePhonenumber(newUser.email, newUser.phonenumber);
 		} else if(newUser.type != oldUser.type){
 			// change the type
+			Loggen.v(this, "Request to change type");
 			web.changeSource(newUser.email, newUser.type);
 		} else if (newUser.localPhoto != null && !newUser.localPhoto.equals(oldUser.localPhoto)){
 			// change the photo
 			// TODO: Fix the photo logic
+			Loggen.v(this, "Request to change photo");
 			web.changePhoto(newUser.email, dummy.randomString());
 		} else if (newUser.password != null && !newUser.password.equals(oldUser.password)){
 			// change the password
+			Loggen.v(this, "Request to change password");
 			web.changePassword(newUser.email, oldUser.password, newUser.password);
 		} else {
 			// convert the JSON user to user info format

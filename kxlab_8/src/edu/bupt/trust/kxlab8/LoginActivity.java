@@ -81,6 +81,7 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
 			break;
 		case R.id.login_checkbox_savepassword:
 			mUser.setRemember(boxRemember.isChecked());
+			mSettings.saveSettingsToSharedPreferences(this);
 			if(mUser.isRemember()) { postToast(getString(R.string.strRemmenberTips)); }
 			break;
 		default :
@@ -129,7 +130,7 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
 			mUser.setPassword(mPassword);
 
 			// log in
-			DaoFactory.getInstance().setProfileDAO(this,this).login(Source.DUMMY, mUsername, mPassword);
+			DaoFactory.getInstance().setProfileDAO(this,this).login(Source.WEB, mUsername, mPassword);
 			
 		}else{
 			
@@ -192,7 +193,7 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
 			openActivity(intent);
 
 		}else if(errorMessage != null) {
-			this.userMustClickOkay(getString(R.string.login_dialog_failure_title), errorMessage);
+			this.userMustClickOkay(getString(R.string.login_dialog_failure_title), getString(R.string.login_dialog_failure_text));
 		}
 	}
 

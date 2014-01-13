@@ -33,11 +33,11 @@ class ProfileDAOweb extends ProfileDAOabstract{
 		// determine the path to send to the server
 		String path = Urls.build(Urls.urlBASE, Urls.pathProfileLogin);
 		RequestParams params = new RequestParams();
-		params.put(Urls.paramUserEmail, email);
+		params.put(Urls.paramEmail, email);
 		params.put(Urls.paramProfilePassword, password);
 		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
 		
-		Loggen.i(this, "Sending request: " + path);
+		Loggen.v(this, "Sending request: " + path);
 		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){

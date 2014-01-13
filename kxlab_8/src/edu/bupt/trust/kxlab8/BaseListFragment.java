@@ -76,7 +76,9 @@ public class BaseListFragment extends Fragment implements BasicDialogListener, O
 		public void onActionSelected(String tag, String goal, Object o);
 	}
 
-	@Override public void onBasicPositiveButtonClicked(String tag, Object o) { }
+	@Override public void onBasicPositiveButtonClicked(String tag, Object o) { 
+		Loggen.d(this, "onBasic positive clicked baselistfragment.");
+	}
 	@Override public void onBasicNegativeButtonClicked(String tag, Object o) { }
 	
 	@Override public boolean onMenuItemActionExpand(MenuItem item) {  return true; }

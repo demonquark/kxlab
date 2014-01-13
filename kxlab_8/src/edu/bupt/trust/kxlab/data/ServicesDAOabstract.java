@@ -21,7 +21,7 @@ abstract class ServicesDAOabstract extends DAOabstract  {
 	// Methods to be implemented by the children
 	
 	
-	protected abstract void createService(String email, int id, String title, String detail);
+	protected abstract void createService(String email, int id, String title, String detail, String photo);
 	protected abstract void deleteService(int serviceId);
 	protected abstract void editService(int id, String title, String detail, String photo);			// method for  "/service/editservice"
 	protected abstract void readServices(String email, String searchterm, ServiceFlavor flavor, ServiceType type, int size, Page page);			// method for "/service/serviceList"

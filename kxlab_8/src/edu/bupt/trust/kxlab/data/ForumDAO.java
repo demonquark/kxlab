@@ -20,6 +20,7 @@ import edu.bupt.trust.kxlab.model.JsonPost;
 import edu.bupt.trust.kxlab.model.JsonPostAnnounceDetail;
 import edu.bupt.trust.kxlab.model.JsonPostForumDetail;
 import edu.bupt.trust.kxlab.model.JsonPostList;
+import edu.bupt.trust.kxlab.model.JsonPostSearchList;
 import edu.bupt.trust.kxlab.model.JsonReply;
 import edu.bupt.trust.kxlab.model.JsonUser;
 import edu.bupt.trust.kxlab.model.JsonVote;
@@ -376,7 +377,6 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		
 		// send the data back to the listener
 		if (forumlistener.get() != null){ forumlistener.get().onReadPostList(posts); }
-		
 	}
 
 	@Override public void onCreatePost(RawResponse response) {
@@ -419,8 +419,27 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 
 	@Override
 	public void onCreateVote(RawResponse response) {
-		// TODO: Validate response. send the data back to the listener
-		if (forumlistener.get() != null){ forumlistener.get().onCreateVote(true); }
+		Loggen.v(this, "Got onCreateVote: " + response.message);
+
+		boolean success = false;
+		if (response.errorStatus == RawResponse.Error.NONE && JsonTools.isValidJSON(response.message)) {
+			try{
+				// success or not
+				JsonParser jp = new JsonParser();
+				JsonElement je = jp.parse(response.message);
+				JsonObject jobj = je.getAsJsonObject();
+	
+				JsonElement s = jobj.get(Urls.jsonForumCreateVoteOrNot);
+				success = (s != null && s.getAsInt() != 0); 
+
+			}catch(Exception e){
+				Loggen.e(this, "We encountered an error while parsing: " + response.message);
+			}
+		} else {
+			Loggen.e(this, "We encountered an error: " + response.errorStatus);
+		}
+
+		if (forumlistener.get() != null){ forumlistener.get().onCreateVote(success); }
 		
 	}
 
@@ -619,10 +638,32 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 		if (forumlistener.get() != null){ forumlistener.get().onReadAnnounceFAQ(post); }
 	}
 
-	@Override
-	public void onSearchPostList(RawResponse response) {
-		// TODO Auto-generated method stub
+	@Override public void onSearchPostList(RawResponse response) {
+		Loggen.v(this, "Got a response onSearchPostList: " + response.message);
 		
+		if(response.errorStatus == RawResponse.Error.NONE){
+			try{
+
+				// Generic Gson instance used for conversion
+				Gson gson = new Gson();
+				JsonPostSearchList searchResult = null;
+				
+				// Step 1 - convert the message into a JSON object
+				if(JsonTools.isValidJSON(response.message)){
+					searchResult = gson.fromJson(response.message,JsonPostSearchList.class);
+					JsonPostList postList = new JsonPostList(searchResult.PostSearchList);
+					response.message = gson.toJson(postList);
+					
+				} 
+			}catch(Exception e){
+				// If an error occurs while parsing the message, just stop and reply with what we've got.
+				Loggen.e(this, "Error (" + e.toString() + ") while parsing " + response.message);
+			}
+		} else {
+			Loggen.e(this, "We encountered an error onReadPostList: " + response.errorStatus.toString());
+		}
+		
+		onReadPostList(response);
 	}	
 	
 	public interface ForumListener {

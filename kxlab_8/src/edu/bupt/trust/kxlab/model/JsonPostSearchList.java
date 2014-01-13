@@ -6,36 +6,38 @@ import java.util.List;
 import edu.bupt.trust.kxlab.utils.JsonTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
-public class JsonPostList extends JsonItem {
+public class JsonPostSearchList extends JsonItem {
 
-	public List<JsonPost> PostList;
+	public List<JsonPost> PostSearchList;
+	public String postType;
 	
-	public JsonPostList(){
-		PostList = new ArrayList<JsonPost> ();
+	public JsonPostSearchList(){
+		PostSearchList = new ArrayList<JsonPost> ();
+		postType = "";
 	}
 	
-	public JsonPostList(List<JsonPost> posts){
-		PostList = copyPosts(posts);
+	public JsonPostSearchList(List<JsonPost> posts){
+		PostSearchList = copyPosts(posts);
 	}
 
 	@Override public JsonItem getJsonItem() {
-		JsonPostList newInstance = new JsonPostList();
+		JsonPostSearchList newInstance = new JsonPostSearchList();
 		newInstance.setFromJsonItem(this, false);
 		return newInstance;
 	}
 
 	@Override public boolean setFromJsonItem(JsonItem aThat, boolean allowNull) {
-		boolean isPostList = (aThat instanceof JsonPostList);
+		boolean isPostList = (aThat instanceof JsonPostSearchList);
 		
 		if(isPostList){
-			JsonPostList that = (JsonPostList) aThat;
+			JsonPostSearchList that = (JsonPostSearchList) aThat;
 			if(allowNull){
-				PostList = that.PostList;	
+				PostSearchList = that.PostSearchList;	
 			} else {
-				PostList = new ArrayList<JsonPost>();
-				if(that.PostList != null){
-					for(JsonPost reply : that.PostList){
-						PostList.add(new JsonPost(reply));
+				PostSearchList = new ArrayList<JsonPost>();
+				if(that.PostSearchList != null){
+					for(JsonPost reply : that.PostSearchList){
+						PostSearchList.add(new JsonPost(reply));
 					}
 				}
 			}
@@ -47,22 +49,22 @@ public class JsonPostList extends JsonItem {
 		return -1;
 	}
 
-	public void updateWithNew(JsonPostList b, boolean pushToEnd){
+	public void updateWithNew(JsonPostSearchList b, boolean pushToEnd){
 		if(b != null){
 			// Step 0 - make sure we have records
-			if(PostList == null) { PostList = new ArrayList<JsonPost> (); }
+			if(PostSearchList == null) { PostSearchList = new ArrayList<JsonPost> (); }
 			
 			// Step 1 - copy the new records
-			List<JsonPost> newRecords = copyPosts(b.PostList);
+			List<JsonPost> newRecords = copyPosts(b.PostSearchList);
 					
 			// Step 2 - update the old records with the new records
-			JsonTools.replaceListOverlap(PostList, newRecords);
+			JsonTools.replaceListOverlap(PostSearchList, newRecords);
 			
 			// Step 3 - add the new records to the old records
 			if(pushToEnd) { 
-				PostList.addAll(newRecords);
+				PostSearchList.addAll(newRecords);
 			} else {
-				PostList.addAll(0, newRecords);
+				PostSearchList.addAll(0, newRecords);
 			}
 		} else {
 			Loggen.e(this, "Cannot update with null");
@@ -78,4 +80,5 @@ public class JsonPostList extends JsonItem {
 		}
 		return newCopy;
 	}
+
 }

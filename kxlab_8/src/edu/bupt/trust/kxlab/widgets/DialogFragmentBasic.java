@@ -1,6 +1,7 @@
 package edu.bupt.trust.kxlab.widgets;
 
 import edu.bupt.trust.kxlab.utils.Gegevens;
+import edu.bupt.trust.kxlab.utils.Loggen;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.app.Activity;
@@ -57,6 +58,7 @@ public class DialogFragmentBasic extends DialogFragment {
         	
         	// try to assign the listener fragment as listener
         	if(mListenerFragmentTag != null){
+        		Loggen.d(this, "Got request to set listener fragment to " + mListenerFragmentTag);
         		Fragment listenerFrag = getActivity().getSupportFragmentManager().findFragmentByTag(mListenerFragmentTag);
         		if(listenerFrag != null && listenerFrag instanceof BasicDialogListener){
             		mListener = (BasicDialogListener) listenerFrag;

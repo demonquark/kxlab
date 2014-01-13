@@ -14,7 +14,7 @@ public class User implements Parcelable {
 	public User() {
 		jsonUser		= new JsonUser();
 		isLogin			= false;
-		remember		= false;
+		remember		= true;
 	}
 	
 	public User(User newUser){
@@ -24,7 +24,7 @@ public class User implements Parcelable {
 
 	public User(JsonUser user){
 		this();
-		this.setJsonUser(user);
+		this.setJsonUser(user, false);
 	}
 	
 	public User (String email){
@@ -32,7 +32,7 @@ public class User implements Parcelable {
 	}
 	
 	public void setFromUser(User that){
-		if(that != null) { jsonUser		= that.jsonUser; }
+		setJsonUser(that.jsonUser, false);
 		isLogin			= that.isLogin;
 		remember		= that.remember;
 	}
@@ -106,8 +106,17 @@ public class User implements Parcelable {
 		return jsonUser.localPhoto;
 	}
 
-	public void setJsonUser(JsonUser jsonUser) {
-		if(jsonUser != null) { this.jsonUser = jsonUser; }
+	public void setJsonUser(JsonUser jsonUser, boolean allowNull) {
+		if(jsonUser != null){
+			if(allowNull){
+				this.jsonUser = jsonUser;
+			} else {
+				this.jsonUser = new JsonUser(jsonUser);
+			}
+		} else if (!allowNull){
+			this.jsonUser = new JsonUser();
+		}
+
 	}
 
 	public void setLocalPhoto(String localPhoto) {

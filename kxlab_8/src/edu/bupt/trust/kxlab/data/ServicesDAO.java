@@ -58,8 +58,9 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	}
 	
 	public void createService(TrustService service) {
-		web.createService(service.getUseremail(), service.getId(), service.getServicetitle(), service.getServicedetail());
-
+		web.createService(service.getUseremail(), service.getType().getServerType(), 
+				service.getServicetitle(), service.getServicedetail(), 
+				service.getLocalPhoto());
 	}
 	
 	public void deleteServices(List <Integer> serviceIds) {
@@ -299,6 +300,7 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		
 		if (response.errorStatus == RawResponse.Error.NONE
 				&& JsonTools.isValidJSON(response.message)) {
+			try{
 
 			// Step 1 - convert the message into a JSON object
 			java.lang.reflect.Type listType = new TypeToken<ArrayList<JsonTrustService>>() { }.getType();
@@ -357,6 +359,9 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 				services.add(new TrustService(null, jsonservice, new User(jsonservice.useremail))); 
 			}
 			
+			}catch(Exception e){
+				Loggen.e(this, "We encountered an error while parsing: " + response.message);
+			}
 		} else {
 			Log.e("Kris", "We encountered an error: " + response.message);
 		}
@@ -434,11 +439,12 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 								// loop through the list of replies
 								for(int i = 0; i < comments.size(); i++){
 									// once we found the reply that this belongs to, add the replies after it.
-									if(comments.get(i).rootcommentid == rootId){
+									Loggen.v(this, "testing against " + rootId);
+									if(comments.get(i).commentid == rootId){
 										for(int j = rereplies.size() - 1; j >= 0; j--){
 											// add the replies to the list
 											comments.add(i + 1, new JsonComment(rereplies.get(j)));
-											Loggen.v(this, "added " + comments.get(i).commentid);											
+											Loggen.v(this, "added " + rereplies.get(j).commentid);											
 										}
 										break;
 									}
@@ -500,6 +506,11 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 	
 				JsonElement s = jobj.get(Urls.jsonServiceCommentOrNot);
 				success = (s != null && s.getAsInt() != 0); 
+				
+				if(!success){
+					JsonElement r = jobj.get(Urls.jsonServiceReplyCommentOrNot);
+					success = (r != null && r.getAsInt() != 0); 
+				}
 
 			}catch(Exception e){
 				Loggen.e(this, "We encountered an error while parsing: " + response.message);

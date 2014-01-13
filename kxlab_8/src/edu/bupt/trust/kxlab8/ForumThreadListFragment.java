@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -288,11 +289,12 @@ public class ForumThreadListFragment extends BaseListFragment
 			Post p = mPosts.get(position);
 			if(p.isPoll()){
 				if(((BaseActivity) getActivity()).mSettings.getUser().isLogin()){
-					DialogFragmentScore.newInstance(true)
+					DialogFragmentScore.newInstance(true, this)
 					.setTitle(getString(R.string.forum_dialog_vote_title))
 					.setMessage(getString(R.string.forum_dialog_vote_text) + " " + p.getPostSponsor().getEmail())
 					.setPositiveButtonText(getString(R.string.submit))
 					.setNegativeButtonText(getString(R.string.cancel))
+					.setObject(mPosts.get(position))
 					.setCancelableAndReturnSelf(false)
 					.show(getFragmentManager(), Gegevens.FRAG_SCORE);
 				} else {
@@ -332,14 +334,30 @@ public class ForumThreadListFragment extends BaseListFragment
 	}
 
 	@Override public void onBasicPositiveButtonClicked(String tag, Object o) { 
-		ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPostType);
-		String email = ((BaseActivity) getActivity()).mSettings.getUser().getEmail();
-		forumDAO.createVote(email, 3, Integer.parseInt(String.valueOf(o)));
+		try{
+			Loggen.d(this, "Rating requested with " + o.toString());
+			@SuppressWarnings("unchecked")
+			Pair<Post, Integer> scoreSpecs = (Pair<Post, Integer>) o;
+			ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPostType);
+			String email = ((BaseActivity) getActivity()).mSettings.getUser().getEmail();
+			forumDAO.createVote(email, scoreSpecs.first.getId(), scoreSpecs.second);
+		} catch (ClassCastException e){
+			Loggen.e(this, "Got something wonky from the Rate dialog");
+		}
+
 	}
 	
 	@Override public void onCreatePost(boolean success) {	}
 	@Override public void onCreateReply(boolean success) { }
-	@Override public void onCreateVote(boolean success) { }
+	@Override public void onCreateVote(boolean success) {
+		if(success){
+			// show an success message
+			userMustClickOkay(getString(R.string.forum_vote_success_title), getString(R.string.forum_vote_success_text));
+		}else {
+			// show an failure message
+			userMustClickOkay(getString(R.string.details_score_failure_title), getString(R.string.details_score_failure_text));
+		}
+	}
 	@Override public void onReadPost(Post post, List <JsonReply> replies) { }
 	@Override public void onReadAnnounceFAQ(Post post) { }
 	@Override public void onSearchPostList(List<Post> posts) { }

@@ -91,7 +91,9 @@ final class Urls {
 	protected static final String jsonPasswordChangeOrNot = "passwordChangeOrNot";
 	protected static final String jsonEditServiceOrNot = "editServiceOrNot";
 	protected static final String jsonServiceScoreOrNot = "serviceScoreOrNot";
+	protected static final String jsonForumCreateVoteOrNot = "createVoteOrNot";
 	protected static final String jsonServiceCommentOrNot = "serviceCommentOrNot";
+	protected static final String jsonServiceReplyCommentOrNot = "ReplyCommentOrNot";
 	protected static final String jsonDeleteServiceOrNot = "deleteServiceOrNot";
 	protected static final String jsonCreateServiceOrNot = "createServiceOrNot";
 	

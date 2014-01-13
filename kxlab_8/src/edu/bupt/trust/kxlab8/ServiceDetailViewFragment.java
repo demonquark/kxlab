@@ -139,6 +139,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 		// load the service owner. (Note: owner remains null if it is neither in the saved state nor the arguments)
 		mOwner = savedstate.getParcelable(Gegevens.EXTRA_USER2); 							
 		if(mOwner == null){ mOwner = arguments.getParcelable(Gegevens.EXTRA_USER2); } 
+		
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -412,7 +413,6 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 			} catch (ClassCastException e){
 				Loggen.e(this, "Got something wonky from the Rate dialog");
 			}
-			
 		}
 	}	
 	
@@ -473,7 +473,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 			userMustClickOkay(getString(R.string.details_score_success_title), getString(R.string.details_score_success_text));
 		}else {
 			// show an failure message
-			userMustClickOkay(getString(R.string.details_score_failure_title), getString(R.string.details_score_failure_text));
+			userMustClickOkay(getString(R.string.forum_vote_failure_title), getString(R.string.forum_vote_failure_text));
 		}
 		showService();
 	}

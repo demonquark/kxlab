@@ -41,7 +41,7 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 	}
 	
 	@Override
-	protected void createService(String email, int id, String title, String detail) {
+	protected void createService(String email, int id, String title, String detail, String photo){
 		// TODO Auto-generated method stub
 //		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
 //		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){

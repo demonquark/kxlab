@@ -208,11 +208,11 @@ public class ForumDAOweb extends ForumDAOabstract {
 		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
 			@Override public void onSuccess(String response) {
 				if(listener != null){
-					listener.onCreatePost(new RawResponse(response));
+					listener.onCreateVote(new RawResponse(response));
 				} }
 			@Override public void onFailure(Throwable error, String content) {
 				if(listener != null){
-					listener.onCreatePost(new RawResponse(error, content, ""));
+					listener.onCreateVote(new RawResponse(error, content, ""));
 				} }
 		});
 
@@ -238,13 +238,13 @@ public class ForumDAOweb extends ForumDAOabstract {
 				if(listener != null){
 					RawResponse rawResponse = new RawResponse(response, cachefilename);
 					rawResponse.page = page;
-					listener.onReadPostList(rawResponse);
+					listener.onSearchPostList(rawResponse);
 				} }
 			@Override public void onFailure(Throwable error, String content) {
 				if(listener != null){
 					RawResponse rawResponse = new RawResponse(error, content, cachefilename);
 					rawResponse.page = page;
-					listener.onReadPostList(rawResponse); 
+					listener.onSearchPostList(rawResponse); 
 				} }
 		});
 		

@@ -102,7 +102,7 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 		}.execute();
 	}
 	
-	@Override protected void createService(String email, int id, String title, String detail) {
+	@Override protected void createService(String email, int id, String title, String detail, String photo){
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
 				try { Thread.sleep(1500); } catch (InterruptedException e) { e.printStackTrace(); }

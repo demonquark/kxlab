@@ -72,7 +72,7 @@ public class ForumThreadActivity extends BaseActivity implements OnActionSelecte
 	@Override public void onActionSelected(String tag, String goal, Object o) {
 		Loggen.v(this, "onActionSelected in ForumThreadActivity.");
 	}
-
+	
 	@Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode,resultCode, data);
 	}

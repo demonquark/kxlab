@@ -65,7 +65,7 @@ public class JsonComment extends JsonItem implements Parcelable  {
 	}
 
 	public String getCommenttimeString(){
-		return new SimpleDateFormat("yyyy-mm-dd HH:mm:ss", Locale.US).format(commenttime);
+		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(commenttime);
 	}
 	
 	private JsonComment(Parcel in) {

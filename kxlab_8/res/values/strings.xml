@@ -87,6 +87,7 @@
 	<string name="login_txt_forgot"><u>Recover password</u></string>
 	<string name="login_txt_remember">Remember me</string>
 	<string name="login_dialog_failure_title">Could not login</string>
+	<string name="login_dialog_failure_text">Please check your email and password and try again.</string>
 	<string name="login_post_guest">You are logged in as a guest</string>
 	<string name="login_dialog_recover_title">Recover my password</string>
 	<string name="login_dialog_recover_text">Please enter your registered email. Our administrator will send you a new password. Thank you! </string>
@@ -288,7 +289,11 @@
 	<string name="forum_vote_for">Vote for</string>
 	<string name="forum_dialog_vote_title">Rate this user</string>
 	<string name="forum_dialog_vote_text">Please rate the credibility of</string>
-				
+	<string name="forum_vote_success_title">Rating recorded</string>
+	<string name="forum_vote_success_text">Your rating has been recorded</string>
+	<string name="forum_vote_failure_title">Rating no recorded</string>
+	<string name="forum_vote_failure_text">The server did not record your score. (Note that you can only score a service once)</string>
+					
 	<!-- user include -->
 	<string name="user_img">User</string>
 	<string name="user_name">Unknown Name</string>

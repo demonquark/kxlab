@@ -124,6 +124,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 	@Override public void onPause() {
 		if(getActivity() != null){
 			// Save the current user to our shared preferences
+			Loggen.d(this, "saving user. the remember is "+ mUser.isRemember());
 			BaseActivity parentActivity = (BaseActivity) getActivity();
 			parentActivity.mSettings.setUser(mUser);
 			parentActivity.mSettings.saveSettingsToSharedPreferences(parentActivity);
@@ -203,6 +204,7 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 				// show the user information
 				mUser = user;
 				mUser.setLogin(true);
+				mUser.setRemember(((BaseActivity) getActivity()).mSettings.getUser().isRemember());
 			}else{
 				// show an error message
 				userMustClickOkay(getString(R.string.myinfo_no_user_title), getString(R.string.myinfo_no_user_text));
