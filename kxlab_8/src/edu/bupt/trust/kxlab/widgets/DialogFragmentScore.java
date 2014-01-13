@@ -3,6 +3,7 @@ package edu.bupt.trust.kxlab.widgets;
 import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab8.R;
 import android.support.v4.app.Fragment;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RadioGroup;
@@ -47,6 +48,8 @@ public class DialogFragmentScore extends DialogFragmentBasic implements OnChecke
         args.putBoolean(Gegevens.EXTRA_HASNEGATIVE, hasNegativeButton);
         if(f.mListenerFragmentTag != null){ args.putString(Gegevens.EXTRA_TAG, f.mListenerFragmentTag); }
         f.setArguments(args);
+        
+        
 
         return f;
     }
@@ -59,24 +62,40 @@ public class DialogFragmentScore extends DialogFragmentBasic implements OnChecke
     	// inflate the custom view into dialog
     	LayoutInflater inflater = getActivity().getLayoutInflater();
     	View view = inflater.inflate(R.layout.dialog_score, null);
+    	((RadioGroup) view.findViewById(R.id.scoRadioGroup)).setOnCheckedChangeListener(this);
+
     	builder.setView(view);
     	
     	// return the dialog
         return builder.create();
     }
-   
 
-	@Override
+    @Override
+    public DialogFragmentBasic setObject(Object o){
+    	mGenericObject = new Pair<Object, Object>(o, Integer.valueOf(0));
+    	return this;
+    }
+
+    @Override
 	public void onCheckedChanged(RadioGroup arg0, int checkedId) {
-		// TODO Auto-generated method stub
+		
+    	// Determine the score
+    	Integer score = Integer.valueOf(0);
 		if(checkedId == R.id.score01){
-			mGenericObject = Integer.valueOf(-1);
+			score = Integer.valueOf(-1);
 		}
 		else if(checkedId == R.id.score02){
-			mGenericObject = Integer.valueOf(0);
+			score = Integer.valueOf(0);
 		}
 		else{
-			mGenericObject = Integer.valueOf(1);
+			score = Integer.valueOf(1);
 		}
+
+		// Save the score as an element of the generic object pair (note the first element is the original object)
+		if(mGenericObject instanceof Pair<?, ?>){
+			mGenericObject = new Pair<Object, Integer>(((Pair<?,?>) mGenericObject).first, score);
+    	} else {
+    		mGenericObject = new Pair<Object, Integer>(mGenericObject != null ? mGenericObject : new Object (), score);
+    	}
 	}
 }

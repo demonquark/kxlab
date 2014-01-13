@@ -65,8 +65,14 @@ public class BaseActivity extends ActionBarActivity  implements BasicDialogListe
 	public void onBtnClick(View view) {
 		int id = view.getId();
 		switch(id){
-		case R.id.footer_services:
 		case R.id.footer_myservice:
+			
+			// Guest do not have access to my services
+			if(!mSettings.getUser().isLogin()){
+				userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
+				break;
+			}
+		case R.id.footer_services:
 			// create an bundle with the specific flavor
 			Bundle b = new Bundle();
 			if(id == R.id.footer_myservice)

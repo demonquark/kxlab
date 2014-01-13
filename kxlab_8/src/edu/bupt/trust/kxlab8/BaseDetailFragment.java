@@ -41,9 +41,13 @@ public class BaseDetailFragment extends Fragment  implements OnClickListener, Ba
 	
 	/** Launch a confirmation dialog from the activity context */
 	protected void userMustClickOkay(String title, String message){
-		DialogFragmentBasic.newInstance(false).setTitle(title).setMessage(message)
-			.setPositiveButtonText(getString(R.string.ok))
-			.show(getFragmentManager(), Gegevens.FRAG_DIALOG);
+		if(isAdded() && getActivity() != null){
+			try{
+				DialogFragmentBasic.newInstance(false).setTitle(title).setMessage(message)
+				.setPositiveButtonText(getString(R.string.ok))
+				.show(getFragmentManager(), Gegevens.FRAG_DIALOG);
+			}catch(java.lang.IllegalStateException e){ }
+		}
 	}
 
 	/** Launch a confirmation dialog from the activity context */

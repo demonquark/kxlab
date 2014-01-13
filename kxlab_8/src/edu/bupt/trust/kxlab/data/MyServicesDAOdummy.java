@@ -30,7 +30,8 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 		this.rand = new Random();
 	}
 
-	@Override protected void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, Page page) {
+	@Override protected void readServices(String email, String searchterm, 
+					ServiceFlavor flavor, ServiceType type, int size, Page page) {
 		
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
@@ -75,7 +76,7 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 		}.execute();
 	}
 
-	@Override protected void updateServiceScore(String path) {
+	@Override protected void updateServiceScore(int serviceId, String userMail, int score) {
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
 				try { Thread.sleep(1500); } catch (InterruptedException e) { e.printStackTrace(); }
@@ -83,12 +84,12 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 			}
 
 			@Override protected void onPostExecute(Void v) {
-				listener.writeServiceScore(new RawResponse(null, "dummservicedetailscore"));
+				listener.onUpdateServiceScore(new RawResponse(null, "dummservicedetailscore"));
 			}
 		}.execute();
 	}
 
-	@Override protected void createServiceComment(String path) {
+	@Override protected void createServiceComment(int serviceId, String userMail, int rootcommentid, String comment) {
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
 				try { Thread.sleep(1500); } catch (InterruptedException e) { e.printStackTrace(); }
@@ -96,12 +97,12 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 			}
 
 			@Override protected void onPostExecute(Void v) {
-				listener.writeServiceComment(new RawResponse(null, "dummservicedetailcomment"));
+				listener.onCreateComment(new RawResponse(null, "dummservicedetailcomment"));
 			}
 		}.execute();
 	}
 	
-	@Override protected void createService(String path) {
+	@Override protected void createService(String email, int id, String title, String detail) {
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
 				try { Thread.sleep(1500); } catch (InterruptedException e) { e.printStackTrace(); }
@@ -114,7 +115,7 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 		}.execute();
 	}
 	
-	@Override protected void editService(String path) { 
+	@Override protected void editService(int id, String title, String detail, String photo) { 
 		new AsyncTask<Void, Integer, Void>  () {
 			@Override protected Void doInBackground(Void... params) {
 				try { Thread.sleep(1500); } catch (InterruptedException e) { e.printStackTrace(); }
@@ -192,6 +193,5 @@ public class MyServicesDAOdummy extends ServicesDAOabstract {
 		return Charset.forName("UTF-8").decode(ByteBuffer.wrap(b)).toString();
 	}
 
-	@Override protected void searchService(String path) { }
-	@Override protected void deleteService(String path) { }
+	@Override protected void deleteService(int serviceId) { }
 }

@@ -218,6 +218,35 @@ public class ForumDAOweb extends ForumDAOabstract {
 
 	}
 
-	@Override protected void searchPostList(String path) {
+	@Override protected void searchPostList(String key, String postType, int currentSize, final Page page) {
+		// determine the path to send to the server
+		String path = Urls.build(Urls.urlBASE, Urls.pathForumPostSearchList);
+		RequestParams params = new RequestParams();
+		params.put(Urls.paramForumPostSearchKey, key);
+		params.put(Urls.paramForumPostListSize, String.valueOf(listSize));
+		params.put(Urls.paramForumPostListPage, String.valueOf(determinePage(currentSize, page))); 
+		params.put(Urls.paramForumPostType, postType);
+		path = AsyncHttpClient.getUrlWithQueryString(true, path, params);
+		
+		// determine the cache file name
+		final String cachefilename = ForumDAOlocal.getPostListFilename(postType);
+		
+		// Send the request to the server 
+		Loggen.v(this, "Sending request: " + path + " | cache: " + cachefilename );
+		asyncHttpClient.get(path, new AsyncHttpResponseHandler(){
+			@Override public void onSuccess(String response) {
+				if(listener != null){
+					RawResponse rawResponse = new RawResponse(response, cachefilename);
+					rawResponse.page = page;
+					listener.onReadPostList(rawResponse);
+				} }
+			@Override public void onFailure(Throwable error, String content) {
+				if(listener != null){
+					RawResponse rawResponse = new RawResponse(error, content, cachefilename);
+					rawResponse.page = page;
+					listener.onReadPostList(rawResponse); 
+				} }
+		});
+		
 	}
 }

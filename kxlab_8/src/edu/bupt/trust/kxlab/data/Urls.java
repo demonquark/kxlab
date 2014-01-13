@@ -19,8 +19,11 @@ final class Urls {
 	protected static final String pathMyServiceDetail = "servicemanagementbyphone/serviceDetail";
 	protected static final String pathServiceScore = "servicemanagementbyphone/importServiceScore";
 	protected static final String pathServiceComment = "servicemanagementbyphone/importServiceComment";
+	protected static final String pathServiceReplyComment = "servicemanagementbyphone/replyComment";
 	protected static final String pathServiceList = "servicemanagementbyphone/serviceList";
 	protected static final String pathServiceDetail = "servicemanagementbyphone/serviceDetail";
+	protected static final String pathSearchServiceList = "servicemanagementbyphone/searchServiceList";
+	protected static final String pathForumPostSearchList = "forum/postSearchList";
 	protected static final String pathForumPostList = "forum/postList";
 	protected static final String pathForumPostDetail = "forum/postForumDetail";
 	protected static final String pathForumCreatePost = "forum/createPost";
@@ -43,6 +46,8 @@ final class Urls {
 	protected static final String paramCommentListSize = "serviceCommentListSize";
 	protected static final String paramCommentScore = "commentscore";
 	protected static final String paramServiceComment = "servicecomment";
+	protected static final String paramRecommentid = "recommentid";
+	protected static final String paramCommentdetail = "commentdetail";
 	protected static final String paramProfilePassword = "password";	
 	protected static final String paramForumPostListSize = "postListSize";	
 	protected static final String paramForumPostListPage = "postListPage";	
@@ -59,6 +64,7 @@ final class Urls {
 	protected static final String paramForumAgType = "agType";
 	protected static final String paramForumVoteId = "voteId";
 	protected static final String paramForumVoteScore = "voteScore";
+	protected static final String paramForumPostSearchKey = "postSearchKey";
 	protected static final String paramProfileListPage = "listPage";
 	protected static final String paramProfileListSize = "listSize";
 	protected static final String paramProfilePhotoImage = "photoImage";
@@ -83,6 +89,11 @@ final class Urls {
 	protected static final String jsonPhoneChangeOrNot = "phoneChangeOrNot";
 	protected static final String jsonPhotoChangeOrNot = "photoChangeOrNot";
 	protected static final String jsonPasswordChangeOrNot = "passwordChangeOrNot";
+	protected static final String jsonEditServiceOrNot = "editServiceOrNot";
+	protected static final String jsonServiceScoreOrNot = "serviceScoreOrNot";
+	protected static final String jsonServiceCommentOrNot = "serviceCommentOrNot";
+	protected static final String jsonDeleteServiceOrNot = "deleteServiceOrNot";
+	protected static final String jsonCreateServiceOrNot = "createServiceOrNot";
 	
 	protected static final String filePost = "post";
 	protected static final String fileAnnounce = "post";

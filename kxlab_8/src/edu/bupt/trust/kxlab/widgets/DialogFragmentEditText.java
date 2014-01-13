@@ -5,6 +5,7 @@ import edu.bupt.trust.kxlab8.R;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -70,12 +71,25 @@ public class DialogFragmentEditText extends DialogFragmentBasic implements TextW
     	// return the dialog
         return builder.create();
     }
+    
+    @Override
+    public DialogFragmentBasic setObject(Object o){
+    	mGenericObject = new Pair<Object, String>(o, "");
+    	return this;
+    }
 
 	@Override public void afterTextChanged(Editable s) { 
-		mGenericObject = s.toString();
+		String text = s.toString();
+		
+		// Save the score as an element of the generic object pair (note the first element is the original object)
+		if(mGenericObject instanceof Pair<?, ?>){
+			mGenericObject = new Pair<Object, String>(((Pair<?,?>) mGenericObject).first, text);
+    	} else {
+    		mGenericObject = new Pair<Object, String>(mGenericObject != null ? mGenericObject : new Object (), text);
+    	}
+
 	}
 
 	@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-
 	@Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
 }

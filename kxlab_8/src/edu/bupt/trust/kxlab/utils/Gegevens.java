@@ -48,6 +48,7 @@ public class Gegevens {
 	public static final String EXTRA_REPLIES		= "replies";
 	public static final String EXTRA_LOADING		= "loading";
 	public static final String EXTRA_SORTKEY		= "sortkey";
+	public static final String EXTRA_SEARCHTERM		= "searchterm";
 	
 	/** Folder and file names */
 	public static final String FILE_EXT_MP3 		= ".mp3";
@@ -73,6 +74,7 @@ public class Gegevens {
 	public static final String FRAG_DELETE			= "dialogdelete";
 	public static final String FRAG_CONFIRM			= "dialogconfirm";
 	public static final String FRAG_PASSWORD		= "dialogpassword";
+	public static final String FRAG_FORGOTPASSWORD	= "dialogforgotpassword";
 	public static final String FRAG_FOOTERLINK		= "dialogfooterexit";
 	public static final String FRAG_BACKPRESSED		= "dialogbackpressed";
 	public static final String FRAG_FINISH 			= "finish";

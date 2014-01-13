@@ -118,6 +118,9 @@
 			    android:layout_marginTop="@dimen/row_vertical_padding">
 			    <Button android:id="@+id/myinfo_btn_save" android:layout_centerInParent="true"
 	           		android:layout_width="wrap_content" android:layout_height="wrap_content"
+	           		android:background="@drawable/btn_bg_selector" android:textColor="@color/white"
+	           		android:paddingLeft="@dimen/button_horizontal_padding" 
+	           		android:paddingRight="@dimen/button_horizontal_padding"
 	           		android:text="@string/myinfo_btn_save" />
 			</RelativeLayout>
 	        		

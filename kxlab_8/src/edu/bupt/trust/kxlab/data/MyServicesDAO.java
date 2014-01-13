@@ -116,7 +116,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 		}
 		Loggen.i(this, "Got path: " + path);
 
-		web.createService(path);
+//		web.createService(path);
 
 	}
 
@@ -126,7 +126,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 		params.put(Urls.paramServiceId, serviceId + "");
 		path = MyServicesDAO.getPath(true, path, params);
 
-		web.deleteService(path);
+		web.deleteService(0);
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 		}
 		Loggen.i(this, "Got path: " + path);
 
-		web.editService(path);
+//		web.editService(path);
 	}
 
 	/**
@@ -293,7 +293,7 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 			params.put(Urls.paramServiceListSize, LIST_SIZE); // list size
 			path = MyServicesDAO.getPath(true, path, params);
 		}
-		web.searchService(path);
+//		web.searchService(path);
 	}
 
 	/**
@@ -478,36 +478,6 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	}
 
 	@Override
-	public void onSearchServices(RawResponse response) {
-		// TODO Auto-generated method stub
-		Loggen.i(this, "Got a response: " + response.message);
-		ArrayList<TrustService> services = null;
-		if (response.errorStatus == RawResponse.Error.NONE
-				&& isJson(response.message)) {
-
-			// first save the data to the cache
-			if (response.path != null && response.message != null) {
-				local.writeToFile(response.path, response.message);
-			}
-
-			// Next create a list of Services using the JSON message
-			// TODO: implement
-			services = new ArrayList<TrustService>();
-			Gson gson = new Gson();
-			java.lang.reflect.Type listType = new TypeToken<ArrayList<TrustService>>() {
-			}.getType();
-			services = gson.fromJson(response.message, listType);
-
-		} else {
-			Log.e("Kris", "We encountered an error: " + response.message);
-		}
-
-		if (listlistener.get() != null) {
-			listlistener.get().onSearchService(services);
-		}
-	}
-
-	@Override
 	public void onReadService(RawResponse response) {
 		TrustService service = null;
 		ArrayList<JsonComment> comments = null;
@@ -590,13 +560,13 @@ public class MyServicesDAO implements OnServicesRawDataReceivedListener {
 	}
 
 	@Override
-	public void writeServiceScore(RawResponse response) {
+	public void onUpdateServiceScore(RawResponse response) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void writeServiceComment(RawResponse response) {
+	public void onCreateComment(RawResponse response) {
 		// TODO Auto-generated method stub
 
 	}

@@ -119,4 +119,8 @@ public class ServiceDetailActivity extends BaseDetailActivity {
 		
 		super.onSaveInstanceState(outState);
 	}
+	
+	public ServiceFlavor getFlavor(){
+		return mFlavor;
+	}
 }

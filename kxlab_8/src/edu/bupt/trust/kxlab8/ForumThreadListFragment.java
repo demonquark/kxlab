@@ -18,8 +18,13 @@ import edu.bupt.trust.kxlab.widgets.DialogFragmentScore;
 import edu.bupt.trust.kxlab.widgets.XListView;
 import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
 
+import android.app.SearchManager;
+import android.app.SearchableInfo;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,10 +46,12 @@ import android.widget.TextView;
 public class ForumThreadListFragment extends BaseListFragment 
 					implements IXListViewListener, OnItemClickListener, ForumListener {
 	
+	private SearchView mSearchView;
 	private PostType mPostType;
 	private ArrayList <Post> mPosts;
 	private View mRootView;
 	private XListView mListView;
+	private String mSearchTerm;
 	
 	public ForumThreadListFragment() {
         // Empty constructor required for ServicesListFragment
@@ -63,6 +70,13 @@ public class ForumThreadListFragment extends BaseListFragment
 		if(((BaseActivity) getActivity()).mSettings.getUser().isLogin()
 				&& (mPostType == PostType.FORUM || mPostType == PostType.SUGGESTION)){
 			inflater.inflate(R.menu.forum, menu);
+
+			// set up the search view
+			MenuItem searchItem = menu.findItem(R.id.action_search);
+			MenuItemCompat.setOnActionExpandListener(searchItem, this);
+		    mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+		    setupSearchView();
+
 		}
 	}
 
@@ -108,6 +122,10 @@ public class ForumThreadListFragment extends BaseListFragment
 		    }
 		}
 		
+		// load the search term
+		mSearchTerm = savedstate.getString(Gegevens.EXTRA_SEARCHTERM); 							
+		if(mSearchTerm == null){ mSearchTerm = arguments.getString(Gegevens.EXTRA_SEARCHTERM); } 	
+		
 		Loggen.v(this, "Post type retrieved and is " + mPostType);
 		
 	}
@@ -151,6 +169,9 @@ public class ForumThreadListFragment extends BaseListFragment
 		// save the list of services to the instance state
 		if(mPosts != null) { outState.putParcelableArrayList(Gegevens.EXTRA_POSTS, mPosts); }
 		outState.putSerializable(Gegevens.EXTRA_POSTTYPE, mPostType);
+		if(mSearchTerm != null && !mSearchTerm.equals("")){
+			outState.putString(Gegevens.EXTRA_SEARCHTERM, mSearchTerm);
+		}
 	}
 	
 	@Override public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -159,6 +180,18 @@ public class ForumThreadListFragment extends BaseListFragment
     		getData(Source.WEB, Page.CURRENT);
     	}
 	}
+
+	private void setupSearchView() {
+    	
+    	if(getActivity() != null){
+            SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+            if (searchManager != null) {
+                SearchableInfo info = searchManager.getSearchableInfo(getActivity().getComponentName());
+                mSearchView.setSearchableInfo(info);
+            }
+    	}
+        mSearchView.setOnQueryTextListener(this);
+    }
 
 	private void showList(boolean showlist) {
 		if(mListView != null){ 
@@ -203,8 +236,15 @@ public class ForumThreadListFragment extends BaseListFragment
 
 	private void getData(Source source, Page page) {
 		if(getActivity() != null){
+			Loggen.v(this, "We are asked to load services with searchterm = " + mSearchTerm);
 			ForumDAO forumDAO = DaoFactory.getInstance().setForumDAO(getActivity(), this, mPostType);
-			forumDAO.readPostList(source, mPostType, mPosts, page);
+			
+			if(mSearchTerm != null && !mSearchTerm.equals("") && 
+					mPostType != PostType.FAQ && mPostType != PostType.ANNOUNCE){
+				forumDAO.searchPostList(source, mSearchTerm, mPostType, mPosts, page);
+			} else {
+				forumDAO.readPostList(source, mPostType, mPosts, page);
+			}
 		}
 	}
 	
@@ -266,27 +306,28 @@ public class ForumThreadListFragment extends BaseListFragment
 
 	@Override public void onReadPostList(List<Post> posts) {
 		Loggen.v(this, "Got a response onReadPostList. posts exist? " + (posts != null));
-		if(posts != null && mPosts != null){
-			// We got a response and are updating an existing list
-			mPosts.clear();
-			mPosts.addAll(posts);
-		} else if(posts == null && mPosts == null){
-			// We got no response and have no existing list
-			userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
-			mPosts = new ArrayList<Post> ();
-			getData(Source.LOCAL, Page.CURRENT);
-		} else if (mPosts == null) {
-			// We got a response, but have no existing list 
-			 mPosts = (ArrayList<Post>) posts;			
-		}
-		
-		// Check the list for votes 
-		for(Post p : mPosts){
-			if(p.isPoll()){
-				p.setPostTitle(getString(R.string.forum_vote_for) + " " + p.getPostSponsor().getEmail());
+		if(getActivity() != null){
+			if(posts != null && mPosts != null){
+				// We got a response and are updating an existing list
+				mPosts.clear();
+				mPosts.addAll(posts);
+			} else if(posts == null && mPosts == null){
+				// We got no response and have no existing list
+				userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
+				mPosts = new ArrayList<Post> ();
+				getData(Source.LOCAL, Page.CURRENT);
+			} else if (mPosts == null) {
+				// We got a response, but have no existing list 
+				 mPosts = (ArrayList<Post>) posts;			
+			}
+			
+			// Check the list for votes 
+			for(Post p : mPosts){
+				if(p.isPoll()){
+					p.setPostTitle(getString(R.string.forum_vote_for) + " " + p.getPostSponsor().getEmail());
+				}
 			}
 		}
-		
 		showList(true);		
 	}
 
@@ -302,5 +343,28 @@ public class ForumThreadListFragment extends BaseListFragment
 	@Override public void onReadPost(Post post, List <JsonReply> replies) { }
 	@Override public void onReadAnnounceFAQ(Post post) { }
 	@Override public void onSearchPostList(List<Post> posts) { }
+	
+	// Contact the DAO only if the user has submitted a full request
+	@Override public boolean onQueryTextSubmit(String arg0) { 
+		Loggen.v(this, getTag() + " - text submitted: " + arg0);
+	    
+		// set the search term
+		mSearchTerm = arg0;
+
+		// clear the search view focus
+		mSearchView.clearFocus();
+		showList(false);
+	
+		// process search
+		getData(Source.WEB, Page.CURRENT);
+		return true; 
+	}
+	
+	@Override public boolean onMenuItemActionCollapse(MenuItem item) { 
+		mSearchTerm = null;
+		getData(Source.WEB, Page.CURRENT);
+		showList(false);
+		return true; }
+
 
 }

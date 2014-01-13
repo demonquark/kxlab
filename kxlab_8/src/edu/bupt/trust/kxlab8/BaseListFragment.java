@@ -9,9 +9,12 @@ import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic;
 import edu.bupt.trust.kxlab.widgets.DialogFragmentBasic.BasicDialogListener;
 import android.app.Activity;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat.OnActionExpandListener;
+import android.support.v7.widget.SearchView.OnQueryTextListener;
+import android.view.MenuItem;
 import android.widget.ImageView;
 
-public class BaseListFragment extends Fragment implements BasicDialogListener {
+public class BaseListFragment extends Fragment implements BasicDialogListener, OnActionExpandListener, OnQueryTextListener {
 
 	OnActionSelectedListener mListener;
 
@@ -34,9 +37,13 @@ public class BaseListFragment extends Fragment implements BasicDialogListener {
 	
 	/** Launch a confirmation dialog from the activity context */
 	protected void userMustClickOkay(String title, String message){
-		DialogFragmentBasic.newInstance(false).setTitle(title).setMessage(message)
-			.setPositiveButtonText(getString(R.string.ok))
-			.show(getFragmentManager(), Gegevens.FRAG_DIALOG);
+		if(isAdded() && getActivity() != null){
+			try{
+				DialogFragmentBasic.newInstance(false).setTitle(title).setMessage(message)
+				.setPositiveButtonText(getString(R.string.ok))
+				.show(getFragmentManager(), Gegevens.FRAG_DIALOG);
+			}catch(java.lang.IllegalStateException e){ }
+		}
 	}
 
 	/** Launch a confirmation dialog from the activity context */
@@ -71,5 +78,20 @@ public class BaseListFragment extends Fragment implements BasicDialogListener {
 
 	@Override public void onBasicPositiveButtonClicked(String tag, Object o) { }
 	@Override public void onBasicNegativeButtonClicked(String tag, Object o) { }
+	
+	@Override public boolean onMenuItemActionExpand(MenuItem item) {  return true; }
+	@Override public boolean onMenuItemActionCollapse(MenuItem item) { return true; }
+
+	@Override
+	public boolean onQueryTextChange(String arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean onQueryTextSubmit(String arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }

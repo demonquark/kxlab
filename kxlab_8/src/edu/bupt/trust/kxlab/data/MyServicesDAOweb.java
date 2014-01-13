@@ -41,47 +41,37 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 	}
 	
 	@Override
-	protected void createService(String path) {
+	protected void createService(String email, int id, String title, String detail) {
 		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
-		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
-			@Override public void onSuccess(String response) {
-				if(listener != null){
-					listener.onCreateService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
-			@Override public void onFailure(Throwable error, String content) {
-				if(listener != null){
-					listener.onCreateService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
-		});
+//		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+//		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+//			@Override public void onSuccess(String response) {
+//				if(listener != null){
+//					listener.onCreateService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+//			@Override public void onFailure(Throwable error, String content) {
+//				if(listener != null){
+//					listener.onCreateService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+//		});
 	}
 
-	@Override
-	protected void deleteService(String path) {
-		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
-		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
-			@Override public void onSuccess(String response) {
-				if(listener != null){
-					listener.onDeleteService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
-			@Override public void onFailure(Throwable error, String content) {
-				if(listener != null){
-					listener.onDeleteService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
-		});
+	@Override protected void deleteService(int serviceId) {
 	}
 	
-	public void editService(String path) {
+	@Override public void editService(int id, String title, String detail, String photo) {
 		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
-		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
-			@Override public void onSuccess(String response) {
-				if(listener != null){
-					listener.onEditService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
-			@Override public void onFailure(Throwable error, String content) {
-				if(listener != null){
-					listener.onEditService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
-		});
+//		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
+//		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
+//			@Override public void onSuccess(String response) {
+//				if(listener != null){
+//					listener.onEditService(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
+//			@Override public void onFailure(Throwable error, String content) {
+//				if(listener != null){
+//					listener.onEditService(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
+//		});
 	}
 
-	@Override protected void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, Page page) {
+	@Override protected void readServices(String email, String searchterm, 
+			ServiceFlavor flavor, ServiceType type, int size, Page page) {
 //		// Send the request to the server 
 //		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
 //		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
@@ -94,19 +84,6 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 //		});
 	}
 	
-	@Override
-	protected void searchService(String path) {
-		// TODO Auto-generated method stub
-		Log.i("Kris", "Sending request: " + Urls.build(urlBase, path));
-		asyncHttpClient.get(Urls.build(urlBase, path), new ServicesResponseHandler(){
-			@Override public void onSuccess(String response) {
-				if(listener != null){
-					listener.onSearchServices(new RawResponse(response, urlToFileName(getRequestURI().toString()))); } }
-			@Override public void onFailure(Throwable error, String content) {
-				if(listener != null){
-					listener.onSearchServices(new RawResponse(error, content, urlToFileName(getRequestURI().toString()))); } }
-		});
-	}
 
 	@Override protected void readService(int id, int size, Page page) {
 		String path = "";
@@ -159,19 +136,17 @@ class MyServicesDAOweb extends ServicesDAOabstract{
 
 
 	@Override
-	protected void updateServiceScore(String path) {
+	protected void updateServiceScore(int serviceId, String userMail, int score) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	protected void createServiceComment(String path) {
+	protected void createServiceComment(int serviceId, String userMail, int rootcommentid, String comment) {
 		// TODO Auto-generated method stub
 		
 	}
 
-
-	
 
 
 	

@@ -9,10 +9,12 @@ public class User implements Parcelable {
 	
 	private JsonUser jsonUser;
 	private boolean isLogin;
+	private boolean remember;
 	
 	public User() {
 		jsonUser		= new JsonUser();
 		isLogin			= false;
+		remember		= false;
 	}
 	
 	public User(User newUser){
@@ -32,6 +34,7 @@ public class User implements Parcelable {
 	public void setFromUser(User that){
 		if(that != null) { jsonUser		= that.jsonUser; }
 		isLogin			= that.isLogin;
+		remember		= that.remember;
 	}
 
 	public String getTimeEnterString(){
@@ -43,6 +46,7 @@ public class User implements Parcelable {
     	// Note: you need to read the items in the same order that you wrote them
     	jsonUser		= in.readParcelable(getClass().getClassLoader());
 		isLogin 		= (in.readByte() != 0);
+		remember 		= (in.readByte() != 0);
     }
 
     // this is used to regenerate your object.
@@ -58,6 +62,7 @@ public class User implements Parcelable {
     	// Note: you need to write the items in the same order that you intend to read them
     	dest.writeParcelable(jsonUser, 0);
     	dest.writeByte((byte) (isLogin ? 1 : 0));
+    	dest.writeByte((byte) (remember ? 1 : 0));
     }
 	
 	@Override 
@@ -73,6 +78,7 @@ public class User implements Parcelable {
 	    //now a proper field-by-field evaluation can be made
 	    return
 	    	((this.jsonUser != null) ? this.jsonUser.equals(that.jsonUser) : that.jsonUser == null) &&
+	    	(this.remember == that.remember) &&
 	    	(this.isLogin == that.isLogin);
 	}
 
@@ -82,6 +88,14 @@ public class User implements Parcelable {
 	
 	public void setLogin(boolean isLogin) {
 		this.isLogin = isLogin;
+	}
+
+	public boolean isRemember() {
+		return remember;
+	}
+	
+	public void setRemember(boolean remember) {
+		this.remember = remember;
 	}
 
 	public JsonUser getJsonUser() {
@@ -188,5 +202,4 @@ public class User implements Parcelable {
 	public void setRoleId(int roleId) {
 		this.jsonUser.roleId = roleId;
 	}
-
 }

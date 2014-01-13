@@ -29,7 +29,7 @@ public class TrustService implements Parcelable  {
     
     public TrustService(ServiceFlavor flavor, JsonTrustService service, User owner){
     	this.flavor = flavor;
-    	setJsonService(service);
+    	setJsonService(service, false);
     	setOwner(owner);
     	ServiceUserNumber = 0;
     }
@@ -37,7 +37,7 @@ public class TrustService implements Parcelable  {
     public void setFromService(TrustService that) {
     	flavor	= that.flavor != null ? that.flavor : ServiceFlavor.SERVICE; 
     	owner 	= that.owner != null ? new User(that.owner) : new User();
-		setJsonService(that.jsonService);
+		setJsonService(that.jsonService, false);
 	}
 
 	public int getId() {
@@ -71,10 +71,16 @@ public class TrustService implements Parcelable  {
 		this.flavor = flavor;
 	}
 
-	public void setJsonService(JsonTrustService jsonService) {
+	public void setJsonService(JsonTrustService jsonService, boolean allowNull) {
 		if(jsonService != null){
 			this.type = ServiceType.fromServerType(jsonService.servicetype);
-			this.jsonService = jsonService;
+			if(allowNull){
+				this.jsonService = jsonService;
+			} else {
+				this.jsonService = new JsonTrustService(jsonService);
+			}
+		} else if (!allowNull){
+			this.jsonService = new JsonTrustService();
 		}
 	}
 

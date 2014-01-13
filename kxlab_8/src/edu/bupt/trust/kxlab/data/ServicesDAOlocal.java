@@ -36,7 +36,8 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 	}
 
 
-	@Override protected void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, Page page) {
+	@Override protected void readServices(String email, 
+			String searchterm, ServiceFlavor flavor, ServiceType type, int size, Page page) {
 
 		// determine the cache file name
 		final String cachefilename = ServicesDAOlocal.getServicesListFilename(type.getFragName(), flavor.toString());
@@ -69,13 +70,12 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 		listener.onReadService(rawResponse);
 	}
 
-	@Override
-	protected void updateServiceScore(String filename) {
+	@Override protected void updateServiceScore(int serviceId, String userMail, int score) {
+		listener.onUpdateServiceScore(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 	}
 
-	@Override
-	protected void createServiceComment(String filename) {
-		// TODO Auto-generated method stub
+	@Override protected void createServiceComment(int serviceId, String userMail, int rootcommentid, String comment) {
+		listener.onCreateComment(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 		
 	}
 	
@@ -126,33 +126,16 @@ class ServicesDAOlocal extends ServicesDAOabstract {
 		return FileManager.writeToFile(new File(cacheDir, filename + Gegevens.FILE_EXT_DAT), string);
 	}
 
-	@Override
-	protected void searchService(String path) {
-		// TODO Auto-generated method stub
-		
+	@Override protected void editService(int id, String title, String detail, String photo){
+		listener.onEditService(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 	}
 
-
-	@Override
-	protected void editService(String path) {
-		// TODO Auto-generated method stub
-		
+	@Override protected void createService(String email, int id, String title, String detail) {
+		listener.onCreateService(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 	}
-
-
-	@Override
-	protected void createService(String path) {
-		// TODO Auto-generated method stub
-		
+	@Override protected void deleteService(int ServiceId) {
+		listener.onDeleteService(new RawResponse(RawResponse.Error.ILLEGALARGUMENT));
 	}
-
-
-	@Override
-	protected void deleteService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
 
 	public static String getServicesDetailFilename(int id) {
 		return Urls.fileServiceDetail + "_" + id   + Gegevens.FILE_EXT_DAT;

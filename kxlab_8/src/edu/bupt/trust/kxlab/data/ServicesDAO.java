@@ -9,27 +9,18 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import com.loopj.android.http.RequestParams;
 
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 import edu.bupt.trust.kxlab.data.ServicesDAOabstract.OnServicesRawDataReceivedListener;
 import edu.bupt.trust.kxlab.model.JsonComment;
-import edu.bupt.trust.kxlab.model.JsonPost;
-import edu.bupt.trust.kxlab.model.JsonPostForumDetail;
-import edu.bupt.trust.kxlab.model.JsonReply;
 import edu.bupt.trust.kxlab.model.JsonReplyComment;
 import edu.bupt.trust.kxlab.model.JsonServiceDetail;
 import edu.bupt.trust.kxlab.model.JsonTrustService;
-import edu.bupt.trust.kxlab.model.JsonUser;
-import edu.bupt.trust.kxlab.model.JsonreReply;
-import edu.bupt.trust.kxlab.model.Post;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
@@ -39,10 +30,8 @@ import edu.bupt.trust.kxlab.utils.JsonTools;
 import edu.bupt.trust.kxlab.utils.Loggen;
 
 public class ServicesDAO implements OnServicesRawDataReceivedListener {
-	
-	private static final String LIST_SIZE = "6";
-	private static int commentPageNo = 0;
-	private static int searchListPageNo = 0;
+	private static List <Integer> deletionlist;
+	private static int itemsDeleted = 0;
 	
 
 	private ServicesDAOlocal local;
@@ -67,110 +56,27 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		dummy = new ServicesDAOdummy(this);
 		this.listener = new WeakReference<ServicesListener>(listener);
 	}
-
-	/**
-	 * 
-	 * @param type
-	 * @param parameters
-	 *            parameter[0] represents user mail,parameter[1] represents
-	 *            service title,parameter[2] represents service detail
-	 */
-	public void createService(ServiceType type, String[] parameters) {
-		int typeParam = 0;
-		switch (type) {
-		case COMMUNITY:
-			typeParam = 1;
-			break;
-		case RECOMMENDED:
-			typeParam = 2;
-			break;
-		case APPLY:
-			typeParam = 3;
-			break;
-		}
-
-		String path = Urls.pathMyServiceCreate;
-		if (parameters != null && parameters.length > 2) {
-
-			RequestParams params = new RequestParams();
-			params.put(Urls.paramUserEmail, parameters[0]);
-			params.put(Urls.paramServiceType, typeParam + ""); // list size
-			params.put(Urls.paramServiceTitle, parameters[1]); // service type
-			params.put(Urls.paramServiceDetial, parameters[2]); // list page
-
-//			path = ServicesDAOweb.getPath(true, path, params);
-		}
-		Loggen.i(this, "Got path: " + path);
-
-		web.createService(path);
+	
+	public void createService(TrustService service) {
+		web.createService(service.getUseremail(), service.getId(), service.getServicetitle(), service.getServicedetail());
 
 	}
-
-	/**
-	 * 
-	 * @param type
-	 * @param parameters
-	 *            parameter[0] represents user mail,parameter[1] represents
-	 *            service title,parameter[2] represents service detail
-	 */
-	public void createService(Source source, ServiceType type, String[] parameters) {
-		dummy.createService(null);
-
-	}
-	public void deleteService(int serviceId) {
-		String path = Urls.pathMyServiceDelete;
-		RequestParams params = new RequestParams();
-		params.put(Urls.paramServiceId, serviceId + "");
-//		path = ServicesDAOweb.getPath(true, path, params);
-
-		web.deleteService(path);
+	
+	public void deleteServices(List <Integer> serviceIds) {
+		deletionlist = serviceIds;
+		deleteServices(false);
 	}
 
-	/**
-	 * 
-	 * @param serviceId
-	 * @param parameters
-	 *            parameter[0] represents service title, parameter[1] represents
-	 *            service detail, parameter[2] represents service photo,
-	 */
-	public void editService(int serviceId, String[] parameters) {
-		// Get the path of the read services page
-		String path = Urls.pathMyServiceEdit;
-		if (parameters != null && parameters.length > 2) {
-
-			RequestParams params = new RequestParams();
-			params.put(Urls.paramServiceId, serviceId + "");
-			params.put(Urls.paramServiceTitle, parameters[0]); // service type
-			params.put(Urls.paramServiceDetial, parameters[1]); // list page
-			params.put(Urls.paramServicePhoto, parameters[2]); // list size
-//			path = ServicesDAOweb.getPath(true, path, params);
-		}
-		Loggen.i(this, "Got path: " + path);
-
-		web.editService(path);
+	public void editService(TrustService service) {
+		web.editService(service.getId(), service.getServicetitle(), 
+				service.getServicedetail(), service.getJsonService().servicephoto);
 	}
 
-	/**
-	 * 
-	 * @param serviceId
-	 * @param parameters
-	 *            parameter[0] represents service title, parameter[1] represents
-	 *            service detail, parameter[2] represents service photo,
-	 */
-	public void editService(Source source, int serviceId, String[] parameters) {
-		dummy.editService(null);
-	}
-
-	/**
-	 * Reads the list of services. Source options are: DEFAULT (try local then
+	/** Reads the list of services. Source options are: DEFAULT (try local then
 	 * web), LOCAL (local), WEB (web), DUMMY (dummy data)
-	 * 
-	 * @param source
-	 * @param parameters
-	 *            parameters[0] matches user email
 	 */
 	public void readServices(Source source, ServiceType type, ServiceFlavor flavor, String email, 
-								List <TrustService> services, Page page) {
+								String searchTerm, List <TrustService> services, Page page) {
 
 		// save the current page to the cache 
 		if(page != Page.CURRENT || (source == Source.WEB && services != null ) ){ 
@@ -185,19 +91,18 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		switch (source) {
 		case DEFAULT:
 		case WEB:
-			web.readServices(email, flavor, type, size, page);
+			web.readServices(email, searchTerm, flavor, type, size, page);
 			break;
 		case LOCAL:
-			local.readServices(email, flavor, type, size, page);
+			local.readServices(email, searchTerm, flavor, type, size, page);
 			break;
 		case DUMMY:
-			dummy.readServices(email, flavor, type, size, page);
+			dummy.readServices(email, searchTerm, flavor, type, size, page);
 			break;
 		}
 	}
 	
 	public void readService(Source source, TrustService service, ArrayList<JsonComment> comments, Page page) {
-		
 		int size = 0;
 		
 		// save the current page to the cache 
@@ -219,7 +124,19 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 			dummy.readService(service.getId(), size, page);;
 			break;
 		}
-	}	
+	}
+	
+	public void updateServiceScore(int serviceId, String userMail, int score) {
+		web.updateServiceScore(serviceId, userMail, score);
+	}
+
+	public void createComment(int serviceId, String userMail, String comment) {
+		createComment(serviceId, userMail, -1, comment);
+	}
+	
+	public void createComment(int serviceId, String userMail, int rootcommentid, String comment) {
+		web.createServiceComment(serviceId, userMail, rootcommentid, comment);
+	}
 	
 	private int overwriteService(TrustService service, ArrayList<JsonComment> comments) {
 		// create a JSON representation of the comments
@@ -282,185 +199,92 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		}
 	}
 
-	/**
-	 * 
-	 * @param type
-	 * @param source
-	 * @param parameters
-	 *            parameters[0] matches search key word, [1] matches user email,
-	 */
-	public void searchService(ServiceType type, Page p, String[] parameters) {
-		switch (p) {
-		case PREVIOUS:
-			searchListPageNo++;
-			break;
-		case LATEST:
-			searchListPageNo = (searchListPageNo > 0) ? searchListPageNo-- : 0;
-			break;
+	private void deleteServices(boolean success){
+		// add the number of deleted items
+		if(success){ itemsDeleted++; }
+		
+		if(deletionlist != null && deletionlist.size() > 0 ){
+			// process the next item to delete
+			web.deleteService(deletionlist.get(0));
+			deletionlist.remove(0);
+		} else {
+			// send back a response
+			int response = itemsDeleted;
+			itemsDeleted = 0;
+			if (listener.get() != null) { listener.get().onDeleteService(response); }
 		}
-
-		int typeParam = 0;
-		switch (type) {
-		case COMMUNITY:
-			typeParam = 1;
-			break;
-		case RECOMMENDED:
-			typeParam = 2;
-			break;
-		case APPLY:
-			typeParam = 3;
-			break;
-		}
-
-		// Get the path of the read services page
-		String path = Urls.pathMyServiceSearch;
-		if (parameters != null && parameters.length > 0) {
-			RequestParams params = new RequestParams();
-			params.put(Urls.paramServiceSearchKey, parameters[0]);
-			params.put(Urls.paramUserEmail, parameters[1]); // user email
-			params.put(Urls.paramServiceType, typeParam + "");
-			params.put(Urls.paramServiceListPage, searchListPageNo + ""); // list
-																			// page
-			params.put(Urls.paramServiceListSize, LIST_SIZE); // list size
-//			path = ServicesDAOweb.getPath(true, path, params);
-		}
-		web.searchService(path);
 	}
 	
-
-
-	public void updateServiceScore(int serviceId, String userMail, int score) {
-		String path = Urls.pathServiceScore;
-
-		RequestParams params = new RequestParams();
-		params.put(Urls.paramUserEmail, userMail);
-		params.put(Urls.paramServiceId, serviceId + "");
-		params.put(Urls.paramCommentListPage, commentPageNo + "");
-//		path = ServicesDAOweb.getPath(true, path, params);
-
-		Loggen.i(this, "Got path: " + path);
-
-		web.updateServiceScore(path);
-	}
-
-	public void createServiceComment(int serviceId, String userMail,
-			String comment) {
-		String path = Urls.pathServiceComment;
-
-		RequestParams params = new RequestParams();
-		params.put(Urls.paramUserEmail, userMail);
-		params.put(Urls.paramServiceId, serviceId + "");
-		params.put(Urls.paramServiceComment, comment);
-//		path = ServicesDAOweb.getPath(true, path, params);
-
-		Loggen.i(this, "Got path: " + path);
-
-		web.createServiceComment(path);
-
-	}
-
-	public void createServiceComment(Source source, int serviceId, String userMail, String comment) {
-		dummy.createServiceComment("");
-	}
-
-	public void updateServiceScore(Source source, int serviceId, String userMail, int score) {
-		dummy.updateServiceScore("");
-	}
-
-
+	
 	@Override public void onCreateService(RawResponse response) {
-		Loggen.i(this, "Got a response: " + response.message);
+		Loggen.v(this, "Got onCreateService: " + response.message);
+
 		boolean success = false;
-		if (response.errorStatus == RawResponse.Error.NONE
-				&& isJson(response.message)) {
+		if (response.errorStatus == RawResponse.Error.NONE && JsonTools.isValidJSON(response.message)) {
+			try{
+				// success or not
+				JsonParser jp = new JsonParser();
+				JsonElement je = jp.parse(response.message);
+				JsonObject jobj = je.getAsJsonObject();
+	
+				JsonElement s = jobj.get(Urls.jsonCreateServiceOrNot);
+				success = (s != null && s.getAsInt() != 0); 
 
-			// first save the data to the cache
-			if (response.path != null && response.message != null) {
-				local.writeToFile(response.path, response.message);
+			}catch(Exception e){
+				Loggen.e(this, "We encountered an error while parsing: " + response.message);
 			}
-
-			// success or not
-			JsonParser jp = new JsonParser();
-			JsonElement je = jp.parse(response.message);
-			JsonObject jobj = je.getAsJsonObject();
-
-			JsonElement s = jobj.get("createServiceOrNot");
-			if (s.getAsInt() == 1) {
-				success = true;
-			} else {
-				success = false;
-			}
-
 		} else {
-			Log.e("Kris", "We encountered an error: " + response.message);
+			Loggen.e(this, "We encountered an error: " + response.errorStatus);
 		}
 
-		if (listener.get() != null) {
-			listener.get().onCreateService(success);
-		}
-
+		if (listener.get() != null) { listener.get().onCreateService(success); }
 	}
 
 	@Override
 	public void onDeleteService(RawResponse response) {
-		Loggen.i(this, "Got a response: " + response.message);
-		boolean success = (Boolean) null;
-		if (response.errorStatus == RawResponse.Error.NONE
-				&& isJson(response.message)) {
+		Loggen.v(this, "Got onDeleteService: " + response.message);
 
-			// first save the data to the cache
-			if (response.path != null && response.message != null) {
-				local.writeToFile(response.path, response.message);
+		boolean success = false;
+		if (response.errorStatus == RawResponse.Error.NONE && JsonTools.isValidJSON(response.message)) {
+			try{
+				// success or not
+				JsonParser jp = new JsonParser();
+				JsonElement je = jp.parse(response.message);
+				JsonObject jobj = je.getAsJsonObject();
+	
+				JsonElement s = jobj.get(Urls.jsonDeleteServiceOrNot);
+				success = (s != null && s.getAsInt() != 0); 
+
+			}catch(Exception e){
+				Loggen.e(this, "We encountered an error while parsing: " + response.message);
 			}
-
-			// success or not
-			JsonParser jp = new JsonParser();
-			JsonElement je = jp.parse(response.message);
-			JsonObject jobj = je.getAsJsonObject();
-
-			JsonElement s = jobj.get("deleteServiceOrNot");
-			if (s.getAsInt() == 1) {
-				success = true;
-			} else {
-				success = false;
-			}
-
 		} else {
-			Log.e("Kris", "We encountered an error: " + response.message);
+			Loggen.e(this, "We encountered an error: " + response.errorStatus);
 		}
-
-		if (listener.get() != null) {
-			listener.get().onDeleteService(success);
-		}
-
+		
+		deleteServices(success);
 	}
 
 	@Override
 	public void onEditService(RawResponse response) {
-		Loggen.i(this, "Got a response: " + response.message);
-		boolean success = true;
-		if (response.errorStatus == RawResponse.Error.NONE
-				&& isJson(response.message)) {
+		Loggen.v(this, "Got onCreateService: " + response.message);
 
-			// first save the data to the cache
-			if (response.path != null && response.message != null) {
-				local.writeToFile(response.path, response.message);
+		boolean success = false;
+		if (response.errorStatus == RawResponse.Error.NONE && JsonTools.isValidJSON(response.message)) {
+			try{
+				// success or not
+				JsonParser jp = new JsonParser();
+				JsonElement je = jp.parse(response.message);
+				JsonObject jobj = je.getAsJsonObject();
+	
+				JsonElement s = jobj.get(Urls.jsonEditServiceOrNot);
+				success = (s != null && s.getAsInt() != 0); 
+
+			}catch(Exception e){
+				Loggen.e(this, "We encountered an error while parsing: " + response.message);
 			}
-
-			// success or not
-			JsonParser jp = new JsonParser();
-			JsonElement je = jp.parse(response.message);
-			JsonObject jobj = je.getAsJsonObject();
-
-			JsonElement s = jobj.get("editServiceOrNot");
-			if (s.getAsInt() == 1) {
-				success = true;
-			} else {
-				success = false;
-			}
-
 		} else {
-			Log.e("Kris", "We encountered an error: " + response.message);
+			Loggen.e(this, "We encountered an error: " + response.errorStatus);
 		}
 
 		if (listener.get() != null) {
@@ -470,7 +294,6 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 
 	@Override
 	public void onReadServices(RawResponse response) {
-		
 		List <TrustService> services = null;
 		Gson gson = new Gson();
 		
@@ -540,36 +363,6 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		
 		if (listener.get() != null) {
 			listener.get().onReadServices(services);
-		}
-	}
-
-	@Override
-	public void onSearchServices(RawResponse response) {
-		// TODO Auto-generated method stub
-		Loggen.i(this, "Got a response: " + response.message);
-		ArrayList<TrustService> services = null;
-		if (response.errorStatus == RawResponse.Error.NONE
-				&& isJson(response.message)) {
-
-			// first save the data to the cache
-			if (response.path != null && response.message != null) {
-				local.writeToFile(response.path, response.message);
-			}
-
-			// Next create a list of Services using the JSON message
-			// TODO: implement
-			services = new ArrayList<TrustService>();
-			Gson gson = new Gson();
-			java.lang.reflect.Type listType = new TypeToken<ArrayList<TrustService>>() {
-			}.getType();
-			services = gson.fromJson(response.message, listType);
-
-		} else {
-			Log.e("Kris", "We encountered an error: " + response.message);
-		}
-
-		if (listener.get() != null) {
-			listener.get().onSearchService(services);
 		}
 	}
 
@@ -668,71 +461,54 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		}
 	}
 
-	@Override
-	public void writeServiceScore(RawResponse response) {
-		Loggen.i(this, "Got a response: " + response.message);
-		// TODO change back to false
-		boolean success = true;
-		if (response.errorStatus == RawResponse.Error.NONE
-				&& isJson(response.message)) {
+	@Override public void onUpdateServiceScore(RawResponse response) {
+		Loggen.v(this, "Got onUpdateServiceScore: " + response.message);
 
-			// first save the data to the cache
-			if (response.path != null && response.message != null) {
-				local.writeToFile(response.path, response.message);
+		boolean success = false;
+		if (response.errorStatus == RawResponse.Error.NONE && JsonTools.isValidJSON(response.message)) {
+			try{
+				// success or not
+				JsonParser jp = new JsonParser();
+				JsonElement je = jp.parse(response.message);
+				JsonObject jobj = je.getAsJsonObject();
+	
+				JsonElement s = jobj.get(Urls.jsonServiceScoreOrNot);
+				success = (s != null && s.getAsInt() != 0); 
+
+			}catch(Exception e){
+				Loggen.e(this, "We encountered an error while parsing: " + response.message);
 			}
-
-			// success or not
-			JsonParser jp = new JsonParser();
-			JsonElement je = jp.parse(response.message);
-			JsonObject jobj = je.getAsJsonObject();
-
-			JsonElement s = jobj.get("editServiceOrNot");
-			if (s.getAsInt() == 1) {
-				success = true;
-			} else {
-				success = false;
-			}
-
 		} else {
-			Log.e("Kris", "We encountered an error: " + response.message);
+			Loggen.e(this, "We encountered an error: " + response.errorStatus);
 		}
 
-		if (listener.get() != null) {
-			listener.get().writeServiceScore(success);
-		}
+		if (listener.get() != null) { listener.get().onUpdateServiceScore(success); }
 	}
 
 	@Override
-	public void writeServiceComment(RawResponse response) {
-		Loggen.v(this, "Got a response: " + response.message);
-		// TODO change back to false
-		boolean success = true;
+	public void onCreateComment(RawResponse response) {
+		Loggen.v(this, "Got onCreateComment: " + response.message);
+
+		boolean success = false;
 		if (response.errorStatus == RawResponse.Error.NONE
-				&& isJson(response.message)) {
+				&& JsonTools.isValidJSON(response.message)) {
+			try{
+				// success or not
+				JsonParser jp = new JsonParser();
+				JsonElement je = jp.parse(response.message);
+				JsonObject jobj = je.getAsJsonObject();
+	
+				JsonElement s = jobj.get(Urls.jsonServiceCommentOrNot);
+				success = (s != null && s.getAsInt() != 0); 
 
-			// first save the data to the cache
-			if (response.path != null && response.message != null) {
-				local.writeToFile(response.path, response.message);
+			}catch(Exception e){
+				Loggen.e(this, "We encountered an error while parsing: " + response.message);
 			}
-
-			// success or not
-			JsonParser jp = new JsonParser();
-			JsonElement je = jp.parse(response.message);
-			JsonObject jobj = je.getAsJsonObject();
-
-			JsonElement s = jobj.get("serviceCommentOrNot");
-			if (s.getAsInt() == 1) {
-				success = true;
-			} else {
-				success = false;
-			}
-
 		} else {
-			Log.e("Kris", "We encountered an error: " + response.message);
+			Loggen.e(this, "We encountered an error: " + response.errorStatus);
 		}
-
 		if (listener.get() != null) {
-			listener.get().writeServiceComment(success);
+			listener.get().onCreateComment(success);
 		}
 	}
 
@@ -743,28 +519,12 @@ public class ServicesDAO implements OnServicesRawDataReceivedListener {
 		 * @param comments A list of comments. Null if data request failed. 
 		 */
 		public void onReadService(TrustService service, List<JsonComment> comments);
-		public void writeServiceScore(boolean success);
-		public void writeServiceComment(boolean success);
+		public void onUpdateServiceScore(boolean success);
+		public void onCreateComment(boolean success);
 		public void onEditService(boolean success);
 		public void onCreateService(boolean success);
-		public void onDeleteService(boolean success);
+		public void onDeleteService(int itemsDeleted);
 		public void onReadServices(List<TrustService> services);
 		public void onSearchService(List<TrustService> services);
-	}
-	
-	/**
-	 * Check server response whether it's JSON format
-	 */
-	private boolean isJson(String message) {
-		if (message == "" || message == null) {
-			return false;
-		} else {
-			try {
-				new JsonParser().parse(message);
-				return true;
-			} catch (JsonParseException e) {
-				return false;
-			}
-		}
 	}
 }

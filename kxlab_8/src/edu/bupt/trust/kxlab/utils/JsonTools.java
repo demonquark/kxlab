@@ -4,12 +4,7 @@ import java.util.List;
 
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-
-import edu.bupt.trust.kxlab.model.JsonAnnounceFAQ;
 import edu.bupt.trust.kxlab.model.JsonItem;
-import edu.bupt.trust.kxlab.model.JsonPost;
-import edu.bupt.trust.kxlab.model.JsonReply;
-import edu.bupt.trust.kxlab.model.JsonVote;
 
 public class JsonTools {
 

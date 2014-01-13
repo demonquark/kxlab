@@ -93,7 +93,20 @@ public class ForumDAOlocal extends ForumDAOabstract {
 		listener.onReadAnnounceList(rawResponse);
 	}
 
-	@Override protected void searchPostList(String path) {
+	@Override protected void searchPostList(String key, String postType, int currentSize, Page page) {
+		// determine the cache file name
+		final String cachefilename = ForumDAOlocal.getPostListFilename(postType);
+		
+		// read from the file
+		String response = readFromFile(cachefilename);
+		
+		// create a response
+		RawResponse rawResponse = new RawResponse(response, cachefilename);
+		if(response == null){ rawResponse.errorStatus = RawResponse.Error.FILE_NOT_FOUND; }
+		rawResponse.page = page;
+		
+		// send back the response
+		listener.onReadPostList(rawResponse);
 	}
 	
 	public String readFromFile(String filename) {

@@ -26,7 +26,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -44,7 +43,7 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class ServicesListFragment extends BaseListFragment 
-						implements ServicesListener, OnItemClickListener, IXListViewListener, OnQueryTextListener{
+						implements ServicesListener, OnItemClickListener, IXListViewListener{
 	
 	private enum State { DELETE, LOADING, IDLE };
 	
@@ -56,6 +55,7 @@ public class ServicesListFragment extends BaseListFragment
 	private State state;
 	private View mRootView;
 	private XListView mListView;
+	private String mSearchTerm;
 	
 	public ServicesListFragment() {
         // Empty constructor required for ServicesListFragment
@@ -70,10 +70,13 @@ public class ServicesListFragment extends BaseListFragment
 		super.onCreateOptionsMenu(menu, inflater);
 
 		// add the services menu
-		inflater.inflate(R.menu.services, menu);
+			inflater.inflate(R.menu.services, menu);
+		if (mFlavor == ServiceFlavor.MYSERVICE)
+			inflater.inflate(R.menu.myservices, menu);
 	    
 		// set up the search view
 		MenuItem searchItem = menu.findItem(R.id.action_search);
+		MenuItemCompat.setOnActionExpandListener(searchItem, this);
 	    mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
 	    setupSearchView();
 	}
@@ -86,6 +89,9 @@ public class ServicesListFragment extends BaseListFragment
             switch (itemId) {
             	case R.id.action_delete:
             		if (mActionMode == null) { changeToDeleteListView(); }
+                break;
+            	case R.id.action_create:
+            		startServicesDetailActivity(null);
                 break;
                 default:
                 	return super.onOptionsItemSelected(item);
@@ -130,6 +136,9 @@ public class ServicesListFragment extends BaseListFragment
 		state = (State) savedstate.getSerializable(Gegevens.EXTRA_STATE);
 		if(state == null){ state = State.IDLE; }
 		
+		// load the search term
+		mSearchTerm = savedstate.getString(Gegevens.EXTRA_SEARCHTERM); 							
+		if(mSearchTerm == null){ mSearchTerm = arguments.getString(Gegevens.EXTRA_SEARCHTERM); } 	
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -172,6 +181,9 @@ public class ServicesListFragment extends BaseListFragment
 		outState.putParcelableArrayList(Gegevens.EXTRA_SERVICES, mServices);
 		outState.putSerializable(Gegevens.EXTRA_FLAVOR, mFlavor);
 		outState.putSerializable(Gegevens.EXTRA_STATE, state);
+		if(mSearchTerm != null && !mSearchTerm.equals("")){
+			outState.putString(Gegevens.EXTRA_SEARCHTERM, mSearchTerm);
+		}
 	}
 
     private void setupSearchView() {
@@ -226,7 +238,6 @@ public class ServicesListFragment extends BaseListFragment
 			
 			// set the choice mode and reaction to the choices 
 			mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-
 			
 			if(mServices.size() == 0){
 				((TextView) mRootView.findViewById(android.R.id.empty)).setVisibility(View.VISIBLE);	
@@ -249,21 +260,44 @@ public class ServicesListFragment extends BaseListFragment
 			// Bundle the post and send it off to the detail activity
 			Bundle b = new Bundle();
 			
-			if(service != null) {
-				b.putParcelable(Gegevens.EXTRA_SERVICE, service);
-				b.putSerializable(Gegevens.EXTRA_FLAVOR, ServiceFlavor.SERVICE);
+			if(service != null) { 
+				b.putParcelable(Gegevens.EXTRA_SERVICE, service); 
+			} else {
+				b.putSerializable(Gegevens.EXTRA_SERVICETYPE, mType);
 			}
+			b.putSerializable(Gegevens.EXTRA_FLAVOR, mFlavor);
+			
 			Intent intent = new Intent(getActivity(), ServiceDetailActivity.class);
 			intent.putExtra(Gegevens.EXTRA_MSG, b);
 			this.startActivity(intent);
 		}
 	}
 
-
 	private void getData(Source source, Page page) {
 		if(getActivity() != null){
+			Loggen.v(this, "We are asked to load services with searchterm = " + mSearchTerm);
 			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, mType, mFlavor);
-			servicesDAO.readServices(source, mType, mFlavor, null, mServices, page);
+			
+			// add the email for my services
+			String email = null;
+			if(mFlavor == ServiceFlavor.MYSERVICE){
+				email = ((BaseActivity) getActivity()).mSettings.getUser().getEmail();
+			}
+			
+			// add the search term
+			String searchterm = null;
+			if(mSearchTerm != null && !mSearchTerm.equals("")){
+				searchterm = mSearchTerm;
+			}
+			
+			servicesDAO.readServices(source, mType, mFlavor, email, searchterm, mServices, page);	
+		}
+	}
+	
+	private void deleteServices(List <Integer> serviceIds){
+		if(getActivity() != null){
+			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, mType, mFlavor);
+			servicesDAO.deleteServices(serviceIds);
 		}
 	}
 	
@@ -297,43 +331,61 @@ public class ServicesListFragment extends BaseListFragment
 	@Override public void onReadServices(List<TrustService> services) {
 		Loggen.v(this, "Got a response onReadservices. services exist? " + (services != null));
 		
-		if(services != null && mServices != null){
-			// We got a response and are updating an existing list
-			mServices.clear();
-			mServices.addAll(services);
-		} else if(services == null && mServices == null){
-			// We got no response and have no existing list
-			userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
-			mServices = new ArrayList<TrustService> ();
-			getData(Source.LOCAL, Page.CURRENT);
-		} else if (mServices == null) {
-			// We got a response, but have no existing list 
-			mServices = (ArrayList<TrustService>) services;			
+		if(getActivity() != null){
+			if(services != null && mServices != null){
+				// We got a response and are updating an existing list
+				mServices.clear();
+				mServices.addAll(services);
+			} else if(services == null && mServices == null){
+				// We got no response and have no existing list
+				userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
+				mServices = new ArrayList<TrustService> ();
+				getData(Source.LOCAL, Page.CURRENT);
+			} else if (mServices == null) {
+				// We got a response, but have no existing list 
+				mServices = (ArrayList<TrustService>) services;			
+			}
+			
+			for(TrustService service : mServices){
+				service.setFlavor(mFlavor);
+			}
 		}
-		
-		for(TrustService service : mServices){
-			service.setFlavor(mFlavor);
-		}
-		
 		showList(true);	
 	}
 
- 	@Override
-	public void onDeleteService(boolean success) {
-		// TODO Auto-generated method stub
-		
+ 	@Override public void onDeleteService(int itemsDeleted) {
+ 		
+ 		if(mListView != null){
+ 			mListView.clearChoices();
+ 		}
+ 		
+ 		if(itemsDeleted > 0){
+ 			userMustClickOkay(getString(R.string.services_delete_success_title), getString(R.string.services_delete_success_text));
+ 			getData(Source.WEB, Page.LATEST);
+ 		} else {
+ 			userMustClickOkay(getString(R.string.services_delete_failure_title), getString(R.string.services_delete_failure_text));
+ 			showList(true);
+ 		}
 	}
 
-	@Override
-	public void onSearchService(List<TrustService> services) {
+	@Override public void onSearchService(List<TrustService> services) {
 		// TODO Auto-generated method stub
 		
 	}	
 
 	@Override public void onBasicPositiveButtonClicked(String tag, Object o) {
-		if(Gegevens.FRAG_DELETE.equals(tag)){
-			// TODO: process deletion (for now it does the same as non delete)
-			showList(mServices != null);	
+		if(Gegevens.FRAG_DELETE.equals(tag) && o instanceof List<?>){
+			List <?> list = (List<?>) o;
+			List <Integer> deletionQuery = new ArrayList<Integer> ();
+			for(Object i : list){
+				if(i instanceof Integer){
+					deletionQuery.add((Integer) i);
+				}
+			}
+			
+			// handle the query
+			deleteServices(deletionQuery);
+			showList(false);
 		} else {
 			showList(mServices != null);	
 		}
@@ -341,17 +393,18 @@ public class ServicesListFragment extends BaseListFragment
 
 	@Override public void onBasicNegativeButtonClicked(String tag, Object o) {showList(mServices != null); }
 
-	// Do NOT search if the user just changed the text
-	@Override public boolean onQueryTextChange(String arg0) { return false; }
 	// Contact the DAO only if the user has submitted a full request
 	@Override public boolean onQueryTextSubmit(String arg0) { 
-		Loggen.v(this, getTag() + " - text submitted. ");
+		Loggen.v(this, getTag() + " - text submitted: " + arg0);
 	    
-		// clear the search view
+		// set the search term
+		mSearchTerm = arg0;
+
+		// clear the search view focus
 		mSearchView.clearFocus();
 		showList(false);
 	
-		// TODO: process search (for now it just reloads the list)
+		// process search
 		getData(Source.WEB, Page.CURRENT);
 		return true; 
 	}
@@ -379,20 +432,20 @@ public class ServicesListFragment extends BaseListFragment
 	        	// Get and list the selected items
 	        	SparseBooleanArray checkedItems = mListView.getCheckedItemPositions();
 	        	String confirmationText = getString(R.string.services_delete_confirm_text);
-	        	String deleteQuery = "";
+	        	List <Integer> deletionList = new ArrayList<Integer> ();
 	        	int listSize = mServices.size();
 	        	for(int i = 0; i < listSize; i++){
 	        		if(checkedItems.get(i)){
 	        			confirmationText += "\n" + mServices.get(i).getServicetitle();
 	        			// TODO: put logic to build deletion query (now it just adds the serviceIds)
-	        			deleteQuery += mServices.get(i).getId();
+	        			deletionList.add(mServices.get(i).getId());
 	        		}
 	        	}
 	        	
 	        	// Ask the user to confirm his choice
 	        	DialogFragmentBasic deletedialog = DialogFragmentBasic.newInstance(true, ServicesListFragment.this)
 	        		.setTitle(getString(R.string.services_delete_confirm_title)).setMessage(confirmationText)
-	        		.setObject(deleteQuery)
+	        		.setObject(deletionList)
 	        		.setPositiveButtonText(getString(R.string.ok))
 	        		.setNegativeButtonText(getString(R.string.cancel));
 	        		
@@ -421,12 +474,15 @@ public class ServicesListFragment extends BaseListFragment
 	}
 
 	@Override public void onReadService(TrustService service, List<JsonComment> comments) { }
-
-	@Override public void writeServiceScore(boolean success) { }
-
-	@Override public void writeServiceComment(boolean success) { }
-
+	@Override public void onUpdateServiceScore(boolean success) { }
+	@Override public void onCreateComment(boolean success) { }
 	@Override public void onEditService(boolean success) { }
-
 	@Override public void onCreateService(boolean success) { }
+	
+	@Override public boolean onMenuItemActionCollapse(MenuItem item) { 
+		mSearchTerm = null;
+		getData(Source.WEB, Page.CURRENT);
+		showList(false);
+		return true; }
+
 }

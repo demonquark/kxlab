@@ -148,7 +148,7 @@ public class ForumDAOdummy extends ForumDAOabstract {
 	}
 
 	@Override
-	protected void searchPostList(String path) {
+	protected void searchPostList(String key, String postType, int currentSize, Page page) {
 		// TODO Auto-generated method stub
 		
 	}

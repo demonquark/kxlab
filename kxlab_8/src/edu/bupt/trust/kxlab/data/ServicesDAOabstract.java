@@ -21,14 +21,13 @@ abstract class ServicesDAOabstract extends DAOabstract  {
 	// Methods to be implemented by the children
 	
 	
-	protected abstract void createService(String path);
-	protected abstract void deleteService(String path);
-	protected abstract void editService(String path);			// method for  "/service/editservice"
-	protected abstract void readServices(String email, ServiceFlavor flavor, ServiceType type, int size, Page page);			// method for "/service/serviceList"
-	protected abstract void searchService(String path);			// method for "/service/searchMyServiceList"
+	protected abstract void createService(String email, int id, String title, String detail);
+	protected abstract void deleteService(int serviceId);
+	protected abstract void editService(int id, String title, String detail, String photo);			// method for  "/service/editservice"
+	protected abstract void readServices(String email, String searchterm, ServiceFlavor flavor, ServiceType type, int size, Page page);			// method for "/service/serviceList"
 	protected abstract void readService(int id, int size, Page page); 			// method for  "/service/serviceDetail"
-	protected abstract void updateServiceScore(String path); 	// method for "/service/importServiceScore"
-	protected abstract void createServiceComment(String path);	// method for "/service/importServiceCommend"
+	protected abstract void updateServiceScore(int serviceId, String userMail, int score); 	// method for "/service/importServiceScore"
+	protected abstract void createServiceComment(int serviceId, String userMail, int rootcommentid, String comment);	// method for "/service/importServiceCommend"
 	
 	
 	interface OnServicesRawDataReceivedListener {
@@ -36,10 +35,9 @@ abstract class ServicesDAOabstract extends DAOabstract  {
 		void onDeleteService(RawResponse response);
 		void onEditService(RawResponse response);
 		void onReadServices(RawResponse response);
-		void onSearchServices(RawResponse response);
 		void onReadService(RawResponse response);		
-		void writeServiceScore(RawResponse response);
-		void writeServiceComment(RawResponse response);
+		void onUpdateServiceScore(RawResponse response);
+		void onCreateComment(RawResponse response);
 	}
 
 }

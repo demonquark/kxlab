@@ -6,6 +6,7 @@
                android:layout_gravity="center"
                android:orientation="vertical" 
                android:layout_marginTop="20dp"
+               android:checkedButton="@+id/score02"
                android:background="@android:drawable/editbox_background" >
               
            <RadioButton android:id="@+id/score01"

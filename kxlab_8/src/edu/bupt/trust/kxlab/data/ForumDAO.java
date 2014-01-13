@@ -56,6 +56,39 @@ public class ForumDAO implements ForumDAOabstract.OnForumRawDataReceivedListener
 	 * @param source can be DUMMY, WEB, LOCAL
 	 * @param type an instance of Post type
 	 */
+	public void searchPostList(Source source, String searchTerm, PostType type, ArrayList<Post> posts, Page page){ 
+		
+		// save the current page to the cache 
+		if(page != Page.CURRENT || (source == Source.WEB && posts != null ) ){ 
+			overwriteForumList(type, posts); 
+		}
+		
+		// determine the post size 
+		int postSize = (posts != null) ? posts.size() : 0;
+		
+		// let the correct source handle the request
+		if(type == PostType.FORUM || type == PostType.SUGGESTION){
+			switch (source) {
+			case DEFAULT:
+			case WEB:
+				web.searchPostList(searchTerm, type.getServerType(), postSize, page);
+				break;
+			case LOCAL:
+				local.searchPostList(searchTerm, type.getServerType(), postSize, page);
+				break;
+			case DUMMY:
+				dummy.searchPostList(searchTerm, type.getServerType(), postSize, page);
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * Get a list of post objects 
+	 * The list of posts is saved to cache and loaded if a future web request fails.
+	 * @param source can be DUMMY, WEB, LOCAL
+	 * @param type an instance of Post type
+	 */
 	public void readPostList(Source source, PostType type, ArrayList<Post> posts, Page page){ 
 		
 		// save the current page to the cache 

@@ -45,7 +45,7 @@ class MyServicesDAOlocal extends ServicesDAOabstract {
 
 
 	@Override
-	protected void readServices(String filename, ServiceFlavor flavor, ServiceType type, int size, Page page) {
+	protected void readServices(String filename, String searchterm, ServiceFlavor flavor, ServiceType type, int size, Page page) {
 		Loggen.v(this, "Request to read services: " + filename);
 		
 		// Read the file and return the content
@@ -62,11 +62,11 @@ class MyServicesDAOlocal extends ServicesDAOabstract {
 	}
 
 	@Override
-	protected void updateServiceScore(String filename) {
+	protected void updateServiceScore(int serviceId, String userMail, int score) {
 	}
 
 	@Override
-	protected void createServiceComment(String filename) {
+	protected void createServiceComment(int serviceId, String userMail, int rootcommentid, String comment) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -152,28 +152,21 @@ class MyServicesDAOlocal extends ServicesDAOabstract {
 	}
 
 	@Override
-	protected void searchService(String path) {
+	protected void editService(int id, String title, String detail, String photo) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
-	protected void editService(String path) {
+	protected void createService(String email, int id, String title, String detail) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
-	protected void createService(String path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	@Override
-	protected void deleteService(String path) {
+	protected void deleteService(int serviceId) {
 		// TODO Auto-generated method stub
 		
 	}

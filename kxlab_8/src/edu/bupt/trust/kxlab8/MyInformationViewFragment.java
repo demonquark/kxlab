@@ -197,14 +197,17 @@ public class MyInformationViewFragment extends BaseDetailFragment implements Pro
 
 	@Override public void onReadUserInformation(User user) { 
 		Loggen.v(this,"Received User information from dao.");
-		if(user != null){ 
-			// show the user information
-			mUser = user;
-			mUser.setLogin(true);
-		}else{
-			// show an error message
-			userMustClickOkay(getString(R.string.myinfo_no_user_title), getString(R.string.myinfo_no_user_text));
-			if(mUser == null && getActivity() != null){ mUser = ((BaseActivity) getActivity()).mSettings.getUser(); }
+		if(getActivity() != null){
+			
+			if(user != null){ 
+				// show the user information
+				mUser = user;
+				mUser.setLogin(true);
+			}else{
+				// show an error message
+				userMustClickOkay(getString(R.string.myinfo_no_user_title), getString(R.string.myinfo_no_user_text));
+				if(mUser == null && getActivity() != null){ mUser = ((BaseActivity) getActivity()).mSettings.getUser(); }
+			}
 		}
 		showUserInformation(true);
 	}

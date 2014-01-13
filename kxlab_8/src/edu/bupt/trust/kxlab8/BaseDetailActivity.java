@@ -15,6 +15,7 @@ public class BaseDetailActivity extends BaseActivity implements OnActionSelected
 		
 		// enable back stack navigation
 		getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		getSupportActionBar().setDisplayShowTitleEnabled(false);
 		getSupportFragmentManager().addOnBackStackChangedListener(this);
 		
 	}

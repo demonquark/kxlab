@@ -267,25 +267,12 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 		if (getActivity() != null) { 
 			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, ServiceFlavor.MYSERVICE);
 
-			// get the new service information
-			String title = newService.getServicetitle();
-			String detail = newService.getServicedetail();
-			String photo = newService.getLocalPhoto();
-			ServiceType type = newService.getType();
-			
 			if(oldService == null){
 				// create a service
-				servicesDAO.createService(DaoFactory.Source.DUMMY, type, 
-						new String [] {newService.getUseremail(), title, detail});
+				servicesDAO.createService(newService);
 			} else {
-				// get the parameters 
-				String [] parameters = new String [3];
-				parameters[0] = (!oldService.getServicetitle().equals(title)) ? title : null;  
-				parameters[1] = (!oldService.getServicedetail().equals(detail)) ? detail : null;  
-				parameters[2] = (!oldService.getLocalPhoto().equals(photo)) ? photo : null;  
-				
 				// update the service
-				servicesDAO.editService(DaoFactory.Source.DUMMY, newService.getId(), parameters);
+				servicesDAO.editService(newService);
 			}
 			
 			// hide the user information until we get a response
@@ -339,7 +326,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 		int id = v.getId();
 		switch(id){
 			case R.id.details_btn_save:
-				saveService();
+				if(verifySaveService()){ saveService(); }
 			break;
 			case R.id.details_btn_img:
 				registerForContextMenu(v); 
@@ -349,7 +336,10 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 		}
 	}
 	
-	@Override public boolean onNavigateUp(){ return verifySaveService(); }
+	@Override public boolean onNavigateUp(){
+		Loggen.v(this, getTag() + " - Called captured on navigate up.");
+
+		return verifySaveService(); }
 	
 	@Override public boolean allowBackPressed(){ return verifySaveService(); }
 
@@ -375,8 +365,8 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 	
 
 	@Override public void onReadService(TrustService service, List<JsonComment> comments) { }
-	@Override public void writeServiceScore(boolean success) { }
-	@Override public void writeServiceComment(boolean success) { }
+	@Override public void onUpdateServiceScore(boolean success) { }
+	@Override public void onCreateComment(boolean success) { }
 
 	@Override public void onCreateService(boolean success) { 
 		Loggen.v(this," Received onCreateService from dao: " + success);
@@ -404,7 +394,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 		showUserInformation(true);
 		
 		if(success){
-			if(oldService == null) { new TrustService(newService); }
+			if(oldService == null) { oldService = new TrustService(newService); }
 			oldService.setFromService(newService);
 			mListener.performBackPress();
 		} else {
@@ -446,7 +436,7 @@ public class ServiceDetailEditFragment extends BaseDetailFragment implements Ser
 	}
 
 	@Override
-	public void onDeleteService(boolean success) {
+	public void onDeleteService(int success) {
 		// TODO Auto-generated method stub
 		
 	}

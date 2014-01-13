@@ -233,7 +233,6 @@ public class MyServicesListFragment extends ListFragment
 			// set the adapter
 			setListAdapter(a);
 			
-
 			// set the choice mode and reaction to the choices 
 			mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 			

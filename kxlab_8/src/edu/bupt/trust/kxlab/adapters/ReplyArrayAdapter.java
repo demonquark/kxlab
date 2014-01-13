@@ -75,7 +75,5 @@ public class ReplyArrayAdapter extends ArrayAdapter <JsonReply>{
 	
 	public void setOnBtnClickListener(OnClickListener listener){
 		mListener = listener;
-	}
-	
-
+	}	
 }

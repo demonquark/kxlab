@@ -5,7 +5,6 @@ import java.util.List;
 
 import edu.bupt.trust.kxlab.adapters.CommentsArrayAdapter;
 import edu.bupt.trust.kxlab.data.DaoFactory;
-import edu.bupt.trust.kxlab.data.ForumDAO;
 import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.ServicesDAO;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
@@ -13,8 +12,6 @@ import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.data.ServicesDAO.ServicesListener;
 import edu.bupt.trust.kxlab.model.JsonActivityRecord;
 import edu.bupt.trust.kxlab.model.JsonComment;
-import edu.bupt.trust.kxlab.model.JsonReply;
-import edu.bupt.trust.kxlab.model.PostType;
 import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.ServiceType;
 import edu.bupt.trust.kxlab.model.TrustService;
@@ -29,6 +26,7 @@ import edu.bupt.trust.kxlab.widgets.XListView.IXListViewListener;
 import edu.bupt.trust.kxlab.data.RawResponse.Page;
 
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,12 +34,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.HeaderViewListAdapter;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -69,9 +64,6 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 	private User mOwner;
 	private User mUser;
 	
-	// temporary variables until I think of something better
-	String mCommentText;
-	
 	public ServiceDetailViewFragment (){
 		// Empty constructor required for ServiceDetailViewFragment
 	}
@@ -90,11 +82,9 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 		super.onCreateOptionsMenu(menu, inflater);
 	
 		// add the services menu
+		inflater.inflate(R.menu.service_detail_view, menu);
 		if(mFlavor == ServiceFlavor.MYSERVICE)
 			inflater.inflate(R.menu.myservice_detail_view, menu);
-		else {
-			inflater.inflate(R.menu.service_detail_view, menu);
-		}
 	}
 	
     @Override public boolean onOptionsItemSelected(MenuItem item) {
@@ -109,7 +99,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
             break;
         	case R.id.action_reply:
         	case R.id.action_rate:
-        		giveFeedback(itemId);
+        		giveFeedback(new FeedbackSpecs(itemId));
             break;
             default:
             	return super.onOptionsItemSelected(item);
@@ -281,6 +271,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 					CommentsArrayAdapter a = new CommentsArrayAdapter(getActivity(), 
 							R.layout.list_item_reply, android.R.id.text1, comments);
 					mListView.setAdapter(a);
+					a.setOnBtnClickListener(this);
 				}
 			} else {
 				// The comments are already loaded to the list view.
@@ -298,41 +289,42 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 	 *  - R.id.action_reply: The user wants to comment on the service
 	 *  - R.id.action_rate: The user wants to score the service
 	 */
-	private void giveFeedback(int id) {
+	private void giveFeedback(FeedbackSpecs specs) {
 		if(!mUser.isLogin()){
 			userMustClickOkay(getString(R.string.myinfo_guest_title), getString(R.string.myinfo_guest_text));
 		} else if(BaseActivity.isNetworkAvailable(getActivity())){
-			switch(id){
-				case R.id.action_reply:
-				case R.id.action_rate:
-					// create a are you sure confirm dialog 
-					DialogFragmentBasic.newInstance(true)
-						.setTitle(getString(R.string.details_dialog_confirm_user_title))
-						.setMessage(getString(R.string.details_dialog_confirm_user_text))
-						.setPositiveButtonText(getString(R.string.yes))
-						.setNegativeButtonText(getString(R.string.no))
-						.setObject(Integer.valueOf(id))
-						.show(getFragmentManager(), Gegevens.FRAG_CONFIRM);
-				break;
-			}
+			// create an "are you sure?" confirm dialog 
+			DialogFragmentBasic.newInstance(true)
+				.setTitle(getString(R.string.details_dialog_confirm_user_title))
+				.setMessage(getString(R.string.details_dialog_confirm_user_text))
+				.setPositiveButtonText(getString(R.string.yes))
+				.setNegativeButtonText(getString(R.string.no))
+				.setObject(specs)
+				.show(getFragmentManager(), Gegevens.FRAG_CONFIRM);
 		} else {
 			userMustClickOkay(getString(R.string.no_network_title), getString(R.string.no_network_text));
 		}
 	}
 
-
-	
 	private void saveScore(int score){ 
+		Loggen.v(this, "Request to score service (" + mService.getId() + ") with score = " + score); 
 		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
-		servicesDAO.updateServiceScore(DaoFactory.Source.DUMMY, mService.getId(), mUser.getEmail(), score);
+		servicesDAO.updateServiceScore(mService.getId(), mUser.getEmail(), score);
 		showInformation(false);
 	}
 	
-	private void saveComment(String commentText) {
-		mCommentText = commentText;
-		ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
-		servicesDAO.createServiceComment(DaoFactory.Source.DUMMY, mService.getId(), mUser.getEmail(), commentText);
-		showInformation(false);
+	private void saveComment(int commentid, String commentText) {
+		Loggen.v(this, "Request to comment (" + commentid + ") in service (" + mService.getId() + ") with text = " + commentText); 
+
+		if(commentText == null || commentText.equals("")){
+			// Verify that the content is not null
+			userMustClickOkay(getString(R.string.details_comment_empty_title), getString(R.string.details_comment_empty_text));
+		} else{
+			// Send the comment to the server
+			ServicesDAO servicesDAO = DaoFactory.getInstance().setServicesDAO(getActivity(), this, ServiceType.COMMUNITY, mFlavor);
+			servicesDAO.createComment(mService.getId(), mUser.getEmail(), commentid, commentText);			
+			showInformation(false);
+		}
 	}
 	
 	private void getData(Source source, Page page){
@@ -340,14 +332,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 		servicesDAO.readService(source, mService, comments, page);
 	}
 	
-	
-
-	/**	Callback for all button click events  
-	 * There are two buttons worth considering: <br />
-	 *  - R.id.details_service_btn_comment: The user wants to comment on the service
-	 *  - R.id.details_service_btn_score: The user wants to score the service
-	 *  - TODO: Button click even for the comment replies.
-	 */
+	/**	Callback for all button click events (Handles comment replies)  */
 	@Override public void onClick(View v) {
 		int id = v.getId();
 		switch(id){
@@ -359,7 +344,7 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 				if(mListener != null && comment != null) { 
 					if(mUser.isLogin()){
 						if(BaseActivity.isNetworkAvailable(getActivity()))
-							giveFeedback(R.id.action_reply);
+							giveFeedback(new FeedbackSpecs(R.id.action_reply, comment.getId()));
 						else 
 							userMustClickOkay(getString(R.string.no_network_title), getString(R.string.no_network_text));
 					} else {
@@ -382,10 +367,11 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 	 *  - FRAG_SCORE: The user has scored the service. Expect the return object to be an Integer
 	 */
 	@Override public void onBasicPositiveButtonClicked(String tag, Object o) {
-		if (Gegevens.FRAG_CONFIRM.equals(tag) && o instanceof Integer){ 
-			int id = (Integer) o;
-			switch(id){
+		if (Gegevens.FRAG_CONFIRM.equals(tag) && o instanceof FeedbackSpecs){ 
+			FeedbackSpecs specs = (FeedbackSpecs) o;
+			switch(specs.requestCode){
 				case R.id.action_reply:
+					Loggen.v(this, "must show reply dialog for " + specs.commentId);
 					// call the dialog fragment that allows you to leave a comment
 					DialogFragmentEditText.newInstance(true, this, R.layout.dialog_comment)
 						.setTitle(getString(R.string.details_dialog_comment_title))
@@ -393,9 +379,11 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 						.setPositiveButtonText(getString(R.string.submit))
 						.setNegativeButtonText(getString(R.string.cancel))
 						.setCancelableAndReturnSelf(false)
+						.setObject(specs)
 						.show(getFragmentManager(), Gegevens.FRAG_COMMENT);
 				break;
 				case R.id.action_rate:
+					Loggen.v(this, "must show rate dialog for " + specs.commentId);
 					// call the dialog fragment that allows you to score
 					DialogFragmentScore.newInstance(true)
 						.setTitle(getString(R.string.details_dialog_rate_title))
@@ -403,13 +391,28 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 						.setPositiveButtonText(getString(R.string.submit))
 						.setNegativeButtonText(getString(R.string.cancel))
 						.setCancelableAndReturnSelf(false)
+						.setObject(specs)
 						.show(getFragmentManager(), Gegevens.FRAG_SCORE);
 				break;
 			}
-		} else if (Gegevens.FRAG_COMMENT.equals(tag) && o instanceof String) {
-			saveComment(String.valueOf(o));
-		} else if (Gegevens.FRAG_SCORE.equals(tag) && o instanceof Integer) {
-			saveScore((Integer) o);
+		} else if (Gegevens.FRAG_COMMENT.equals(tag) && o instanceof Pair<?,?>) {
+			try{
+				@SuppressWarnings("unchecked")
+				Pair<FeedbackSpecs, String> commentSpecs = (Pair<FeedbackSpecs, String>) o;
+				saveComment(commentSpecs.first.commentId, commentSpecs.second);
+			} catch (ClassCastException e){
+				Loggen.e(this, "Got something wonky from the EditText dialog");
+			}
+			
+		} else if (Gegevens.FRAG_SCORE.equals(tag) && o instanceof Pair<?,?>) {
+			try{
+				@SuppressWarnings("unchecked")
+				Pair<FeedbackSpecs, Integer> scoreSpecs = (Pair<FeedbackSpecs, Integer>) o;
+				saveScore(scoreSpecs.second.intValue());
+			} catch (ClassCastException e){
+				Loggen.e(this, "Got something wonky from the Rate dialog");
+			}
+			
 		}
 	}	
 	
@@ -425,62 +428,68 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 	}
 
 	@Override public void onReadService(TrustService service, List<JsonComment> comments) { 
-		Loggen.i(this, getTag() + " - Returned from onReadservice. ");
+		Loggen.v(this, getTag() + " - Returned from onReadservice. ");
+		if(getActivity() != null){
+			// make sure the replies are not empty
+			 if(comments == null && this.comments == null){
+				userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
+				this.comments = new ArrayList <JsonComment> ();
+				getData(Source.LOCAL, Page.CURRENT);
+			}
+			
+			// update the post
+			if(service != null){
+				this.mService.setFromService(service); 
+			}
 
-		// Inform the user of any failures
-		if(service == null){
-			userMustClickOkay(getString(R.string.details_no_service_title), getString(R.string.details_no_service_text));
-		} 
-		
-		// make sure the replies are not empty
-		 if(comments == null && this.comments == null){
-			userMustClickOkay(getString(R.string.forum_error_update_title), getString(R.string.forum_error_update_text)); 
-			this.comments = new ArrayList <JsonComment> ();
-			getData(Source.LOCAL, Page.CURRENT);
-		}
-		
-		// update the post
-		if(service != null){
-			this.mService.setFromService(service); 
-		}
-
-		// add the replies
-		if(comments != null){
-			if(this.comments == null){ this.comments = new ArrayList<JsonComment> (); }
-			this.comments.clear();
-			this.comments.addAll(comments);
+			// add the replies
+			if(comments != null){
+				if(this.comments == null){ this.comments = new ArrayList<JsonComment> (); }
+				this.comments.clear();
+				this.comments.addAll(comments);
+			}
 		}
 		showService();
 	}
 	
 	@Override public void onReadUserInformation(User user) {
 		Loggen.v(this," Received User information from dao.");
-		if(user != null){ 
-			// show the user information
-			mOwner = user;
-		}else{
-			// show an error message
-			userMustClickOkay(getString(R.string.myinfo_no_user_title), getString(R.string.myinfo_no_user_text));
+		if(getActivity() != null){
+			if(user != null){ 
+				// show the user information
+				mOwner = user;
+			}else{
+				// show an error message
+				userMustClickOkay(getString(R.string.myinfo_no_user_title), getString(R.string.myinfo_no_user_text));
+			}
 		}
 		showOwner();
 	}
 
-	@Override public void writeServiceScore(boolean success) {
-		Loggen.v(this," Received Score update from DAO");
+	@Override public void onUpdateServiceScore(boolean success) {
+		Loggen.v(this," Received Score update from DAO: " + success);
+		if(success){
+			// show an success message
+			userMustClickOkay(getString(R.string.details_score_success_title), getString(R.string.details_score_success_text));
+		}else {
+			// show an failure message
+			userMustClickOkay(getString(R.string.details_score_failure_title), getString(R.string.details_score_failure_text));
+		}
 		showService();
 	}
 	
-	@Override public void writeServiceComment(boolean success) {
-		Loggen.v(this," Received Comment update from DAO");
-//		if(comments != null){
-//			JsonComment myComment = new JsonComment();
-//			myComment.commentdetail = mCommentText;
-//			myComment.commenttime = System.currentTimeMillis();
-//			myComment.useremail = mUser.getEmail();
-//			myComment.commentscore = String.valueOf(mScore);
-//			comments.add(0, myComment);
-//		}
-		showService();
+	@Override public void onCreateComment(boolean success) {
+		Loggen.v(this," Received Comment update from DAO: " + success);
+		if(success){
+			// show an success message
+			userMustClickOkay(getString(R.string.details_comment_success_title), getString(R.string.details_comment_success_text));
+			getData(Source.WEB, Page.LATEST);
+			showInformation(false);
+		}else {
+			// show an failure message
+			userMustClickOkay(getString(R.string.details_comment_failure_title), getString(R.string.details_comment_failure_text));
+			showService();
+		}
 	}
 
 	@Override public void onReadUserList(List<User> users) {}
@@ -488,28 +497,25 @@ public class ServiceDetailViewFragment extends BaseDetailFragment implements
 	@Override public void onReadActivityHistory(List<JsonActivityRecord> records) {}
 	@Override public void onChangeUser(User newUser, String errorMessage) {}
 	@Override public void onEditService(boolean success) { }
-
-	@Override
-	public void onLogin(boolean success, String errorMessage) {
-		// TODO Auto-generated method stub
+	@Override public void onLogin(boolean success, String errorMessage) { }
+	@Override public void onDeleteService(int success) { }
+	@Override public void onReadServices(List<TrustService> services) { }
+	@Override public void onSearchService(List<TrustService> services) { }
+	
+	
+	private class FeedbackSpecs {
+		/** Use this constructor create specifications for a score */
+		FeedbackSpecs(int requestCode){ 
+			this.requestCode = requestCode; 
+			this.commentId = -1;
+		}
+		/** Use this constructor create specifications for a reply to a comment */
+		FeedbackSpecs(int requestCode, int commentId){ 
+			this.requestCode = requestCode; 
+			this.commentId = commentId; 
+		}
 		
-	}
-
-	@Override
-	public void onDeleteService(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onReadServices(List<TrustService> services) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSearchService(List<TrustService> services) {
-		// TODO Auto-generated method stub
-		
+		int requestCode;
+		int commentId;
 	}
 }

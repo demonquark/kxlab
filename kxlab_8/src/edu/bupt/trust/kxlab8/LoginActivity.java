@@ -4,18 +4,19 @@ import java.io.File;
 import java.util.List;
 
 import edu.bupt.trust.kxlab.data.DaoFactory;
-import edu.bupt.trust.kxlab.data.ProfileDAO;
 import edu.bupt.trust.kxlab.data.DaoFactory.Source;
 import edu.bupt.trust.kxlab.data.ProfileDAO.ProfileListener;
 import edu.bupt.trust.kxlab.model.JsonActivityRecord;
+import edu.bupt.trust.kxlab.model.ServiceFlavor;
 import edu.bupt.trust.kxlab.model.User;
 import edu.bupt.trust.kxlab.utils.BitmapTools;
+import edu.bupt.trust.kxlab.utils.Gegevens;
 import edu.bupt.trust.kxlab.utils.Loggen;
+import edu.bupt.trust.kxlab.utils.Tools;
+import edu.bupt.trust.kxlab.widgets.DialogFragmentEditText;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -27,20 +28,9 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
 	/**
 	 * 用户 保存用户名和密码
 	 */
-	private User user;
-	
-	EditText editAccount;
-	EditText editPassword;
-
+	private User mUser;
 	CheckBox boxRemember;
-	ImageView imageviewFace;
-    boolean isRemmber;
-    int userFace;
 
-	/**
-	 * 获得用户相关数据的一个类
-	 */
-	private ProfileDAO pDao;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,49 +39,32 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
 		
 		// enable back stack navigation
 		getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-		 
-	     pDao = DaoFactory.getInstance().setProfileDAO(this,this);
-	     //获得一个只能本程序读写的SharedPreferences对象
-	     editAccount = (EditText)findViewById(R.id.login_edit_account);
-	     editPassword = (EditText)findViewById(R.id.login_edit_pwd);
-	     boxRemember = (CheckBox)findViewById(R.id.login_cb_savepwd);
-	     imageviewFace = (ImageView)findViewById(R.id.login_img_face);
-	     
-	     mSettings.loadSettingsFromSharedPreferences(this);
-	     user=mSettings.getUser();
-	     Loggen.i(this, "passsword is: " + user.getPassword());
-	     isRemmber=mSettings.isRemmber();
-	     userFace=mSettings.getUserFace();
-	     if (user==null) {
-	    	 user = new User();
+		
+		// load views
+		boxRemember = (CheckBox) findViewById(R.id.login_checkbox_savepassword);
+		
+		// get the user
+		mSettings.loadSettingsFromSharedPreferences(this);
+		mUser = mSettings.getUser();
+		
+		// determine what to do
+		if(mUser.isRemember()){
+			
+			if(mUser.isLogin()){
+				// Case 1 - The user wants to be remembered and has not explicitly logged out.
+				// Give the user immediate access.
+				onLogin(mUser.isLogin(), null);
+			} else {
+				// Case 2 - The user wants to be remembered, but has explicitly logged out.
+				// Show his information. We need not worry about rotation (see Manifest) 
+				showUserInfo();
+			}
+		} else {
+			// Case 3 - The user does not want to be remembered.
+			mUser.setLogin(false);
 		}
-	    
-	     validateUserIsLogin();
-	     recoveryUserInfo();
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.login, menu);
-		return true;
-	}
-	
-    @Override public boolean onOptionsItemSelected(MenuItem item) {
-    	int itemId = item.getItemId();
-        switch (itemId) {
-    	case R.id.action_login_guest:
-    		login(false);
-    		break;
-    	case R.id.action_login_recover_password:
-    		findPassword();
-    		break;
-        default:
-        	return super.onOptionsItemSelected(item);
-        }
-    	
-    	return true;
-    }
 
 
 	public void onBtnClick(View view) {
@@ -100,64 +73,39 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
 		case R.id.login_btn_login:
 			login(true);
 			break;
-		case R.id.btn_login_guest:
+		case R.id.login_btn_guest:
 			login(false);
 			break;
-		case R.id.btn_login_findPassword:
+		case R.id.login_txt_forgot:
 			findPassword();
 			break;
-		case R.id.login_cb_savepwd:
-			if(boxRemember.isChecked()){
-			Toast.makeText(this, getString(R.string.strRemmenberTips), Toast.LENGTH_SHORT).show();
-				isRemmber=true;
-			}else {
-				isRemmber=false;
-			}
+		case R.id.login_checkbox_savepassword:
+			mUser.setRemember(boxRemember.isChecked());
+			if(mUser.isRemember()) { postToast(getString(R.string.strRemmenberTips)); }
 			break;
 		default :
 			super.onBtnClick(view);
-			Toast.makeText(this, getString(R.string.no_suchbtn), Toast.LENGTH_SHORT).show();
 			break;
 		}
 	}
 
-	 /**
-     * 从sharedpreference 中检查是否有用户登陆过 显示用户名和用户图片
-     */
-    private void recoveryUserInfo() {
-    	editAccount.setText(user.getEmail());
-    	boxRemember.setChecked(isRemmber);
-    	File avatar = new File(user.getLocalPhoto());
-    	
-    	// try to load the image from file
-    	if(avatar.exists()){ 
-    		imageviewFace.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
-    			avatar.getAbsolutePath(),
-    			imageviewFace.getLayoutParams().width, 
-    			imageviewFace.getLayoutParams().height));
-    	} else {
-    		imageviewFace.setImageResource(userFace);
-    	}
-    	
-    	if (boxRemember.isChecked()) {
-    		editPassword.setText(user.getPassword());
+    private void showUserInfo() {
+		// get the email box
+		EditText editTxtEmail = ((EditText) findViewById(R.id.login_edit_account));
+		EditText editTxtPassword = ((EditText) findViewById(R.id.login_edit_password));
+		ImageView imgView = (ImageView)findViewById(R.id.login_img_face);
+		
+		editTxtEmail.setText(String.valueOf(mUser.getEmail()));
+		editTxtPassword.setText(String.valueOf(mUser.getPassword()));
+		boxRemember.setChecked(mUser.isRemember());
+		File imgFile = new File(mUser.getLocalPhoto());
+		if(imgFile.exists()){
+			imgView.setImageBitmap(BitmapTools.decodeSampledBitmapFromResource(
+		    		imgFile.getAbsolutePath(),
+		    		imgView.getLayoutParams().width, 
+		    		imgView.getLayoutParams().height));
 		}
 	}
-	
-	/**
-     * 用户是否已登录
-     */
-    private void validateUserIsLogin() {
-    	
-		//如果已经登录就直接跳转到用户界面
-		if(user.isLogin()){
-			Intent startmain = new Intent(LoginActivity.this,MyServicesListActivity.class);
-			startActivity(startmain);
-			finish();
-		}
-	}
-    
-    
     /**
 	 * 用来实现用户和游客的登录
 	 * @param isUser
@@ -166,93 +114,91 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
 		
 		if(isUser){
 			
-			String mUsername = editAccount.getText().toString().trim();
-			String mPassword = editPassword.getText().toString().trim();
-			if(mUsername == null || mPassword == null 
-					|| mUsername.equals("") || mPassword.equals("") ){
-				//Toast 用户名密码不能为空
+			// get the user name and password
+			String mUsername = ((EditText) findViewById(R.id.login_edit_account)).getText().toString().trim();
+			String mPassword = ((EditText) findViewById(R.id.login_edit_password)).getText().toString().trim();
+			
+			// make sure they are valid entries
+			if(mUsername == null || mPassword == null || mUsername.equals("") || mPassword.equals("") ){
 				Toast.makeText(this, getString(R.string.strLoginReplyAmpty), Toast.LENGTH_LONG).show();
 				return ;
 			}
-			/*if(!Tools.isEmail(mUsername)){
-				//Toast 用户名密码不能为空
-				Toast.makeText(this, getString(R.string.strLoginReplyNotMail), Toast.LENGTH_LONG).show();
-				return ;
-			}*/
-			user.setEmail(mUsername);
-			user.setPassword(mPassword);
-			pDao.login(Source.DUMMY, mUsername, mPassword);
-			System.out.println("success do login");
-			/*if(mUsername == null || mPassword == null 
-					|| mUsername.equals("") || mPassword.equals("") ){
-				//Toast 用户名密码不能为空
-				Toast.makeText(this, getString(R.string.strLoginReplyAmpty), Toast.LENGTH_LONG).show();
-			}else if(mUsername.equals(user.getFullName())&& mPassword.equals(user.getPassword())){
-				//可以成功登录
-				islogin = true;
-				Intent startmain = new Intent(LoginActivity.this,MainActivity.class);
-				startActivity(startmain);
-				//保存用户
-				saveUser(user);
-				//登录成功就可以销毁掉login页面了 游客就不用
-				finish();
-			}else{//Toast 用户名密码错误
-				Toast.makeText(this,getString(R.string.strLoginReplyErr),Toast.LENGTH_LONG).show();
-			}*/
-		}else{//此时为游客登录
-			user = new User();
-			user.setLogin(false);
-			save();
-			Toast.makeText(this,"you are a guest",Toast.LENGTH_LONG).show();
-			Intent startmain = new Intent(LoginActivity.this,MyServicesListActivity.class);
-			startActivity(startmain);
-			finish();
+			
+			// update the user 
+			mUser.setEmail(mUsername);
+			mUser.setPassword(mPassword);
+
+			// log in
+			DaoFactory.getInstance().setProfileDAO(this,this).login(Source.DUMMY, mUsername, mPassword);
+			
+		}else{
+			
+			// login as guest
+			mUser = new User();
+			mUser.setLogin(false);
+			mSettings.saveSettingsToSharedPreferences(this);
+			
+			// inform the user
+			postToast(getString(R.string.login_post_guest));
+			
+			// open the Services activity
+			Bundle b = new Bundle();
+			b.putSerializable(Gegevens.EXTRA_FLAVOR, ServiceFlavor.SERVICE);
+			Intent intent = new Intent(this, ServicesListActivity.class);
+			intent.putExtra(Gegevens.EXTRA_MSG, b);
+			openActivity(intent);
 		}
-		
-		
 	}
     
 	/**
 	 * 供用户找回密码
 	 */
 	private void findPassword() {
-		Intent toFindPassword = new Intent(LoginActivity.this,FindPasswordActivity.class);
-		startActivity(toFindPassword);
+		DialogFragmentEditText.newInstance(true, null, R.layout.dialog_email)
+				.setTitle(getString(R.string.login_dialog_recover_title))
+				.setMessage(getString(R.string.login_dialog_recover_text))
+				.setPositiveButtonText(getString(R.string.submit))
+				.setNegativeButtonText(getString(R.string.cancel))
+				.setCancelableAndReturnSelf(false)
+				.show(getSupportFragmentManager(), Gegevens.FRAG_FORGOTPASSWORD);
 	}
     
+	@Override public void onBasicPositiveButtonClicked(String tag, Object o) { 
+		if(o instanceof String){
+			String email = (String) o;
+			if(Tools.isEmail(email)){
+				Loggen.e(this, "I have no idea what to do with this: " + email);
+			} else {
+				this.postToast("You did not enter a valid email address");
+			}
+			
+		}
+	}
+
+	
 	@Override
 	public void onLogin(boolean success, String errorMessage) {
-		System.out.println(" do onlogin"+success);
+		System.out.println(" do onlogin" + success);
 		if (success) {
-				//可以成功登录
-				user.setLogin(true);
-				userFace=R.drawable.tom_head;
-				Intent startmain = new Intent(LoginActivity.this,MyServicesListActivity.class);
-				startActivity(startmain);
-				//保存配置
-				save();
-				//登录成功就可以销毁掉login页面了 游客就不用
-				finish();
-			}else {
-				Toast.makeText(this,errorMessage,Toast.LENGTH_LONG).show();
-			}
-		}
-		
-		/**
-		 * 把用户信息保存到sharedpreference
-		 * @param person
-		 */
-		public void save(){
-			mSettings.setUser(user);
-			mSettings.setRemmber(isRemmber);
-			mSettings.setUserFace(userFace);
+			
+			// update and save the user
+			mUser.setLogin(true);
 			mSettings.saveSettingsToSharedPreferences(this);
+			
+			// launch the my services activity.
+			Bundle b = new Bundle();
+			b.putSerializable(Gegevens.EXTRA_FLAVOR, ServiceFlavor.MYSERVICE);
+			Intent intent = new Intent(this, ServicesListActivity.class);
+			intent.putExtra(Gegevens.EXTRA_MSG, b);
+			openActivity(intent);
+
+		}else if(errorMessage != null) {
+			this.userMustClickOkay(getString(R.string.login_dialog_failure_title), errorMessage);
 		}
+	}
 
-		@Override public void onReadUserList(List<User> users) {}
-		@Override public void onReadUserInformation(User user) { }
-		@Override public void onReadActivityHistory(List<JsonActivityRecord> records) { }
-		@Override public void onChangeUser(User newUser, String errorMessage) { }
-		
+	@Override public void onReadUserList(List<User> users) {}
+	@Override public void onReadUserInformation(User user) { }
+	@Override public void onReadActivityHistory(List<JsonActivityRecord> records) { }
+	@Override public void onChangeUser(User newUser, String errorMessage) { }
 }
-

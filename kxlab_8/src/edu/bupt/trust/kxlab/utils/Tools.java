@@ -101,6 +101,6 @@ public class Tools {
 		Pattern p = Pattern.compile(strPattern);		
 		Matcher m = p.matcher(strEmail);		
 		return m.matches();	
-		}
+	}
 	
 }

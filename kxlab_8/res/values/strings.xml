@@ -78,6 +78,19 @@
 	<string name="footer_forum">Discussion Forum</string>
 	<string name="footer_myinformation">My Information</string>
 	<string name="footer_other">Other</string>
+	
+	<!-- login activity -->
+	<string name="login_edit_username_hint">User email</string>
+	<string name="login_edit_password_hint">Password</string>
+	<string name="login_btn_login">sign in</string>
+	<string name="login_btn_guest">log in as guest</string>
+	<string name="login_txt_forgot"><u>Recover password</u></string>
+	<string name="login_txt_remember">Remember me</string>
+	<string name="login_dialog_failure_title">Could not login</string>
+	<string name="login_post_guest">You are logged in as a guest</string>
+	<string name="login_dialog_recover_title">Recover my password</string>
+	<string name="login_dialog_recover_text">Please enter your registered email. Our administrator will send you a new password. Thank you! </string>
+
 	<!-- services activity -->
 	<string name="services_activity_name">services</string>
 	<string name="services_tab_community">Community</string>
@@ -89,6 +102,10 @@
 	<string name="services_delete_confirm_text">The following services will be deleted:</string>
 	<string name="services_delete_empty_title">Delete</string>
 	<string name="services_delete_empty_text">No services were selected. Nothing was deleted.</string>
+	<string name="services_delete_success_title">Delete</string>
+	<string name="services_delete_success_text">The selected services were deleted.</string>
+	<string name="services_delete_failure_title">Delete</string>
+	<string name="services_delete_failure_text">No services were selected. Nothing was deleted.</string>
 	<string-array name="services_tab_titles">
 		<item>@string/services_tab_community</item>
 		<item>@string/services_tab_recommended</item>
@@ -117,7 +134,7 @@
 	<string name="details_no_comments_title">No comments</string>
 	<string name="details_no_comments_text">We could not download the comments.</string>
 	<string name="details_no_service_title">No service</string>
-	<string name="details_no_service_text">An error occurred while trying to download the latest service details. NOW.</string>
+	<string name="details_no_service_text">An error occurred while trying to download the latest service details.</string>
 	<string name="details_dialog_confirm_user_title">Have you used this service?</string>
 	<string name="details_dialog_confirm_user_text">Only users of this service are allowed to provide feedback.</string>
 	<string name="details_dialog_rate_title">Rate this service</string>
@@ -146,7 +163,17 @@
 	<string name="details_update_fail_text">We could not save the service. Please try again.</string>
 	<string name="details_lastedit_title">Last edited:</string>
 	<string name="details_createtime_title">Created:</string>
-		
+	<string name="details_score_success_title">Score saved</string>
+	<string name="details_score_success_text">Your score was successfully recorded</string>
+	<string name="details_score_failure_title">Score not saved</string>
+	<string name="details_score_failure_text">The server did not record your score. (Note that you can only score a service once)</string>
+	<string name="details_comment_empty_title">No text</string>
+	<string name="details_comment_empty_text">You cannot submit a empty comment</string>
+	<string name="details_comment_success_title">Comment saved</string>
+	<string name="details_comment_success_text">Your comment was saved.</string>
+	<string name="details_comment_failure_title">Comment not saved</string>
+	<string name="details_comment_failure_text">The server did not record your comment.</string>
+							
 						
 	<!-- comments list item -->
 	<string name="comment_owner_img">Commenter</string>

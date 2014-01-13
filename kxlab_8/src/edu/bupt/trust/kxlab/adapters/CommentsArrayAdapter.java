@@ -74,7 +74,7 @@ public class CommentsArrayAdapter extends ArrayAdapter <JsonComment>{
 		return v;
 	}
 	
-	public void setList(List <JsonComment> items){
-		this.items = items;
+	public void setOnBtnClickListener(OnClickListener listener){
+		mListener = listener;
 	}
 }
