@@ -178,7 +178,6 @@ public class LoginActivity extends BaseActivity implements ProfileListener{
 	
 	@Override
 	public void onLogin(boolean success, String errorMessage) {
-		System.out.println(" do onlogin" + success);
 		if (success) {
 			
 			// update and save the user
