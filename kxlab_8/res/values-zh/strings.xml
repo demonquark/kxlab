@@ -3,13 +3,13 @@
 	<string name="app_name">Kxlab_8</string>
 	<!-- String to be sorted -->
 	<string name="myserv_activity_name">my services</string>
-	<string name="forum_activity_name">forum</string>
-	<string name="myinfo_activity_name">my info</string>
-	<string name="other_activity_name">other</string>
-	<string name="findpass_activity_name">find password</string>	
+	<string name="forum_activity_name">讨论区</string>
+	<string name="myinfo_activity_name">个人信息</string>
+	<string name="other_activity_name">其他</string>
+	<string name="findpass_activity_name">找回密码</string>	
 	<string name="pull_to_refresh">下拉可以刷新</string>
 	<string name="release_to_refresh">释放立即刷新</string>
-	<string name="refreshing">正在刷新…</string>
+	<string name="refreshing">正在刷新&#8230;</string>
 	<string name="not_updated_yet">暂未更新过</string>
 	<string name="updated_at">上次更新于%1$s前</string>
 	<string name="updated_just_now">刚刚更新</string>
@@ -22,105 +22,126 @@
 	<string name="login">登 录</string>
 	<string name="findPasswordLabel">找回密码</string>
 	<string name="guestLabel">我是游客</string>
-	<string name="login_guest">login as guest</string>
-	<string name="login_recover_password">recover password</string>
+	<string name="login_guest">游客登录</string>
+	<string name="login_recover_password">找回密码</string>
 		
 	<!-- 用户名密码不能空 -->
-	<string name="strLoginReplyAmpty">not allow null</string>
+	<string name="strLoginReplyAmpty">不许为空</string>
 	<!--用户名密码错误  -->
-	<string name="strLoginReplyErr">username or password is incorrect</string>
+	<string name="strLoginReplyErr">用户名或密码错误</string>
 	<!--没有该按钮的响应  -->
-	<string name="no_suchbtn">no such button</string>
+	<string name="no_suchbtn">无此按钮</string>
 	<!-- 用户名需要为邮箱 -->
-	<string name="strLoginReplyNotMail">username must be EmaiAddress</string>
+	<string name="strLoginReplyNotMail">用户名必须为电子邮件地址</string>
 	<!-- 如果不是你的手机不要保存密码 -->
-	<string name="strRemmenberTips">If this is not your Phone Dont do this</string>
+	<string name="strRemmenberTips">若非您的手机请不要进行此操作</string>
 	<!-- 找回密码界面 -->
 	<string name="strPwdInputEmail">请输入邮箱</string>
 	<string name="strPwdTipLabel">请您留下您的注册邮箱，稍后管理员会将您的密码发送给您！谢谢！</string>
 	<string name="strPwdTittle">找回密码</string>
 	<string name="btnFindpwdSubmit">确定</string>
 	<!-- generic strings -->
-	<string name="yes">Yes</string>
-	<string name="no">No</string>
+	<string name="yes">是</string>
+	<string name="no">否</string>
 	<string name="ok">OK</string>
-	<string name="on">ON</string>
-	<string name="off">OFF</string>
+	<string name="on">开</string>
+	<string name="off">关</string>
 	<string name="and">and</string>
-	<string name="submit">Submit</string>
-	<string name="back">Back</string>
-	<string name="reset">Reset</string>
-	<string name="error">Error</string>
-	<string name="loading">Loading</string>
-	<string name="cancel">Cancel</string>
-	<string name="unknown">Unknown</string>
-	<string name="invalidInput">Invalid input</string>
-	<string name="unknownBtn">You pressed an unknown button</string>
+	<string name="submit">提交</string>
+	<string name="back">返回</string>
+	<string name="reset">重置</string>
+	<string name="error">错误</string>
+	<string name="loading">加载中</string>
+	<string name="cancel">取消</string>
+	<string name="unknown">未知</string>
+	<string name="invalidInput">无效的输入</string>
+	<string name="unknownBtn">您点击了一个未知的按钮</string>
 	<string name="bullet">&#8226;</string>
 	<string name="ellipsis">&#8230;</string>
 	<string name="niets"/>
+	<string name="no_network_title">没有网络</string>
+	<string name="no_network_text">无法连接到网络，请检查你的网络连接并重试.</string>
+	
 	<!-- menu strings -->
-	<string name="action_accept">accept</string>
-	<string name="action_search">search</string>
-	<string name="action_create">create</string>
-	<string name="action_reply">reply</string>
-	<string name="action_rate">rate</string>
-	<string name="action_delete">delete</string>
-	<string name="action_sort">sort</string>
-	<string name="action_edit">edit</string>
-	<string name="context_img_from_gallery">Choose photo from Gallery</string>
-	<string name="context_img_from_camera">Take a photo</string>
-	<string name="footer_services">Services</string>
-	<string name="footer_myservice">My Services</string>
-	<string name="footer_forum">Discussion Forum</string>
-	<string name="footer_myinformation">My Information</string>
-	<string name="footer_other">Other</string>
+	<string name="action_accept">同意</string>
+	<string name="action_search">搜索</string>
+	<string name="action_create">创建</string>
+	<string name="action_reply">回复</string>
+	<string name="action_rate">评分</string>
+	<string name="action_delete">删除</string>
+	<string name="action_sort">排序</string>
+	<string name="action_edit">编辑</string>
+	<string name="context_img_from_gallery">从图库中选择相片</string>
+	<string name="context_img_from_camera">拍照</string>
+	<string name="footer_services">服务</string>
+	<string name="footer_myservice">我的服务</string>
+	<string name="footer_forum">讨论区</string>
+	<string name="footer_myinformation">个人信息</string>
+	<string name="footer_other">其他</string>
+
+	<!-- login activity -->
+	<string name="login_edit_username_hint">用户电子邮件</string>
+	<string name="login_edit_password_hint">密码</string>
+	<string name="login_btn_login">登录</string>
+	<string name="login_btn_guest">游客登录</string>
+	<string name="login_txt_forgot"><u>找回密码</u></string>
+	<string name="login_txt_remember">记住账号</string>
+	<string name="login_dialog_failure_title">登陆失败</string>
+	<string name="login_dialog_failure_text">请检查你的电子邮件地址及密码并重试</string>
+	<string name="login_post_guest">您以游客身份登录</string>
+	<string name="login_dialog_recover_title">找回我的密码</string>
+	<string name="login_dialog_recover_text">请输入您的注册邮箱管理员将会发送给您新的密码。谢谢！</string>
+	
 	<!-- services activity -->
-	<string name="services_activity_name">services</string>
-	<string name="services_tab_community">Community</string>
-	<string name="services_tab_recommended">Recommended</string>
-	<string name="services_tab_apply">Apply</string>
-	<string name="services_empty_list">No services found</string>
-	<string name="services_delete_hint">Select the services you want to delete</string>
-	<string name="services_delete_confirm_title">Delete</string>
-	<string name="services_delete_confirm_text">The following services will be deleted:</string>
-	<string name="services_delete_empty_title">Delete</string>
-	<string name="services_delete_empty_text">No services were selected. Nothing was deleted.</string>
+	<string name="services_activity_name">服务</string>
+	<string name="services_tab_community">社区服务</string>
+	<string name="services_tab_recommended">推荐服务</string>
+	<string name="services_tab_apply">申请服务</string>
+	<string name="services_empty_list">未找到相关服务</string>
+	<string name="services_delete_hint">请选择您想要删除的服务</string>
+	<string name="services_delete_confirm_title">删除</string>
+	<string name="services_delete_confirm_text">以下服务将会被删除:</string>
+	<string name="services_delete_empty_title">删除</string>
+	<string name="services_delete_empty_text">没有服务被选中.没有删除项.</string>
+	<string name="services_delete_success_title">删除</string>
+	<string name="services_delete_success_text">所选服务已被删除.</string>
+	<string name="services_delete_failure_title">删除</string>
+	<string name="services_delete_failure_text">没有服务被选中.没有删除项.</string>
 	<string-array name="services_tab_titles">
 		<item>@string/services_tab_community</item>
 		<item>@string/services_tab_recommended</item>
 		<item>@string/services_tab_apply</item>
 	</string-array>
 	<!-- service details activity -->
-	<string name="details_activity_name">details</string>
-	<string name="details_confirm_close_title">Data not saved</string>
-	<string name="details_confirm_close_text">Are you sure you want to continue? Leaving this screen will result in losing all your changes.</string>
-	<string name="details_owner_img">Owner</string>
-	<string name="details_owner_name">Name</string>
-	<string name="details_owner_score">Activity Score:</string>
-	<string name="details_owner_time">join date</string>
-	<string name="details_service_img">Owner</string>
-	<string name="details_service_name">Title of this service:</string>
-	<string name="details_service_btn_score">score</string>
-	<string name="details_service_score">Credibility Score</string>
-	<string name="details_service_number">Number of users:</string>
-	<string name="details_service_description">这里是详情页面  this the details of this service</string>
-	<string name="details_empty_list">No comments</string>
-	<string name="details_eror_service_edit">An error occurred while trying to load the service information</string>
-	<string name="details_comments_empty_list">No comments found</string>
-	<string name="details_error_title">Error loading data</string>
-	<string name="details_error_text">An error occurred while trying to load the service details</string>	
-	<string name="details_error_text2">Something really bad happened. I suggest you go back to the previous screen.</string>	
-	<string name="details_no_comments_title">No comments</string>
-	<string name="details_no_comments_text">We could not download the comments.</string>
-	<string name="details_no_service_title">No service</string>
-	<string name="details_no_service_text">An error occurred while trying to download the latest service details. NOW.</string>
-	<string name="details_dialog_confirm_user_title">Have you used this service?</string>
-	<string name="details_dialog_confirm_user_text">Only users of this service are allowed to provide feedback.</string>
-	<string name="details_dialog_rate_title">Rate this service</string>
-	<string name="details_dialog_rate_text">Please rate the credibility of this service</string>
-	<string name="details_dialog_comment_title">Comment on this service</string>
-	<string name="details_dialog_comment_text">Leave a comment for this service</string>
+	<string name="details_activity_name">详情</string>
+	<string name="details_confirm_close_title">数据未保存</string>
+	<string name="details_confirm_close_text">您确定要继续?离开此页面将导致您的所有更改丢失.</string>
+	<string name="details_owner_img">创建者</string>
+	<string name="details_owner_name">姓名</string>
+	<string name="details_owner_score">活跃度:</string>
+	<string name="details_owner_time">入社时间</string>
+	<string name="details_service_img">创建者</string>
+	<string name="details_service_name">服务的标题:</string>
+	<string name="details_service_btn_score">评分</string>
+	<string name="details_service_score">可信度:</string>
+	<string name="details_service_number">使用人数:</string>
+	<string name="details_service_description">这里是详情页面 this the details of this service</string>
+	<string name="details_empty_list">尚无评论</string>
+	<string name="details_eror_service_edit">加载服务信息时发生错误</string>
+	<string name="details_comments_empty_list">尚无评论</string>
+	<string name="details_error_title">数据加载时错误</string>
+	<string name="details_error_text">加载服务详情时发生错误</string>	
+	<string name="details_error_text2">有严重的错误发生建议您跳回上一页面.</string>	
+	<string name="details_no_comments_title">没有评论</string>
+	<string name="details_no_comments_text">评论无法加载.</string>
+	<string name="details_no_service_title">没有服务</string>
+	<string name="details_no_service_text">加载最新服务详情时发生错误.</string>
+	<string name="details_dialog_confirm_user_title">您是否使用过该服务?</string>
+	<string name="details_dialog_confirm_user_text">只允许该服务的使用者提供反馈.</string>
+	<string name="details_dialog_rate_title">给该服务打分</string>
+	<string name="details_dialog_rate_text">请对该服务的可信度进行评分</string>
+	<string name="details_dialog_comment_title">评论该服务</string>
+	<string name="details_dialog_comment_text">请对该服务进行评论</string>
 	<string name="details_btn_save">save changes</string>
 	<string name="details_edit_title">Edit your service</string>
 	<string name="details_edit_new_title">Create a service</string>
@@ -141,7 +162,33 @@
 	<string name="details_img_not_found_text">Could not find the service image.</string>
 	<string name="details_update_fail_title">Incomplete save</string>
 	<string name="details_update_fail_text">We could not save the service. Please try again.</string>
-						
+	<string name="details_lastedit_title">Last edited:</string>
+	<string name="details_createtime_title">Created:</string>
+	<string name="details_score_success_title">Score saved</string>
+	<string name="details_score_success_text">Your score was successfully recorded</string>
+	<string name="details_score_failure_title">Score not saved</string>
+	<string name="details_score_failure_text">The server did not record your score. (Note that you can only score a service once)</string>
+	<string name="details_comment_empty_title">No text</string>
+	<string name="details_comment_empty_text">You cannot submit a empty comment</string>
+	<string name="details_comment_success_title">Comment saved</string>
+	<string name="details_comment_success_text">Your comment was saved.</string>
+	<string name="details_comment_failure_title">Comment not saved</string>
+	<string name="details_comment_failure_text">The server did not record your comment.</string>
+	<string name="details_title_title">Title</string>
+	<string name="details_title_text">Unknown title</string>
+	<string name="details_title_hint">Service title</string>
+	<string name="details_type_title">Type</string>
+	<string name="details_type_text">Unknown type</string>
+	<string name="details_type_hint">Service type</string>
+	<string name="details_description_title">Description</string>
+	<string name="details_description_text">Unknown description</string>
+	<string name="details_description_hint">Service description</string>
+	<string name="details_error_captured_img">Could not load the image</string>
+	<string name="details_img_not_found_title">No image</string>
+	<string name="details_img_not_found_text">Could not find the service image.</string>
+	<string name="details_update_fail_title">Incomplete save</string>
+	<string name="details_update_fail_text">We could not save the service. Please try again.</string>
+
 	<!-- comments list item -->
 	<string name="comment_owner_img">Commenter</string>
 	<string name="comment_owner_name">Commenter</string>
@@ -255,7 +302,11 @@
 	<string name="forum_vote_for">Vote for</string>
 	<string name="forum_dialog_vote_title">Rate this user</string>
 	<string name="forum_dialog_vote_text">Please rate the credibility of</string>
-				
+	<string name="forum_vote_success_title">Rating recorded</string>
+	<string name="forum_vote_success_text">Your rating has been recorded</string>
+	<string name="forum_vote_failure_title">Rating no recorded</string>
+	<string name="forum_vote_failure_text">The server did not record your score. (Note that you can only score a service once)</string>
+								
 	<!-- user include -->
 	<string name="user_img">User</string>
 	<string name="user_name">Unknown Name</string>

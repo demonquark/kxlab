@@ -7,7 +7,7 @@ import android.net.NetworkInfo;
 
 abstract class DAOabstract {
 
-	int listSize = 4;
+	int listSize = 10;
 
 	/**
 	 * <p>Converts the path of a URL address to a file name. <br /> 
