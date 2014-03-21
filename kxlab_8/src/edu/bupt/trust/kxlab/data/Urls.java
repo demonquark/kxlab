@@ -2,7 +2,7 @@ package edu.bupt.trust.kxlab.data;
 
 final class Urls {
 
-	protected static final String urlBASE = "http://trustworth.w20.mc-test.com/trustworthy-community"; 
+	protected static final String urlBASE = "http://trustworth.w20.mc-test.com/trustworthy-community/t"; 
 	protected static final String pathProfileLogin = "userManagementByPhone/login";				
 	protected static final String pathProfileUserInfo = "userManagementByPhone/userInformation";
 	protected static final String pathProfileHistory = "userManagementByPhone/activityHistory";	
